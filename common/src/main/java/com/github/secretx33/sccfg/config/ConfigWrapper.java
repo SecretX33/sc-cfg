@@ -1,10 +1,10 @@
 package com.github.secretx33.sccfg.config;
 
+import com.github.secretx33.sccfg.api.FieldNameStrategy;
+import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Method;
-import java.util.Objects;
+import java.nio.file.Path;
 import java.util.Set;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -13,13 +13,26 @@ public class ConfigWrapper<T> {
 
     private final T instance;
     private final Configuration configAnnotation;
-    private final
-    private final Set<Method> runBeforeReload;
-    private final Set<Method> runAfterReload;
+    private final Path destination;
+    private final FileType fileType;
+    private final FieldNameStrategy nameStrategy;
+    private final Set<MethodWrapper> runBeforeReloadMethods;
+    private final Set<MethodWrapper> runAfterReloadMethods;
 
-    public ConfigWrapper(T instance, Configuration configAnnotation) {
+    public ConfigWrapper(
+        final T instance,
+        final Configuration configAnnotation,
+        final Path destination,
+        final Set<MethodWrapper> runBeforeReload,
+        final Set<MethodWrapper> runAfterReload
+    ) {
         this.instance = checkNotNull(instance);
         this.configAnnotation = checkNotNull(configAnnotation);
+        this.destination = destination;
+        this.fileType = checkNotNull(configAnnotation.type(), "type cannot be null");
+        this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy cannot be null");
+        this.runBeforeReloadMethods = checkNotNull(runBeforeReload);
+        this.runAfterReloadMethods = checkNotNull(runAfterReload);
     }
 
     public T getInstance() {
@@ -30,24 +43,23 @@ public class ConfigWrapper<T> {
         return configAnnotation;
     }
 
-    @Override
-    public boolean equals(@Nullable Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        ConfigWrapper<?> that = (ConfigWrapper<?>) o;
-        return instance.equals(that.instance) && configAnnotation.equals(that.configAnnotation);
+    public Path getDestination() {
+        return destination;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(instance, configAnnotation);
+    public FileType getFileType() {
+        return fileType;
     }
 
-    @Override
-    public String toString() {
-        return "ConfigWrapper{" +
-                "instance=" + instance +
-                ", configAnnotation=" + configAnnotation +
-                '}';
+    public FieldNameStrategy getNameStrategy() {
+        return nameStrategy;
+    }
+
+    public Set<MethodWrapper> getRunBeforeReloadMethods() {
+        return runBeforeReloadMethods;
+    }
+
+    public Set<MethodWrapper> getRunAfterReloadMethods() {
+        return runAfterReloadMethods;
     }
 }

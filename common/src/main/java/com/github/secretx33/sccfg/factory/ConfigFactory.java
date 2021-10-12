@@ -2,6 +2,7 @@ package com.github.secretx33.sccfg.factory;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructor;
@@ -9,7 +10,9 @@ import com.github.secretx33.sccfg.scanner.Scanner;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,9 +22,11 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 public final class ConfigFactory {
 
     private final Map<Class<?>, ConfigWrapper<?>> instances = new ConcurrentHashMap<>();
+    private final Path basePath;
     private final Scanner scanner;
 
-    public ConfigFactory(Scanner scanner) {
+    public ConfigFactory(final Path basePath, final Scanner scanner) {
+        this.basePath = checkNotNull(basePath);
         this.scanner = checkNotNull(scanner);
     }
 
@@ -42,13 +47,26 @@ public final class ConfigFactory {
 
             final T instance = (T) constructor.newInstance();
             final Configuration annotation = getConfigAnnotation(clazz);
-            final Set<Method> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
-            final Set<Method> runAfterReload = scanner.getAfterReloadMethods(clazz);
+            final Path destination = basePath.resolve(parseConfigPath(clazz, annotation));
+            final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
+            final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
-            return new ConfigWrapper<>(instance, annotation);
-        } catch (ReflectiveOperationException e) {
+            return new ConfigWrapper<>(instance, annotation, destination, runBeforeReload, runAfterReload);
+        } catch (Exception e) {
             throw new ConfigException(e);
         }
+    }
+
+    private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {
+        final String value = configuration.value().trim();
+        final String extension = configuration.type().extension;
+        if (value.isEmpty()) {
+            return clazz.getName() + extension;
+        }
+        if(value.toLowerCase(Locale.US).endsWith(extension)) {
+            return value;
+        }
+        return value + extension;
     }
 
     private Configuration getConfigAnnotation(final Class<?> clazz) {
