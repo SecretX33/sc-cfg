@@ -16,7 +16,9 @@ import org.reflections.util.FilterBuilder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -27,7 +29,7 @@ public class BaseScanner implements Scanner {
     protected static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.immutableOf(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
 
     protected final Reflections reflections = getGenericReflections();
-    protected Set<ClassLoader> extraClassLoaders;
+    protected Set<ClassLoader> extraClassLoaders = Collections.emptySet();
 
     @NotNull
     protected Reflections getGenericReflections(final ClassLoader... additionalClassLoaders) {
@@ -60,7 +62,7 @@ public class BaseScanner implements Scanner {
     @Override
     public Set<MethodWrapper> getBeforeReloadMethods(final Class<?> clazz) {
         final Reflections reflectionForClass = getReflections(clazz);
-        return getZeroArgsMethods(() -> reflectionForClass.getMethodsAnnotatedWith(BeforeReload.class),
+        return getZeroArgsInstanceMethods(() -> reflectionForClass.getMethodsAnnotatedWith(BeforeReload.class),
                 method -> {
                     final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
                     final boolean async = reloadAnnotation.async();
@@ -71,7 +73,7 @@ public class BaseScanner implements Scanner {
     @Override
     public Set<MethodWrapper> getAfterReloadMethods(final Class<?> clazz) {
         final Reflections reflectionForClass = getReflections(clazz);
-        return getZeroArgsMethods(() -> reflectionForClass.getMethodsAnnotatedWith(AfterReload.class),
+        return getZeroArgsInstanceMethods(() -> reflectionForClass.getMethodsAnnotatedWith(AfterReload.class),
                 method -> {
                     final AfterReload reloadAnnotation = method.getDeclaredAnnotation(AfterReload.class);
                     final boolean async = reloadAnnotation.async();
@@ -79,12 +81,13 @@ public class BaseScanner implements Scanner {
                 });
     }
 
-    protected Set<MethodWrapper> getZeroArgsMethods(
+    protected Set<MethodWrapper> getZeroArgsInstanceMethods(
         final Supplier<Set<Method>> methods,
         final Function<Method, MethodWrapper> mapper
     ) {
         return methods.get().stream()
-                .filter(method -> method.getParameterCount() == 0)
+                .filter(method -> method.getParameterCount() == 0
+                        && !Modifier.isStatic(method.getModifiers()))
                 .peek(method -> method.setAccessible(true))
                 .map(mapper)
                 .collect(Collectors.toSet());
@@ -100,7 +103,8 @@ public class BaseScanner implements Scanner {
     protected Set<Field> getConfigurationFields(final Class<?> clazz, final Reflections reflectionsForClass) {
         final Set<Field> ignoredFields = getIgnoredFields(reflectionsForClass);
         return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> !ignoredFields.contains(field))
+                .filter(field -> !Modifier.isStatic(field.getModifiers())
+                        && !ignoredFields.contains(field))
                 .peek(field -> field.setAccessible(true))
                 .collect(Collectors.toSet());
     }
@@ -113,6 +117,7 @@ public class BaseScanner implements Scanner {
 
     protected Set<Field> getIgnoredFields(final Reflections reflectionsForClass) {
         return reflectionsForClass.getFieldsAnnotatedWith(IgnoreField.class).stream()
+                .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .peek(field -> field.setAccessible(true))
                 .collect(Collectors.toSet());
     }
