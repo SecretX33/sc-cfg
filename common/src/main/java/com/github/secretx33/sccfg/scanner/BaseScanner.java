@@ -12,7 +12,6 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.FilterBuilder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -36,8 +35,7 @@ public class BaseScanner implements Scanner {
         return new Reflections(new ConfigurationBuilder()
                 .addScanners(Scanners.TypesAnnotated, Scanners.MethodsAnnotated, Scanners.FieldsAnnotated)
                 .addClassLoaders(Sets.toArray(BASE_CLASSLOADERS, extraClassLoaders))
-                .addClassLoaders(additionalClassLoaders)
-                .filterInputsBy(new FilterBuilder().excludePattern("com.github.secretx33.sccfg")));
+                .addClassLoaders(additionalClassLoaders));
     }
 
     @NotNull

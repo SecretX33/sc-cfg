@@ -15,6 +15,14 @@ public final class FileWatcherEvent {
         this.type = checkNotNull(type);
     }
 
+    public Path getFile() {
+        return file;
+    }
+
+    public FileModificationType getType() {
+        return type;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

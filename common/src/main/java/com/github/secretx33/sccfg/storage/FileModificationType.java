@@ -2,6 +2,9 @@ package com.github.secretx33.sccfg.storage;
 
 import com.github.secretx33.sccfg.util.Sets;
 
+import java.nio.file.Path;
+import java.nio.file.StandardWatchEventKinds;
+import java.nio.file.WatchEvent;
 import java.util.Set;
 
 public enum FileModificationType {
@@ -39,4 +42,16 @@ public enum FileModificationType {
     }
 
     public static final Set<FileModificationType> CREATE_AND_MODIFICATION = Sets.immutableOf(CREATE, MODIFY);
+
+    public static FileModificationType adapt(final WatchEvent<Path> event) {
+        if(event.kind().equals(StandardWatchEventKinds.ENTRY_CREATE))
+            return FileModificationType.CREATE;
+        if(event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY))
+            return FileModificationType.MODIFY;
+        if(event.kind().equals(StandardWatchEventKinds.ENTRY_DELETE))
+            return FileModificationType.DELETE;
+        if(event.kind().equals(StandardWatchEventKinds.OVERFLOW))
+            return FileModificationType.OVERFLOW;
+        throw new IllegalStateException("Could not convert unknown event " + event.kind().toString() + " to a FileModificationType");
+    }
 }

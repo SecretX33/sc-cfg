@@ -131,9 +131,8 @@ public abstract class AbstractFileWatcher implements AutoCloseable  {
      * Process an observed watch event.
      *
      * @param event the event
-     * @param path the resolved event context
      */
-    protected abstract void processEvent(WatchEvent<Path> event, Path path);
+    protected abstract void processEvent(final FileWatcherEvent event);
 
     public final void runEventProcessingLoopAsync() {
         CompletableFuture.runAsync(this::runEventProcessingLoop, singleThreadExecutor);
@@ -181,14 +180,14 @@ public abstract class AbstractFileWatcher implements AutoCloseable  {
 
                 // if the file is a regular file, send the event on to be processed
                 if (Files.isRegularFile(file)) {
-                    processEvent(event, file);
+                    processEvent(new FileWatcherEvent(file, FileModificationType.adapt(event)));
                 }
 
                 // handle recursive directory creation
-                if (autoRegisterNewSubDirectories && event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    if (Files.isDirectory(file, LinkOption.NOFOLLOW_LINKS)) {
-                        registerRecursively(file);
-                    }
+                if (autoRegisterNewSubDirectories
+                        && event.kind() == StandardWatchEventKinds.ENTRY_CREATE
+                        && Files.isDirectory(file, LinkOption.NOFOLLOW_LINKS)) {
+                    registerRecursively(file);
                 }
             }
 

@@ -3,6 +3,7 @@ package com.github.secretx33.sccfg.storage;
 import com.github.secretx33.sccfg.util.Sets;
 
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
@@ -12,6 +13,7 @@ public class FileWatcherEventConsumer {
 
     private final Set<FileModificationType> acceptTypes;
     private final Consumer<FileWatcherEvent> consumer;
+    private final UUID uniqueId = UUID.randomUUID();
 
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final FileModificationType... acceptTypes) {
         checkNotNull(acceptTypes, "acceptTypes cannot be null");
@@ -19,12 +21,28 @@ public class FileWatcherEventConsumer {
         this.acceptTypes = Sets.immutableOf(acceptTypes);
         this.consumer = checkNotNull(consumer);
     }
-    
+
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final Set<FileModificationType> acceptTypes) {
         checkNotNull(acceptTypes, "acceptTypes cannot be null");
         checkArgument(!acceptTypes.isEmpty(), "cannot listen to zero modification types");
         this.acceptTypes = acceptTypes;
         this.consumer = checkNotNull(consumer);
+    }
+
+    public void accept(final FileWatcherEvent event) {
+        consumer.accept(checkNotNull(event));
+    }
+
+    public Set<FileModificationType> getAcceptTypes() {
+        return acceptTypes;
+    }
+
+    public Consumer<FileWatcherEvent> getConsumer() {
+        return consumer;
+    }
+
+    public UUID getUniqueId() {
+        return uniqueId;
     }
 
     @Override

@@ -25,13 +25,15 @@
 
 package com.github.secretx33.sccfg.storage;
 
-import com.github.secretx33.sccfg.util.ExpiringSet;
+import com.github.secretx33.sccfg.util.ExpiringMap;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.WatchEvent;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -79,56 +81,48 @@ public class FileWatcher extends AbstractFileWatcher {
     }
 
     @Override
-    protected void processEvent(WatchEvent<Path> event, Path path) {
-        // get the relative path of the event
-        Path relativePath = this.basePath.relativize(path);
-        if (relativePath.getNameCount() == 0) {
+    protected void processEvent(final FileWatcherEvent event) {
+        // return if there's no element
+        if (event.getFile().getNameCount() == 0) {
             return;
         }
 
         // pass the event onto all watched locations that match
-        for (Map.Entry<Path, WatchedLocation> entry : this.watchedLocations.entrySet()) {
-            if (relativePath.startsWith(entry.getKey())) {
-                entry.getValue().onEvent(event, relativePath);
-            }
-        }
+        watchedLocations.entrySet().stream()
+            .filter(entry -> event.getFile().startsWith(basePath.resolve(entry.getKey()).toAbsolutePath()))
+            .map(Map.Entry::getValue)
+            .forEach(watchedLocation -> watchedLocation.onEvent(event));
     }
 
     /**
      * Encapsulates a "watcher" in a specific directory.
      */
     public static final class WatchedLocation {
-        /** The directory being watched by this instance. */
-        private final Path path;
+
+        private final Path basePath;
 
         /** A set of files which have been modified recently */
-        private final ExpiringSet<String> recentlyModifiedFiles = new ExpiringSet<>(1, TimeUnit.SECONDS);
+        private final ExpiringMap<UUID, Path> recentlyConsumedFiles = new ExpiringMap<>(1, TimeUnit.SECONDS);
 
         /** The listener callback functions */
-        private final List<Consumer<Path>> callbacks = new CopyOnWriteArrayList<>();
+        private final List<FileWatcherEventConsumer> callbacks = new CopyOnWriteArrayList<>();
 
-        WatchedLocation(Path path) {
-            this.path = path;
+        WatchedLocation(final Path basePath) {
+            this.basePath = checkNotNull(basePath);
         }
 
-        void onEvent(WatchEvent<Path> event, Path path) {
-            // get the relative path of the modified file
-            Path relativePath = path.relativize(path);
-
-            // check if the file has been modified recently
-            String fileName = relativePath.toString();
-            if (!recentlyModifiedFiles.add(fileName)) {
-                return;
-            }
-
+        void onEvent(final FileWatcherEvent event) {
             // pass the event onto registered listeners
-            callbacks.forEach(cb -> {
-                try {
-                    cb.accept(relativePath);
-                } catch (final Exception e) {
-                    e.printStackTrace();
-                }
-            });
+            callbacks.stream()
+                .filter(cb -> cb.getAcceptTypes().contains(event.getType()))
+                .filter(cb -> recentlyConsumedFiles.put(cb.getUniqueId(), basePath.relativize(event.getFile())))
+                .forEach(cb -> {
+                    try {
+                        cb.accept(event);
+                    } catch (final Exception e) {
+                        e.printStackTrace();
+                    }
+                });
         }
 
         /**
@@ -136,8 +130,10 @@ public class FileWatcher extends AbstractFileWatcher {
          *
          * @param fileName the name of the file
          */
-        public void recordChange(String fileName) {
-            recentlyModifiedFiles.add(fileName);
+        public void recordChange(final Path path) {
+            final Map<UUID, Path> recentlyConsumed = new HashMap<>();
+            callbacks.forEach(cb -> recentlyConsumed.put(cb.getUniqueId(), path));
+            recentlyConsumedFiles.putAll(recentlyConsumed);
         }
 
         /**
@@ -145,8 +141,8 @@ public class FileWatcher extends AbstractFileWatcher {
          *
          * @param listener the listener
          */
-        public void addListener(Consumer<Path> listener) {
-            callbacks.add(listener);
+        public void addListener(Set<FileModificationType> modificationTypes, Consumer<FileWatcherEvent>  listener) {
+            callbacks.add(new FileWatcherEventConsumer(listener, modificationTypes));
         }
     }
 

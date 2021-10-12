@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 
-public class ExpiringSet<T> {
+public class ExpiringSet<T> implements Iterable<T> {
 
     private final Cache<T, Long> cache;
     private final long lifetime;
@@ -21,25 +21,6 @@ public class ExpiringSet<T> {
         checkArgument(duration > 0L, "duration has to be greater than zero");
         this.lifetime = unit.toMillis(duration);
         this.cache = CacheBuilder.newBuilder().expireAfterWrite(duration, unit).build();
-    }
-
-    public int size() {
-        return (int) cache.size();
-    }
-
-    public boolean isEmpty() {
-        return size() == 0;
-    }
-
-    public boolean contains(@Nullable T element) {
-        if (element == null) return false;
-        final Long timeout = cache.getIfPresent(element);
-        return timeout != null && timeout > System.currentTimeMillis();
-    }
-
-    @NotNull
-    public Iterator<T> iterator() {
-        return cache.asMap().keySet().iterator();
     }
 
     public boolean add(T element) {
@@ -52,6 +33,25 @@ public class ExpiringSet<T> {
         boolean present = contains(element);
         cache.invalidate(element);
         return present;
+    }
+
+    public boolean contains(@Nullable T element) {
+        if (element == null) return false;
+        final Long timeout = cache.getIfPresent(element);
+        return timeout != null && timeout > System.currentTimeMillis();
+    }
+
+    public int size() {
+        return (int) cache.size();
+    }
+
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    @NotNull
+    public Iterator<T> iterator() {
+        return cache.asMap().keySet().iterator();
     }
 
     public boolean containsAll(@NotNull Collection<T> c) {
