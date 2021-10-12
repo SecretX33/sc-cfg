@@ -7,6 +7,9 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructor;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.storage.FileModificationType;
+import com.github.secretx33.sccfg.storage.FileWatcher;
+import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 
 import java.lang.reflect.Constructor;
 import java.nio.file.Path;
@@ -15,18 +18,21 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public final class BaseConfigFactory implements ConfigFactory {
+public class BaseConfigFactory implements ConfigFactory {
 
     private final Map<Class<?>, ConfigWrapper<?>> instances = new ConcurrentHashMap<>();
     private final Path basePath;
     private final Scanner scanner;
+    private final FileWatcher fileWatcher;
 
-    public BaseConfigFactory(final Path basePath, final Scanner scanner) {
+    public BaseConfigFactory(final Path basePath, final Scanner scanner, final FileWatcher fileWatcher) {
         this.basePath = checkNotNull(basePath);
         this.scanner = checkNotNull(scanner);
+        this.fileWatcher = checkNotNull(fileWatcher);
     }
 
     @Override
@@ -51,7 +57,10 @@ public final class BaseConfigFactory implements ConfigFactory {
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
-            return new ConfigWrapper<>(instance, annotation, destination, runBeforeReload, runAfterReload);
+            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, runBeforeReload, runAfterReload);
+            final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(destination);
+            watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
+            return wrapper;
         } catch (Exception e) {
             throw new ConfigException(e);
         }
@@ -75,5 +84,12 @@ public final class BaseConfigFactory implements ConfigFactory {
             throw new MissingConfigAnnotationException(clazz);
         }
         return annotation;
+    }
+
+    protected Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
+        return event -> {
+            // TODO handle config reload
+            System.out.println("Config reloaded...");
+        };
     }
 }

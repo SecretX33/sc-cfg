@@ -17,6 +17,14 @@ public class MethodWrapper {
         this.async = async;
     }
 
+    public Method getMethod() {
+        return method;
+    }
+
+    public boolean isAsync() {
+        return async;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

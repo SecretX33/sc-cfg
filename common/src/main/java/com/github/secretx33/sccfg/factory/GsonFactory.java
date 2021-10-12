@@ -53,11 +53,14 @@ public class GsonFactory {
         checkNotNull(typeAdapter, "typeAdapter cannot be null");
         checkArgument(isTypeAdapter(typeAdapter.getClass()), () -> "typeAdapter passed as argument does not implement any of Gson type adapter interfaces, so I could not register " + typeAdapter.getClass().getCanonicalName() + " since it is not a type adapter");
         this.typeAdapters.put(adapterFor, typeAdapter);
+        gson = newInstanceWithTypeAdapters();
     }
 
     public void addCustomTypeAdapters(final Map<Class<?>, Object> typeAdapters) {
         checkNotNull(typeAdapters);
+        if(typeAdapters.isEmpty()) return;
         this.typeAdapters.putAll(typeAdapters);
+        gson = newInstanceWithTypeAdapters();
     }
 
     private void parseTypeAdaptersOnClasspath() {
