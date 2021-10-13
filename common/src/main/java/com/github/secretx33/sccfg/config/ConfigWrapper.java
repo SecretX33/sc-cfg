@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class ConfigWrapper<T> {
+public final class ConfigWrapper<T> {
 
     private final T instance;
     private final Configuration configAnnotation;

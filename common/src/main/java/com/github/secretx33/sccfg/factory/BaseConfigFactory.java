@@ -4,12 +4,14 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructor;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
+import com.github.secretx33.sccfg.util.Valid;
 
 import java.lang.reflect.Constructor;
 import java.nio.file.Path;
@@ -44,12 +46,21 @@ public class BaseConfigFactory implements ConfigFactory {
 
     @SuppressWarnings("unchecked")
     private <T> ConfigWrapper<T> newWrappedConfigInstance(final Class<T> clazz) {
-        final Configuration annotation = getConfigAnnotation(clazz);
+        Valid.validateConfigClass(clazz);
         final Constructor<?> constructor = getDefaultConstructor(clazz);
         try {
-            constructor.setAccessible(true);
-
             final T instance = (T) constructor.newInstance();
+            return wrapInstance(instance);
+        } catch (Exception e) {
+            throw new ConfigException(e);
+        }
+    }
+
+    private <T> ConfigWrapper<T> wrapInstance(final T instance) {
+        checkNotNull(instance, "instance cannot be null");
+        final Class<?> clazz = instance.getClass();
+        final Configuration annotation = getConfigAnnotation(clazz);
+        try {
             final Path destination = basePath.resolve(parseConfigPath(clazz, annotation));
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
@@ -88,6 +99,19 @@ public class BaseConfigFactory implements ConfigFactory {
                 .filter(c -> c.getParameterCount() == 0)
                 .findAny()
                 .orElseThrow(() -> new MissingNoArgsConstructor(clazz));
+    }
+
+    @Override
+    public void registerInstance(final Object instance) {
+        checkNotNull(instance, "instance cannot be null");
+        final Class<?> clazz = instance.getClass();
+        Valid.validateConfigClass(clazz);
+
+        if(instances.containsKey(clazz)) {
+            throw new ConfigOverrideException(clazz);
+        }
+        final ConfigWrapper<?> wrapper = wrapInstance(instance);
+        instances.put(clazz, wrapper);
     }
 
     protected Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {

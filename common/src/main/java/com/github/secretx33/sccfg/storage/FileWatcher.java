@@ -43,9 +43,9 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 /**
- * Simple implementation of {@link AbstractFileWatcher} for LuckPerms data files.
+ * Simple implementation of {@link AbstractFileWatcher}.
  */
-public class FileWatcher extends AbstractFileWatcher {
+public final class FileWatcher extends AbstractFileWatcher {
 
     /** The base watched path */
     private final Path basePath;

@@ -5,7 +5,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class BukkitScannerFactory implements ScannerFactory {
+public final class BukkitScannerFactory implements ScannerFactory {
 
     private final Scanner scanner;
 

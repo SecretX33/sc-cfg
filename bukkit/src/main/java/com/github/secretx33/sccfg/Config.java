@@ -6,8 +6,11 @@ import com.github.secretx33.sccfg.factory.ScannerFactory;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
+import com.github.secretx33.sccfg.util.Valid;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.Arrays;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
@@ -23,5 +26,17 @@ public final class Config {
     public static <T> T get(final Class<T> configClass) {
         checkNotNull(configClass, "configClass cannot be null");
         return configFactory.getWrapper(configClass).getInstance();
+    }
+
+    public static <T> T register(final T configInstance) {
+        checkNotNull(configInstance, "configInstance cannot be null");
+        configFactory.registerInstance(configInstance);
+        return configInstance;
+    }
+
+    public static void register(final Object... configInstances) {
+        checkNotNull(configInstances, "configInstances cannot be null");
+        if(configInstances.length == 0) return;
+        Arrays.stream(configInstances).forEach(configFactory::registerInstance);
     }
 }

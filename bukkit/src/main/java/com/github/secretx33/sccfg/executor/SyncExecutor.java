@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class SyncExecutor extends AbstractMethodExecutor {
+public final class SyncExecutor extends AbstractMethodExecutor {
 
     private final Plugin plugin;
 

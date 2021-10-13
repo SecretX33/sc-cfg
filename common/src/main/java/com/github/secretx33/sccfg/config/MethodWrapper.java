@@ -6,7 +6,7 @@ import java.util.Objects;
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class MethodWrapper {
+public final class MethodWrapper {
 
     private final Method method;
     private final boolean async;

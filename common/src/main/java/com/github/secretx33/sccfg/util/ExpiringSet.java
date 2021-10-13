@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 
-public class ExpiringSet<T> implements Iterable<T> {
+public final class ExpiringSet<T> implements Iterable<T> {
 
     private final Cache<T, Long> cache;
     private final long lifetime;

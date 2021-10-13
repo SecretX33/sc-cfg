@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class FileWatcherEventConsumer {
+public final class FileWatcherEventConsumer {
 
     private final Set<FileModificationType> acceptTypes;
     private final Consumer<FileWatcherEvent> consumer;

@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 
-public class ExpiringMap<K, V> {
+public final class ExpiringMap<K, V> {
 
     private final Cache<K, V> cache;
 

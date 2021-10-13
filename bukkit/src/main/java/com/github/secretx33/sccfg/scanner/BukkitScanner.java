@@ -5,7 +5,7 @@ import org.bukkit.plugin.Plugin;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class BukkitScanner extends BaseScanner {
+public final class BukkitScanner extends BaseScanner {
 
     public BukkitScanner(final Plugin plugin) {
         super(checkNotNull(plugin, "plugin cannot be null").getClass().getPackage().getName(), Sets.immutableOf(plugin.getClass().getClassLoader()));
