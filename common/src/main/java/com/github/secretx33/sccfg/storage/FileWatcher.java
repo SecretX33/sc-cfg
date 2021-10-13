@@ -128,7 +128,7 @@ public final class FileWatcher extends AbstractFileWatcher {
         /**
          * Record that a file has been changed recently.
          *
-         * @param fileName the name of the file
+         * @param path the path of the file
          */
         public void recordChange(final Path path) {
             final Map<UUID, Path> recentlyConsumed = new HashMap<>();

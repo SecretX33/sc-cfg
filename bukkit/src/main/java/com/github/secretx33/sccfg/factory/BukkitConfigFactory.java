@@ -2,11 +2,11 @@ package com.github.secretx33.sccfg.factory;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.config.MethodWrapper;
+import com.github.secretx33.sccfg.executor.AsyncExecutor;
+import com.github.secretx33.sccfg.executor.SyncExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
-import com.github.secretx33.sccfg.executor.AsyncExecutor;
-import com.github.secretx33.sccfg.executor.SyncExecutor;
 import org.bukkit.plugin.Plugin;
 
 import java.nio.file.Path;

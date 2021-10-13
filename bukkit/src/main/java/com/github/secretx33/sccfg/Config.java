@@ -6,7 +6,6 @@ import com.github.secretx33.sccfg.factory.ScannerFactory;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
-import com.github.secretx33.sccfg.util.Valid;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
