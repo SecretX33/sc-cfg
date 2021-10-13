@@ -1,4 +1,4 @@
-package com.github.secretx33.sccfg.util;
+package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.config.MethodWrapper;
 

@@ -8,7 +8,6 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 public class BukkitScanner extends BaseScanner {
 
     public BukkitScanner(final Plugin plugin) {
-        checkNotNull(plugin);
-        super.extraClassLoaders = Sets.immutableOf(plugin.getClass().getClassLoader());
+        super(checkNotNull(plugin, "plugin cannot be null").getClass().getPackage().getName(), Sets.immutableOf(plugin.getClass().getClassLoader()));
     }
 }

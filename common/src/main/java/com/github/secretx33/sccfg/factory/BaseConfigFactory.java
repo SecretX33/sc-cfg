@@ -44,15 +44,12 @@ public class BaseConfigFactory implements ConfigFactory {
 
     @SuppressWarnings("unchecked")
     private <T> ConfigWrapper<T> newWrappedConfigInstance(final Class<T> clazz) {
-        final Constructor<?> constructor = Arrays.stream(clazz.getDeclaredConstructors())
-            .filter(c -> c.getParameterCount() == 0)
-            .findAny()
-            .orElseThrow(() -> new MissingNoArgsConstructor(clazz));
+        final Configuration annotation = getConfigAnnotation(clazz);
+        final Constructor<?> constructor = getDefaultConstructor(clazz);
         try {
             constructor.setAccessible(true);
 
             final T instance = (T) constructor.newInstance();
-            final Configuration annotation = getConfigAnnotation(clazz);
             final Path destination = basePath.resolve(parseConfigPath(clazz, annotation));
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
@@ -84,6 +81,13 @@ public class BaseConfigFactory implements ConfigFactory {
             throw new MissingConfigAnnotationException(clazz);
         }
         return annotation;
+    }
+
+    private <T> Constructor<?> getDefaultConstructor(Class<T> clazz) {
+        return Arrays.stream(clazz.getDeclaredConstructors())
+                .filter(c -> c.getParameterCount() == 0)
+                .findAny()
+                .orElseThrow(() -> new MissingNoArgsConstructor(clazz));
     }
 
     protected Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
