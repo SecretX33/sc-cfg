@@ -13,6 +13,7 @@ import com.google.gson.TypeAdapter;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,6 +60,7 @@ public class GsonFactory {
     public void addCustomTypeAdapters(final Map<Class<?>, Object> typeAdapters) {
         checkNotNull(typeAdapters);
         if(typeAdapters.isEmpty()) return;
+        checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on this map that is not a type adapter, please pass only type adapters as argument");
         this.typeAdapters.putAll(typeAdapters);
         gson = newInstanceWithTypeAdapters();
     }
@@ -105,5 +107,9 @@ public class GsonFactory {
                 || JsonDeserializer.class.isAssignableFrom(clazz)
                 || InstanceCreator.class.isAssignableFrom(clazz)
                 || TypeAdapter.class.isAssignableFrom(clazz);
+    }
+
+    private boolean areTypeAdapters(final Collection<?> typeAdapters) {
+        return typeAdapters.stream().allMatch(adapter -> isTypeAdapter(adapter.getClass()));
     }
 }

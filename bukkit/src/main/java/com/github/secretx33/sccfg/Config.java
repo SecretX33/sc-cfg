@@ -16,7 +16,7 @@ public final class Config {
     private static final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
     private static final ScannerFactory scannerFactory = new BukkitScannerFactory(plugin);
     private static final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
-    private static final ConfigFactory factory = new BukkitConfigFactory(plugin.getDataFolder().toPath(), scannerFactory.getScanner(), fileWatcher);
+    private static final ConfigFactory factory = new BukkitConfigFactory(plugin, plugin.getDataFolder().toPath(), scannerFactory.getScanner(), fileWatcher);
 
     private Config() {}
 
