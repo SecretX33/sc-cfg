@@ -2,6 +2,7 @@ package com.github.secretx33.sccfg.util;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,7 +17,7 @@ public final class Sets {
     private Sets() {}
 
     @SafeVarargs
-    public static <T> Set<T> of(final T... elements) {
+    public static <T, S extends T> Set<T> of(final S... elements) {
         return Arrays.stream(elements)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
@@ -48,19 +49,23 @@ public final class Sets {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T[] toArray(@Nullable final Set<T> set) {
-        if(set == null) return (T[]) EMPTY_ARRAY;
-        return (T[]) set.toArray();
+    public static <T> T[] toArray(final Class<T> clazz, @Nullable final Set<? extends T> set) {
+        if(set == null || set.isEmpty())
+            return (T[]) Array.newInstance(clazz, 0);
+
+        final T[] array = (T[]) Array.newInstance(clazz, set.size());
+        return set.toArray(array);
     }
 
     @SafeVarargs
     @SuppressWarnings("unchecked")
-    public static <T> T[] toArray(final Set<T>... sets) {
-        return (T[]) Arrays.stream(sets)
+    public static <T> T[] toArray(final Class<T> clazz, final Set<T>... sets) {
+        if(sets.length == 0)
+            return (T[]) Array.newInstance(clazz, 0);
+
+        return Arrays.stream(sets)
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
-                .toArray();
+                .toArray(size -> (T[]) Array.newInstance(clazz, size));
     }
-
-    private static final Object[] EMPTY_ARRAY = new Object[0];
 }

@@ -30,25 +30,27 @@ public class BaseScanner implements Scanner {
 
     private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.immutableOf(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
 
-    private final Reflections reflections = getGenericReflections();
+    private final Reflections reflections;
     private final Set<ClassLoader> extraClassLoaders;
     private final String basePackage;
 
     public BaseScanner(final String basePackage) {
         this.extraClassLoaders = Collections.emptySet();
-        this.basePackage = checkNotNull(basePackage, "basePath cannot be null");;
+        this.basePackage = checkNotNull(basePackage, "basePath cannot be null");
+        this.reflections = getGenericReflections();
     }
 
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath cannot be null");
         this.extraClassLoaders = checkNotNull(extraClassLoaders, "extraClassLoaders cannot be null");
+        this.reflections = getGenericReflections();
     }
 
     @NotNull
     protected Reflections getGenericReflections() {
         return new Reflections(new ConfigurationBuilder()
                 .addScanners(Scanners.TypesAnnotated, Scanners.MethodsAnnotated, Scanners.FieldsAnnotated)
-                .addClassLoaders(Sets.toArray(BASE_CLASSLOADERS, extraClassLoaders))
+                .addClassLoaders(Sets.toArray(ClassLoader.class, BASE_CLASSLOADERS, extraClassLoaders))
                 .forPackage(basePackage));
     }
 

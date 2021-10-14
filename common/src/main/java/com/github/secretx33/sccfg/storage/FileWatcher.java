@@ -56,11 +56,12 @@ public final class FileWatcher extends AbstractFileWatcher {
     public FileWatcher(final Path basePath) {
         super(checkNotNull(basePath, "basePath cannot be null")
                 .getFileSystem(), true);
-        basePath.toFile().mkdirs();
-        checkArgument(Files.exists(basePath), "basePath needs to exist");
-        checkArgument(Files.isDirectory(basePath), "basePath needs to be a directory");
-        this.basePath = basePath;
-        super.registerRecursively(basePath);
+        final Path newBasePath = basePath.toAbsolutePath();
+        newBasePath.toFile().mkdirs();
+        checkArgument(Files.exists(newBasePath), "basePath needs to exist");
+        checkArgument(Files.isDirectory(newBasePath), "basePath needs to be a directory");
+        this.basePath = newBasePath;
+        super.registerRecursively(newBasePath);
         super.runEventProcessingLoopAsync();
     }
 
