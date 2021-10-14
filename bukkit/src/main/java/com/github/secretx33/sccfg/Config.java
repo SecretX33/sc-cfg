@@ -22,18 +22,18 @@ public final class Config {
 
     private Config() {}
 
-    public static <T> T get(final Class<T> configClass) {
+    public static <T> T getConfig(final Class<T> configClass) {
         checkNotNull(configClass, "configClass cannot be null");
         return configFactory.getWrapper(configClass).getInstance();
     }
 
-    public static <T> T register(final T configInstance) {
+    public static <T> T registerConfig(final T configInstance) {
         checkNotNull(configInstance, "configInstance cannot be null");
         configFactory.registerInstance(configInstance);
         return configInstance;
     }
 
-    public static void register(final Object... configInstances) {
+    public static void registerConfigs(final Object... configInstances) {
         checkNotNull(configInstances, "configInstances cannot be null");
         if(configInstances.length == 0) return;
         Arrays.stream(configInstances).forEach(configFactory::registerInstance);
