@@ -49,16 +49,6 @@ public final class YamlSerializer extends AbstractSerializer {
         return configWrapper;
     }
 
-    @Override
-    public void saveConfig(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper");
-
-        final Object config = configWrapper.getInstance();
-        final Path path = configWrapper.getDestination();
-        createFileIfMissing(config, path);
-        saveToFile(configWrapper, config);
-    }
-
     private Map<String, ?> loadFromFile(final ConfigWrapper<?> configWrapper) {
         final Path path = configWrapper.getDestination();
         final ConfigurationNode yaml;
@@ -71,7 +61,17 @@ public final class YamlSerializer extends AbstractSerializer {
         }
 
         final Gson gson = gsonFactory.getInstance();
-        return Maps.immutableOf(gson.fromJson(gson.toJson(yaml.childrenMap()), mapToken));
+        return Maps.immutableOf(gson.fromJson(gson.toJson(yaml.childrenMap(), mapToken), mapToken));
+    }
+
+    @Override
+    public void saveConfig(final ConfigWrapper<?> configWrapper) {
+        checkNotNull(configWrapper, "configWrapper");
+
+        final Object config = configWrapper.getInstance();
+        final Path path = configWrapper.getDestination();
+        createFileIfMissing(config, path);
+        saveToFile(configWrapper, config);
     }
 
     @Override

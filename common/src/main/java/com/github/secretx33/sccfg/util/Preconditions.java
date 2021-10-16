@@ -46,16 +46,16 @@ public final class Preconditions {
         return reference;
     }
 
-    public static <K, V> Map<K, V> notContainsNull(@Nullable final Map<K, V> reference) {
+    public static <K, V> Map<K, V> notContainsNull(@Nullable final Map<K, V> reference, final String variableName) {
         if (reference == null) {
-            throw new NullPointerException("map cannot be null");
+            throw new NullPointerException(variableName + " cannot be null");
         }
         reference.forEach((key, value) -> {
             if (key == null) {
-                throw new NullPointerException("map passed as argument cannot hold null keys");
+                throw new NullPointerException(variableName + " passed as argument cannot hold null keys");
             }
             if (value == null) {
-                throw new NullPointerException("map passed as argument cannot hold null values");
+                throw new NullPointerException(variableName + " passed as argument cannot hold null values");
             }
         });
         return reference;

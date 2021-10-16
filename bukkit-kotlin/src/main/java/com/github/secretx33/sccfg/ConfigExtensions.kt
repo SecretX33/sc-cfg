@@ -1,5 +1,7 @@
 package com.github.secretx33.sccfg
 
+import java.lang.reflect.Type
+
 
 /**
  * Extension for getting the singleton instance of [T].
@@ -32,3 +34,15 @@ inline fun <reified T : Any> registerConfig(instance: T): T = Config.registerCon
  * Extension for registering your instance of a configuration class.
  */
 fun registerConfigs(vararg instances: Any) = Config.registerConfigs(instances)
+
+fun saveConfig(config: Any) = Config.saveConfig(config)
+
+fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
+
+fun registerTypeAdapter(type: Type, typeAdapter: Any) = Config.registerTypeAdapter(type, typeAdapter)
+
+fun registerTypeAdaptersByClass(typeAdapters: Map<Class<*>, Any>) = Config.registerTypeAdaptersByClass(typeAdapters)
+
+fun registerTypeAdaptersByType(typeAdapters: Map<Type, Any>) = Config.registerTypeAdaptersByType(typeAdapters)
+
+
