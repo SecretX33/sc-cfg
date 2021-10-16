@@ -84,8 +84,7 @@ public class GsonFactory {
 
             try {
                 final Object instance = clazz.getConstructor().newInstance();
-                checkNotNull(instance, "instance");
-                newTypeAdapters.put(annotationFor, instance);
+                newTypeAdapters.put(annotationFor, checkNotNull(instance, "instance"));
             } catch (final ReflectiveOperationException e) {
                 throw new IllegalStateException("This exception should not be thrown, and will only if sccfg has messed up somehow.", e);
             }
