@@ -4,6 +4,7 @@ import com.github.secretx33.sccfg.api.FieldNameStrategy;
 import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 
+import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -19,6 +20,7 @@ public final class ConfigWrapper<T> {
     private final FileType fileType;
     private final FieldNameStrategy nameStrategy;
     private final Map<String, ?> defaults;
+    private final Set<Field> configFields;
     private final Set<MethodWrapper> runBeforeReloadMethods;
     private final Set<MethodWrapper> runBeforeReloadAsyncMethods;
     private final Set<MethodWrapper> runBeforeReloadSyncMethods;
@@ -27,12 +29,13 @@ public final class ConfigWrapper<T> {
     private final Set<MethodWrapper> runAfterReloadSyncMethods;
 
     public ConfigWrapper(
-        final T instance,
-        final Configuration configAnnotation,
-        final Path destination,
-        final Map<String, ?> defaults,
-        final Set<MethodWrapper> runBeforeReload,
-        final Set<MethodWrapper> runAfterReload
+            final T instance,
+            final Configuration configAnnotation,
+            final Path destination,
+            final Map<String, ?> defaults,
+            final Set<Field> configFields,
+            final Set<MethodWrapper> runBeforeReload,
+            final Set<MethodWrapper> runAfterReload
     ) {
         this.instance = checkNotNull(instance, "instance");
         this.configAnnotation = checkNotNull(configAnnotation, "configAnnotation");
@@ -40,6 +43,7 @@ public final class ConfigWrapper<T> {
         this.fileType = checkNotNull(configAnnotation.type(), "type");
         this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy");
         this.defaults = checkNotNull(defaults, "defaults");
+        this.configFields = checkNotNull(configFields, "configFields");
         this.runBeforeReloadMethods = checkNotNull(runBeforeReload, "runBeforeReload");
         this.runBeforeReloadAsyncMethods = filterAsync(runBeforeReloadMethods);
         this.runBeforeReloadSyncMethods = filterSync(runBeforeReloadMethods);
@@ -70,6 +74,10 @@ public final class ConfigWrapper<T> {
 
     public Map<String, ?> getDefaults() {
         return defaults;
+    }
+
+    public Set<Field> getConfigFields() {
+        return configFields;
     }
 
     public Set<MethodWrapper> getRunBeforeReloadMethods() {

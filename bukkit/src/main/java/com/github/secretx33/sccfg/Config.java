@@ -2,8 +2,10 @@ package com.github.secretx33.sccfg;
 
 import com.github.secretx33.sccfg.factory.BukkitConfigFactory;
 import com.github.secretx33.sccfg.factory.ConfigFactory;
+import com.github.secretx33.sccfg.factory.GsonFactory;
 import com.github.secretx33.sccfg.scanner.ScannerFactory;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
+import com.github.secretx33.sccfg.serialization.SerializerFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
 import org.bukkit.plugin.Plugin;
@@ -18,7 +20,12 @@ public final class Config {
     private static final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
     private static final ScannerFactory scannerFactory = new BukkitScannerFactory(plugin);
     private static final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
-    private static final ConfigFactory configFactory = new BukkitConfigFactory(plugin, plugin.getDataFolder().toPath(), scannerFactory.getScanner(), fileWatcher);
+    private static final ConfigFactory configFactory = new BukkitConfigFactory(
+            plugin,
+            plugin.getDataFolder().toPath(),
+            scannerFactory.getScanner(),
+            fileWatcher,
+            new SerializerFactory(plugin.getLogger(), new GsonFactory(plugin.getLogger(), scannerFactory.getScanner())));
 
     private Config() {}
 
@@ -37,5 +44,16 @@ public final class Config {
         checkNotNull(configInstances, "configInstances");
         if(configInstances.length == 0) return;
         Arrays.stream(configInstances).forEach(configFactory::registerInstance);
+    }
+
+    public static void saveConfig(final Object configInstance) {
+        checkNotNull(configInstance, "configInstance");
+        configFactory.saveInstance(configInstance);
+    }
+
+    public static void saveConfigs(final Object... configInstances) {
+        checkNotNull(configInstances, "configInstance");
+        if(configInstances.length == 0) return;
+        Arrays.stream(configInstances).forEach(configFactory::saveInstance);
     }
 }

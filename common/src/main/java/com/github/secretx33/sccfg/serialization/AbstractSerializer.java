@@ -28,7 +28,8 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
-    public Map<String, ?> getDefaults(Object configInstance) {
+    public Map<String, ?> getDefaults(final Object configInstance) {
+        checkNotNull(configInstance, "configInstance");
         try {
             final Gson gson = gsonFactory.getInstance();
             return Maps.immutableOf(gson.fromJson(gson.toJson(configInstance), mapToken));
@@ -56,5 +57,5 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    private static final Type mapToken = new TypeToken<Map<String, ?>>() {}.getType();
+    protected static final Type mapToken = new TypeToken<Map<String, ?>>() {}.getType();
 }

@@ -15,8 +15,8 @@ public final class SyncExecutor extends AbstractMethodExecutor {
     private final Plugin plugin;
 
     public SyncExecutor(final Plugin plugin, final Logger logger) {
-        this.plugin = checkNotNull(plugin);
-        super.logger = checkNotNull(logger);
+        this.plugin = checkNotNull(plugin, "plugin");
+        super.logger = checkNotNull(logger, "logger");
     }
 
     public void runMethodsSync(final Object instance, final Set<MethodWrapper> tasks) {

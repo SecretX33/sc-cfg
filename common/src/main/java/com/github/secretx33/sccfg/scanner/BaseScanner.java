@@ -6,6 +6,7 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.config.MethodWrapper;
+import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
 import org.jetbrains.annotations.NotNull;
@@ -113,8 +114,20 @@ public class BaseScanner implements Scanner {
         return Arrays.stream(clazz.getDeclaredFields())
                 .filter(field -> !Modifier.isStatic(field.getModifiers())
                         && !ignoredFields.contains(field))
-                .peek(field -> field.setAccessible(true))
+                .map(this::turnAccessibleNonField)
                 .collect(Collectors.toSet());
+    }
+
+    private Field turnAccessibleNonField(final Field field) {
+        try {
+            field.setAccessible(true);
+            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            return field;
+        } catch (final ReflectiveOperationException e) {
+            throw new ConfigException(e);
+        }
     }
 
     @Override

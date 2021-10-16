@@ -7,4 +7,6 @@ public interface ConfigFactory {
     <T> ConfigWrapper<T> getWrapper(Class<T> clazz);
 
     void registerInstance(Object instance);
+
+    void saveInstance(Object instance);
 }

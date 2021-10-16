@@ -135,4 +135,6 @@ public class GsonFactory {
     private boolean areTypeAdapters(final Collection<?> typeAdapters) {
         return typeAdapters.stream().allMatch(adapter -> isTypeAdapter(adapter.getClass()));
     }
+
+    public static Gson INSTANCE = new GsonBuilder().disableHtmlEscaping().create();
 }

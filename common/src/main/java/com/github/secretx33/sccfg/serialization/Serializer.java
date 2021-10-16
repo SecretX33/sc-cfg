@@ -6,7 +6,7 @@ import java.util.Map;
 
 public interface Serializer {
 
-    void loadConfig(ConfigWrapper<?> configWrapper);
+    <T> ConfigWrapper<T> loadConfig(ConfigWrapper<T> configWrapper);
     void saveConfig(ConfigWrapper<?> configWrapper);
 
     /**

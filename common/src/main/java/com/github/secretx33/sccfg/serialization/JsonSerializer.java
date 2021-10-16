@@ -14,8 +14,9 @@ public final class JsonSerializer extends AbstractSerializer {
     }
 
     @Override
-    public void loadConfig(final ConfigWrapper<?> configWrapper) {
+    public <T> ConfigWrapper<T> loadConfig(final ConfigWrapper<T> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
+        return null;
     }
 
     @Override
@@ -24,7 +25,8 @@ public final class JsonSerializer extends AbstractSerializer {
     }
 
     @Override
-    public void saveDefault(final ConfigWrapper<?> configWrapper) {
+    public boolean saveDefault(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
+        return false;
     }
 }

@@ -5,6 +5,7 @@ import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.executor.AsyncExecutor;
 import com.github.secretx33.sccfg.executor.SyncExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.serialization.SerializerFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 import org.bukkit.plugin.Plugin;
@@ -26,9 +27,10 @@ public final class BukkitConfigFactory extends BaseConfigFactory {
         final Plugin plugin,
         final Path basePath,
         final Scanner scanner,
-        final FileWatcher fileWatcher
+        final FileWatcher fileWatcher,
+        final SerializerFactory serializerFactory
     ) {
-        super(basePath, scanner, fileWatcher);
+        super(basePath, scanner, fileWatcher, serializerFactory);
         checkNotNull(plugin, "plugin");
         this.asyncExecutor = new AsyncExecutor(plugin.getLogger());
         this.syncExecutor = new SyncExecutor(plugin, plugin.getLogger());
