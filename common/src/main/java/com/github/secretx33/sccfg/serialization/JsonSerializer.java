@@ -11,21 +11,21 @@ public final class JsonSerializer implements Serializer {
     private final Logger logger;
 
     public JsonSerializer(final Logger logger) {
-        this.logger = checkNotNull(logger, "logger cannot be null");
+        this.logger = checkNotNull(logger, "logger");
     }
 
     @Override
     public void loadConfig(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper cannot be null");
+        checkNotNull(configWrapper, "configWrapper");
     }
 
     @Override
-    public void saveConfig(final ConfigWrapper<?> configWrapper) {
-
+    public boolean saveConfig(final ConfigWrapper<?> configWrapper) {
+        return true;
     }
 
     @Override
     public void saveDefault(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper cannot be null");
+        checkNotNull(configWrapper, "configWrapper");
     }
 }

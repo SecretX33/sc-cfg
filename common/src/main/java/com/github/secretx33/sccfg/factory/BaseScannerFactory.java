@@ -11,7 +11,7 @@ public final class BaseScannerFactory implements ScannerFactory {
     private final Scanner scanner;
 
     public BaseScannerFactory(final String basePackage) {
-        checkNotNull(basePackage, "basePackage cannot be null");
+        checkNotNull(basePackage, "basePackage");
         this.scanner = new BaseScanner(basePackage);
     }
 

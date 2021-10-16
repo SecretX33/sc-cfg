@@ -47,7 +47,7 @@ public class GsonFactory {
     }
 
     public Gson newInstanceWithTypeAdapters() {
-        checkNotNull(typeAdapters, "typeAdapters cannot be null");
+        checkNotNull(typeAdapters, "typeAdapters");
         final GsonBuilder builder = new GsonBuilder().disableHtmlEscaping()
                 .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC);
         typeAdapters.forEach(builder::registerTypeAdapter);
@@ -55,8 +55,8 @@ public class GsonFactory {
     }
 
     public void addCustomTypeAdapter(final Class<?> adapterFor, final Object typeAdapter) {
-        checkNotNull(adapterFor, "adapterFor cannot be null");
-        checkNotNull(typeAdapter, "typeAdapter cannot be null");
+        checkNotNull(adapterFor, "adapterFor");
+        checkNotNull(typeAdapter, "typeAdapter");
         checkArgument(isTypeAdapter(typeAdapter.getClass()), () -> "typeAdapter passed as argument does not implement any of Gson type adapter interfaces, so I could not register " + typeAdapter.getClass().getCanonicalName() + " since it is not a type adapter");
 
         this.typeAdapters = Maps.immutableCopyPutting(typeAdapters, adapterFor, typeAdapter);
@@ -72,10 +72,26 @@ public class GsonFactory {
     }
 
     private void parseTypeAdaptersOnClasspath() {
-        final Set<Class<?>> typeAdaptersClasses = scanner.getRegisterTypeAdapters();
-        final Map<Class<?>, Object> newTypeAdapters = new HashMap<>(typeAdaptersClasses.size());
+        final Set<Class<?>> baseTypeAdaptersClasses = scanner.getBaseRegisterTypeAdapters();
+        final Set<Class<?>> customTypeAdaptersClasses = scanner.getCustomRegisterTypeAdapters();
+        final Map<Class<?>, Object> newTypeAdapters = new HashMap<>(customTypeAdaptersClasses.size());
 
-        for (Class<?> clazz : typeAdaptersClasses) {
+        baseTypeAdaptersClasses.forEach(clazz -> {
+            final Class<?> annotationFor = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class).value();
+            if(annotationFor.equals(Object.class)) {
+                throw new IllegalStateException("Type adapter class " + clazz.getCanonicalName() + " is missing a type override.");
+            }
+
+            try {
+                final Object instance = clazz.getConstructor().newInstance();
+                checkNotNull(instance, "instance");
+                newTypeAdapters.put(annotationFor, instance);
+            } catch (final ReflectiveOperationException e) {
+                throw new IllegalStateException("This exception should not be thrown, and will only if sccfg has messed up somehow.", e);
+            }
+        });
+
+        for (Class<?> clazz : customTypeAdaptersClasses) {
             final Constructor<?> constructor = Arrays.stream(clazz.getDeclaredConstructors())
                     .filter(c -> c.getParameterCount() == 0)
                     .findAny()

@@ -6,6 +6,7 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.config.MethodWrapper;
+import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
@@ -28,6 +29,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public class BaseScanner implements Scanner {
 
+    private static final String LIBRARY_CLASSPATH = "com.github.secretx33.sccfg";
     private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.immutableOf(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
 
     private final Reflections reflections;
@@ -36,13 +38,13 @@ public class BaseScanner implements Scanner {
 
     public BaseScanner(final String basePackage) {
         this.extraClassLoaders = Collections.emptySet();
-        this.basePackage = checkNotNull(basePackage, "basePath cannot be null");
+        this.basePackage = checkNotNull(basePackage, "basePath");
         this.reflections = getGenericReflections();
     }
 
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
-        this.basePackage = checkNotNull(basePackage, "basePath cannot be null");
-        this.extraClassLoaders = checkNotNull(extraClassLoaders, "extraClassLoaders cannot be null");
+        this.basePackage = checkNotNull(basePackage, "basePath");
+        this.extraClassLoaders = checkNotNull(extraClassLoaders, "extraClassLoaders");
         this.reflections = getGenericReflections();
     }
 
@@ -60,8 +62,17 @@ public class BaseScanner implements Scanner {
     }
 
     @Override
-    public Set<Class<?>> getRegisterTypeAdapters() {
-        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class);
+    public Set<Class<?>> getBaseRegisterTypeAdapters() {
+        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
+                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
+                .collect(Collectors.toSet());
+    }
+
+    @Override
+    public Set<Class<?>> getCustomRegisterTypeAdapters() {
+        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
+                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
+                .collect(Collectors.toSet());
     }
 
     @Override

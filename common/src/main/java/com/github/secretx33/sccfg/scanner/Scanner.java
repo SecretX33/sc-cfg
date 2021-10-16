@@ -8,7 +8,18 @@ import java.util.Set;
 public interface Scanner {
 
     Set<Class<?>> getConfigurationClasses();
-    Set<Class<?>> getRegisterTypeAdapters();
+
+    /**
+     * Return a set containing all type adapters classes that are <b>within</b> the sccfg
+     * classpath.
+     */
+    Set<Class<?>> getBaseRegisterTypeAdapters();
+
+    /**
+     * Return a set containing all type adapters classes that are <b>not</b> in the sccfg
+     * classpath.
+     */
+    Set<Class<?>> getCustomRegisterTypeAdapters();
     Set<MethodWrapper> getBeforeReloadMethods(final Class<?> clazz);
     Set<MethodWrapper> getAfterReloadMethods(final Class<?> clazz);
     Set<Field> getConfigurationFields(final Class<?> clazz);

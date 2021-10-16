@@ -29,14 +29,14 @@ public final class BukkitConfigFactory extends BaseConfigFactory {
         final FileWatcher fileWatcher
     ) {
         super(basePath, scanner, fileWatcher);
-        checkNotNull(plugin, "plugin cannot be null");
+        checkNotNull(plugin, "plugin");
         this.asyncExecutor = new AsyncExecutor(plugin.getLogger());
         this.syncExecutor = new SyncExecutor(plugin, plugin.getLogger());
     }
 
     @Override
     protected Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper cannot be null");
+        checkNotNull(configWrapper, "configWrapper");
         return event -> handleReloadAsync(configWrapper);
     }
 

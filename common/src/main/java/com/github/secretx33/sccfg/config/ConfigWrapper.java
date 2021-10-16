@@ -34,8 +34,8 @@ public final class ConfigWrapper<T> {
         this.instance = checkNotNull(instance);
         this.configAnnotation = checkNotNull(configAnnotation);
         this.destination = destination;
-        this.fileType = checkNotNull(configAnnotation.type(), "type cannot be null");
-        this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy cannot be null");
+        this.fileType = checkNotNull(configAnnotation.type(), "type");
+        this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy");
         this.runBeforeReloadMethods = checkNotNull(runBeforeReload);
         this.runBeforeReloadAsyncMethods = filterAsync(runBeforeReloadMethods);
         this.runBeforeReloadSyncMethods = filterSync(runBeforeReloadMethods);

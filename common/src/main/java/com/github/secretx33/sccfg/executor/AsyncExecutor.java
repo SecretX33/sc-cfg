@@ -23,23 +23,23 @@ public final class AsyncExecutor extends AbstractMethodExecutor {
 
     public void delayedRun(final long millis, final Runnable task) {
         checkArgument(millis >= 0L);
-        checkNotNull(task, "task cannot be null");
+        checkNotNull(task, "task");
 
         executor.schedule(task, millis, TimeUnit.MILLISECONDS);
     }
 
     public void runMethodsAsync(final Object instance, final Set<MethodWrapper> tasks) {
-        checkNotNull(instance, "instance cannot be null");
-        checkNotNull(tasks, "tasks cannot be null");
+        checkNotNull(instance, "instance");
+        checkNotNull(tasks, "tasks");
 
         if (tasks.isEmpty()) return;
         CompletableFuture.runAsync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
     }
 
     public void runMethodsAsyncWithLatch(final Object instance, final Set<MethodWrapper> tasks, final CountDownLatch latch) {
-        checkNotNull(instance, "instance cannot be null");
-        checkNotNull(tasks, "tasks cannot be null");
-        checkNotNull(latch, "latch cannot be null");
+        checkNotNull(instance, "instance");
+        checkNotNull(tasks, "tasks");
+        checkNotNull(latch, "latch");
 
         if (tasks.isEmpty()) return;
         CompletableFuture.runAsync(() -> tasks.forEach(wrapper ->  runCatching(instance, wrapper, latch)));

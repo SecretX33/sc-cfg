@@ -16,11 +16,11 @@ public final class SerializerFactory {
     private final Logger logger;
 
     public SerializerFactory(final Logger logger) {
-        this.logger = checkNotNull(logger, "logger cannot be null");
+        this.logger = checkNotNull(logger, "logger");
     }
 
     public Serializer getFor(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper cannot be null");
+        checkNotNull(configWrapper, "configWrapper");
         return getSerializer(configWrapper.getFileType());
     }
 

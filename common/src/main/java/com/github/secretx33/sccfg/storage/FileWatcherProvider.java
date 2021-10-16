@@ -13,7 +13,7 @@ public final class FileWatcherProvider {
     private FileWatcherProvider() {}
 
     public static FileWatcher get(final Path basePath) {
-        checkNotNull(basePath, "basePath cannot be null");
+        checkNotNull(basePath, "basePath");
         return watchers.computeIfAbsent(basePath, FileWatcher::new);
     }
 }

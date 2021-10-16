@@ -41,7 +41,7 @@ public class BaseConfigFactory implements ConfigFactory {
     @Override
     @SuppressWarnings("unchecked")
     public <T> ConfigWrapper<T> getWrapper(final Class<T> clazz) {
-        checkNotNull(clazz, "clazz cannot be null");
+        checkNotNull(clazz, "clazz");
         return (ConfigWrapper<T>) instances.computeIfAbsent(clazz, this::newWrappedConfigInstance);
     }
 
@@ -57,7 +57,7 @@ public class BaseConfigFactory implements ConfigFactory {
     }
 
     private <T> ConfigWrapper<T> wrapInstance(final T instance) {
-        checkNotNull(instance, "instance cannot be null");
+        checkNotNull(instance, "instance");
         checkArgument(!(instance instanceof Class<?>), "cannot register classes as instances of configuration");
 
         final Class<?> clazz = instance.getClass();
@@ -108,7 +108,7 @@ public class BaseConfigFactory implements ConfigFactory {
 
     @Override
     public void registerInstance(final Object instance) {
-        checkNotNull(instance, "instance cannot be null");
+        checkNotNull(instance, "instance");
         final Class<?> clazz = instance.getClass();
         Valid.validateConfigClass(clazz);
 

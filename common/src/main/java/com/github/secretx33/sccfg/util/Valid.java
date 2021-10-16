@@ -14,7 +14,7 @@ public final class Valid {
     private Valid() {}
 
     public static boolean isConfigClass(final Class<?> clazz) {
-        checkNotNull(clazz, "clazz cannot be null");
+        checkNotNull(clazz, "clazz");
 
         final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
         if (annotation == null) {
@@ -29,7 +29,7 @@ public final class Valid {
     }
 
     public static void validateConfigClass(final Class<?> clazz) {
-        checkNotNull(clazz, "clazz cannot be null");
+        checkNotNull(clazz, "clazz");
 
         final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
         if (annotation == null) {
@@ -43,12 +43,12 @@ public final class Valid {
     }
 
     public static void validateConfigClasses(final Class<?>... classes) {
-        checkNotNull(classes, "classes cannot be null");
+        checkNotNull(classes, "classes");
         Arrays.stream(classes).forEach(Valid::validateConfigClass);
     }
 
     public static void validateConfigClasses(final Object... instances) {
-        checkNotNull(instances, "instances cannot be null");
+        checkNotNull(instances, "instances");
         Arrays.stream(instances).map(Object::getClass).forEach(Valid::validateConfigClass);
     }
 

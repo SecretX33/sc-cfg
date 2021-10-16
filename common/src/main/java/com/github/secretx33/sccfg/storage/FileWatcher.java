@@ -54,7 +54,7 @@ public final class FileWatcher extends AbstractFileWatcher {
     private final Map<Path, WatchedLocation> watchedLocations = new ConcurrentHashMap<>();
 
     public FileWatcher(final Path basePath) {
-        super(checkNotNull(basePath, "basePath cannot be null")
+        super(checkNotNull(basePath, "basePath")
                 .getFileSystem(), true);
         final Path newBasePath = basePath.toAbsolutePath();
         newBasePath.toFile().mkdirs();

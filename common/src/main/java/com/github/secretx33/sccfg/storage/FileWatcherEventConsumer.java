@@ -16,14 +16,14 @@ public final class FileWatcherEventConsumer {
     private final UUID uniqueId = UUID.randomUUID();
 
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final FileModificationType... acceptTypes) {
-        checkNotNull(acceptTypes, "acceptTypes cannot be null");
+        checkNotNull(acceptTypes, "acceptTypes");
         checkArgument(acceptTypes.length > 0, "cannot listen to zero modification types");
         this.acceptTypes = Sets.immutableOf(acceptTypes);
         this.consumer = checkNotNull(consumer);
     }
 
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final Set<FileModificationType> acceptTypes) {
-        checkNotNull(acceptTypes, "acceptTypes cannot be null");
+        checkNotNull(acceptTypes, "acceptTypes");
         checkArgument(!acceptTypes.isEmpty(), "cannot listen to zero modification types");
         this.acceptTypes = acceptTypes;
         this.consumer = checkNotNull(consumer);

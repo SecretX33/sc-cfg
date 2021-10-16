@@ -32,9 +32,9 @@ public final class Preconditions {
         return reference;
     }
 
-    public static <T> T checkNotNull(@Nullable final T reference, final String errorMessage) {
+    public static <T> T checkNotNull(@Nullable final T reference, final String variableName) {
         if (reference == null) {
-            throw new NullPointerException(errorMessage);
+            throw new NullPointerException(variableName + "cannot be null");
         }
         return reference;
     }

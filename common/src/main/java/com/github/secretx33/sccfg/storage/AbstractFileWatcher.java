@@ -72,7 +72,7 @@ public abstract class AbstractFileWatcher implements AutoCloseable  {
         final FileSystem fileSystem,
         final boolean autoRegisterNewSubDirectories
     ) {
-        checkNotNull(fileSystem, "fileSystem cannot be null");
+        checkNotNull(fileSystem, "fileSystem");
         try {
             this.watchService = checkNotNull(fileSystem.newWatchService());
             this.autoRegisterNewSubDirectories = autoRegisterNewSubDirectories;

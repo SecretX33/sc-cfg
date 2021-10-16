@@ -20,17 +20,17 @@ public final class SyncExecutor extends AbstractMethodExecutor {
     }
 
     public void runMethodsSync(final Object instance, final Set<MethodWrapper> tasks) {
-        checkNotNull(instance, "instance cannot be null");
-        checkNotNull(tasks, "tasks cannot be null");
+        checkNotNull(instance, "instance");
+        checkNotNull(tasks, "tasks");
 
         if (tasks.isEmpty()) return;
         Bukkit.getScheduler().runTask(plugin, () -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
     }
 
     public void runMethodsSyncWithLatch(final Object instance, final Set<MethodWrapper> tasks, final CountDownLatch latch) {
-        checkNotNull(instance, "instance cannot be null");
-        checkNotNull(tasks, "tasks cannot be null");
-        checkNotNull(latch, "latch cannot be null");
+        checkNotNull(instance, "instance");
+        checkNotNull(tasks, "tasks");
+        checkNotNull(latch, "latch");
 
         if (tasks.isEmpty()) return;
         Bukkit.getScheduler().runTask(plugin, () -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
