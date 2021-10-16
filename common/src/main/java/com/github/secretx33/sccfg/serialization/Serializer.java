@@ -5,5 +5,6 @@ import com.github.secretx33.sccfg.config.ConfigWrapper;
 public interface Serializer {
 
     void loadConfig(ConfigWrapper<?> configWrapper);
+    boolean saveConfig(ConfigWrapper<?> configWrapper);
     void saveDefault(ConfigWrapper<?> configWrapper);
 }

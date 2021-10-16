@@ -2,6 +2,7 @@ package com.github.secretx33.sccfg.factory;
 
 import com.github.secretx33.sccfg.scanner.BaseScanner;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.scanner.ScannerFactory;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 

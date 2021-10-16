@@ -2,7 +2,7 @@ package com.github.secretx33.sccfg;
 
 import com.github.secretx33.sccfg.factory.BukkitConfigFactory;
 import com.github.secretx33.sccfg.factory.ConfigFactory;
-import com.github.secretx33.sccfg.factory.ScannerFactory;
+import com.github.secretx33.sccfg.scanner.ScannerFactory;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
