@@ -1,21 +1,24 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigSerializationException;
+import com.github.secretx33.sccfg.factory.GsonFactory;
+import org.spongepowered.configurate.ConfigurateException;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.yaml.NodeStyle;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public final class YamlSerializer implements Serializer {
+public final class YamlSerializer extends AbstractSerializer {
 
-    private final Logger logger;
-
-    public YamlSerializer(final Logger logger) {
-        this.logger = checkNotNull(logger, "logger");
+    public YamlSerializer(final Logger logger, final GsonFactory gsonFactory) {
+        super(logger, gsonFactory);
     }
 
     @Override
@@ -23,38 +26,59 @@ public final class YamlSerializer implements Serializer {
         checkNotNull(configWrapper, "configWrapper");
 
         final Path path = configWrapper.getDestination();
-        try {
-            Files.createFile(path);
-        } catch (final IOException e) {
-            logger.log(Level.SEVERE, "An error has occurred when saving " + configWrapper.getInstance().getClass().getName() + ".", e);
-        }
+        saveDefault(configWrapper);
+
     }
 
     @Override
-    public boolean saveConfig(final ConfigWrapper<?> configWrapper) {
+    public void saveConfig(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
+        final Object config = configWrapper.getInstance();
         final Path path = configWrapper.getDestination();
-        try {
-            if (Files.notExists(path)) {
-                Files.createFile(path);
-            }
-        } catch (final IOException e) {
-            logger.log(Level.SEVERE, "An error has occurred when creating config file for class " + configWrapper.getInstance().getClass().getName() + ".", e);
-            return false;
-        }
-        return true;
-
-//        YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK).path(path)
-//                .defaultOptions()
-//                .build();
-
-//        JsonNode jsonNodeTree = new ObjectMapper().readTree(jsonString);
-//        return new YAMLMapper().writeValueAsString(jsonNodeTree);
+        createFileIfMissing(config, path);
+        saveToFile(configWrapper, path, config);
     }
 
     @Override
-    public void saveDefault(final ConfigWrapper<?> configWrapper) {
+    public boolean saveDefault(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
+
+        final Object config = configWrapper.getInstance();
+        final Path path = configWrapper.getDestination();
+        if(!createFileIfMissing(config, path)) return false;
+        saveToFile(configWrapper, path, configWrapper.getDefaults());
+        return true;
+    }
+
+    private void saveToFile(final ConfigWrapper<?> configWrapper, final Path path, final Object newValues) {
+        final String json;
+        try {
+            json = gsonFactory.getInstance().toJson(newValues);
+        } catch (final Exception e) {
+            final ConfigSerializationException ex = new ConfigSerializationException(e);
+            logger.log(Level.SEVERE, "An error has occurred when serializing config class " + configWrapper.getInstance().getClass().getName() + ".", ex);
+            throw ex;
+        }
+
+        final ConfigurationNode yaml;
+        try {
+            yaml = yamlBuilder().buildAndLoadString(json);
+        } catch (final ConfigurateException e) {
+            final ConfigSerializationException ex = new ConfigSerializationException(e);
+            logger.log(Level.SEVERE, "An error has occurred when converting the config class " + configWrapper.getInstance().getClass().getName() + " to YAML.", ex);
+            throw ex;
+        }
+
+        try {
+            yamlBuilder().path(path).build().save(yaml);
+        } catch (final ConfigurateException e) {
+            throw new ConfigException(e);
+        }
+    }
+
+    private YamlConfigurationLoader.Builder yamlBuilder() {
+        return YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK)
+                .defaultOptions(defaults -> defaults.shouldCopyDefaults(false));
     }
 }

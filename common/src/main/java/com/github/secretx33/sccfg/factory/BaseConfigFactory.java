@@ -8,6 +8,7 @@ import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructor;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
@@ -31,11 +32,13 @@ public class BaseConfigFactory implements ConfigFactory {
     private final Path basePath;
     private final Scanner scanner;
     private final FileWatcher fileWatcher;
+    private final Serializer serializer;
 
-    public BaseConfigFactory(final Path basePath, final Scanner scanner, final FileWatcher fileWatcher) {
-        this.basePath = checkNotNull(basePath);
-        this.scanner = checkNotNull(scanner);
-        this.fileWatcher = checkNotNull(fileWatcher);
+    public BaseConfigFactory(final Path basePath, final Scanner scanner, final FileWatcher fileWatcher,  final Serializer serializer) {
+        this.basePath = checkNotNull(basePath, "basePath");
+        this.scanner = checkNotNull(scanner, "scanner");
+        this.fileWatcher = checkNotNull(fileWatcher, "fileWatcher");
+        this.serializer = checkNotNull(serializer, "serializer");
     }
 
     @Override
@@ -62,12 +65,13 @@ public class BaseConfigFactory implements ConfigFactory {
 
         final Class<?> clazz = instance.getClass();
         final Configuration annotation = getConfigAnnotation(clazz);
+        final Map<String, ?> defaults = serializer.getDefaults(instance);
         try {
             final Path destination = basePath.resolve(parseConfigPath(clazz, annotation));
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
-            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, runBeforeReload, runAfterReload);
+            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, runBeforeReload, runAfterReload);
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(destination);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             return wrapper;

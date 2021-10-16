@@ -1,17 +1,16 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.factory.GsonFactory;
 
 import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public final class JsonSerializer implements Serializer {
+public final class JsonSerializer extends AbstractSerializer {
 
-    private final Logger logger;
-
-    public JsonSerializer(final Logger logger) {
-        this.logger = checkNotNull(logger, "logger");
+    public JsonSerializer(final Logger logger, final GsonFactory gsonFactory) {
+        super(logger, gsonFactory);
     }
 
     @Override
@@ -20,8 +19,8 @@ public final class JsonSerializer implements Serializer {
     }
 
     @Override
-    public boolean saveConfig(final ConfigWrapper<?> configWrapper) {
-        return true;
+    public void saveConfig(final ConfigWrapper<?> configWrapper) {
+        return;
     }
 
     @Override
