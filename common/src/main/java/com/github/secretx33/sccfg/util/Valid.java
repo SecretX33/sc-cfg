@@ -28,7 +28,6 @@ public final class Valid {
         return true;
     }
 
-
     public static void validateConfigClass(final Class<?> clazz) {
         checkNotNull(clazz, "clazz cannot be null");
 

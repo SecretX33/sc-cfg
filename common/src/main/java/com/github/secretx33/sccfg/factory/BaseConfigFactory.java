@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public class BaseConfigFactory implements ConfigFactory {
@@ -44,12 +45,11 @@ public class BaseConfigFactory implements ConfigFactory {
         return (ConfigWrapper<T>) instances.computeIfAbsent(clazz, this::newWrappedConfigInstance);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> ConfigWrapper<T> newWrappedConfigInstance(final Class<T> clazz) {
         Valid.validateConfigClass(clazz);
-        final Constructor<?> constructor = getDefaultConstructor(clazz);
+        final Constructor<T> constructor = getDefaultConstructor(clazz);
         try {
-            final T instance = (T) constructor.newInstance();
+            final T instance = constructor.newInstance();
             return wrapInstance(instance);
         } catch (Exception e) {
             throw new ConfigException(e);
@@ -58,6 +58,8 @@ public class BaseConfigFactory implements ConfigFactory {
 
     private <T> ConfigWrapper<T> wrapInstance(final T instance) {
         checkNotNull(instance, "instance cannot be null");
+        checkArgument(!(instance instanceof Class<?>), "cannot register classes as instances of configuration");
+
         final Class<?> clazz = instance.getClass();
         final Configuration annotation = getConfigAnnotation(clazz);
         try {
@@ -76,12 +78,13 @@ public class BaseConfigFactory implements ConfigFactory {
 
     private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {
         final String value = configuration.value().trim();
+        final String lowerCasedValue = value.toLowerCase(Locale.US);
         final String extension = configuration.type().extension;
         if (value.isEmpty()) {
             return clazz.getName() + extension;
         }
-        if(value.toLowerCase(Locale.US).endsWith(extension)) {
-            return value;
+        if(lowerCasedValue.endsWith(extension)) {
+            return value.substring(0, lowerCasedValue.lastIndexOf(extension) + 1) + extension;
         }
         return value + extension;
     }
@@ -94,10 +97,12 @@ public class BaseConfigFactory implements ConfigFactory {
         return annotation;
     }
 
-    private <T> Constructor<?> getDefaultConstructor(Class<T> clazz) {
+    @SuppressWarnings("unchecked")
+    private <T> Constructor<T> getDefaultConstructor(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredConstructors())
                 .filter(c -> c.getParameterCount() == 0)
                 .findAny()
+                .map(c -> (Constructor<T>)c)
                 .orElseThrow(() -> new MissingNoArgsConstructor(clazz));
     }
 

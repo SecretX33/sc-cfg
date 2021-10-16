@@ -2,6 +2,7 @@ package com.github.secretx33.sccfg.util;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.function.Supplier;
 
 public final class Preconditions {
@@ -42,6 +43,21 @@ public final class Preconditions {
         if (reference == null) {
             throw new NullPointerException(errorMessage.get());
         }
+        return reference;
+    }
+
+    public static <K, V> Map<K, V> notContainsNull(@Nullable final Map<K, V> reference) {
+        if (reference == null) {
+            throw new NullPointerException("map cannot be null");
+        }
+        reference.forEach((key, value) -> {
+            if (key == null) {
+                throw new NullPointerException("map passed as argument cannot hold null keys");
+            }
+            if (value == null) {
+                throw new NullPointerException("map passed as argument cannot hold null values");
+            }
+        });
         return reference;
     }
 }

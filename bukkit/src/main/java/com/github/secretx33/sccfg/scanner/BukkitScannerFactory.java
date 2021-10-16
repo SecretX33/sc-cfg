@@ -10,7 +10,7 @@ public final class BukkitScannerFactory implements ScannerFactory {
     private final Scanner scanner;
 
     public BukkitScannerFactory(final Plugin plugin) {
-        checkNotNull(plugin);
+        checkNotNull(plugin, "plugin cannot be null");
         this.scanner = new BukkitScanner(plugin);
     }
 
