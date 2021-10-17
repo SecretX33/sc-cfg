@@ -37,6 +37,8 @@ fun registerConfigs(vararg instances: Any) = Config.registerConfigs(instances)
 
 fun saveConfig(config: Any) = Config.saveConfig(config)
 
+inline fun <reified T : Any> saveConfig() = Config.saveConfig(T::class.java)
+
 fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
 
 fun registerTypeAdapter(type: Type, typeAdapter: Any) = Config.registerTypeAdapter(type, typeAdapter)

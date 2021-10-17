@@ -30,6 +30,8 @@ public final class SerializerFactory {
 
     private Serializer getSerializer(final FileType fileType) {
         switch(fileType) {
+            case HOCON:
+                return serializers.computeIfAbsent(fileType, type -> new HoconSerializer(logger, gsonFactory));
             case JSON:
                 return serializers.computeIfAbsent(fileType, type -> new JsonSerializer(logger, gsonFactory));
             case YAML:

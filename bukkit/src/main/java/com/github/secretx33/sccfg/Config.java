@@ -54,6 +54,11 @@ public final class Config {
         configFactory.saveInstance(configInstance);
     }
 
+    public static void saveConfig(final Class<?> configClazz) {
+        checkNotNull(configClazz, "configClazz");
+        configFactory.saveInstance(configClazz);
+    }
+
     public static void saveConfigs(final Object... configInstances) {
         checkNotNull(configInstances, "configInstance");
         if(configInstances.length == 0) return;

@@ -4,6 +4,7 @@ package com.github.secretx33.sccfg.api;
  * The type the config file will be.
  */
 public enum FileType {
+    HOCON(".conf"),
     JSON(".json"),
     YAML(".yml");
 

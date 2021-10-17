@@ -5,4 +5,5 @@ dependencies {
     compileOnly("com.google.guava:guava:31.0.1-jre")
     implementation("org.spongepowered:configurate-core:4.1.2")
     implementation("org.spongepowered:configurate-yaml:4.1.2")
+    implementation("org.spongepowered:configurate-hocon:4.1.2")
 }

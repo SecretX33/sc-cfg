@@ -7,7 +7,7 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
-import com.github.secretx33.sccfg.exception.NotInstanceOfConfigException;
+import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
@@ -48,9 +48,9 @@ public class BaseConfigFactory implements ConfigFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> ConfigWrapper<T> getWrapper(final Class<T> clazz) {
-        checkNotNull(clazz, "clazz");
-        return (ConfigWrapper<T>) instances.computeIfAbsent(clazz, this::newWrappedConfigInstance);
+    public <T> ConfigWrapper<T> getWrapper(final Class<T> configClazz) {
+        checkNotNull(configClazz, "configClazz");
+        return (ConfigWrapper<T>) instances.computeIfAbsent(configClazz, this::newWrappedConfigInstance);
     }
 
     private <T> ConfigWrapper<T> newWrappedConfigInstance(final Class<T> clazz) {
@@ -102,7 +102,7 @@ public class BaseConfigFactory implements ConfigFactory {
             return clazz.getName() + extension;
         }
         if(lowerCasedValue.endsWith(extension)) {
-            return value.substring(0, lowerCasedValue.lastIndexOf(extension) + 1) + extension;
+            return value.substring(0, lowerCasedValue.lastIndexOf(extension)) + extension;
         }
         return value + extension;
     }
@@ -149,14 +149,21 @@ public class BaseConfigFactory implements ConfigFactory {
     @Override
     public void saveInstance(final Object instance) {
         checkNotNull(instance, "instance");
+        checkArgument(!(instance instanceof Class<?>), "cannot save instance of clazz");
 
-        final Class<?> clazz = instance.getClass();
-        Valid.validateConfigClass(clazz);
-        ConfigWrapper<?> wrapper = instances.get(clazz);
+        saveInstance(instance.getClass());
+    }
+
+    @Override
+    public void saveInstance(Class<?> configClazz) {
+        checkNotNull(configClazz, "instance");
+
+        Valid.validateConfigClass(configClazz);
+        ConfigWrapper<?> wrapper = instances.get(configClazz);
         if (wrapper == null) {
-            throw new NotInstanceOfConfigException(clazz);
+            throw new ConfigNotInitializedException(configClazz);
         }
-        final Configuration annotation = getConfigAnnotation(clazz);
+        final Configuration annotation = getConfigAnnotation(configClazz);
         serializerFactory.getFor(annotation.type()).saveConfig(wrapper);
     }
 
