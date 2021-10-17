@@ -22,7 +22,7 @@ public @interface BeforeReload {
     /**
      * This option is platform dependent. By default, on bukkit, all methods run on Bukkit main thread,
      * but you can change that by setting this option to true, which will cause your method to be run on
-     * {@link java.util.concurrent.ForkJoinPool#commonPool()}.<br><br>
+     * {@link java.util.concurrent.ForkJoinPool#commonPool() ForkJoinPool#commonPool()}.<br><br>
      *
      * On standalone applications this behaviour is undefined, so always assume that your methods will
      * run async.
