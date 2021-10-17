@@ -6,13 +6,14 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.factory.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
-import com.google.gson.Gson;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +32,7 @@ public final class YamlSerializer extends AbstractSerializer {
 
         saveDefault(configWrapper);
         final Object instance = configWrapper.getInstance();
-        final Map<String, ?> fileValues = loadFromFile(configWrapper);
+        final Map<String, Object> fileValues = loadFromFile(configWrapper);
 
         configWrapper.getConfigFields().stream()
             .filter(field -> fileValues.get(field.getName()) != null)
@@ -49,19 +50,22 @@ public final class YamlSerializer extends AbstractSerializer {
         return configWrapper;
     }
 
-    private Map<String, ?> loadFromFile(final ConfigWrapper<?> configWrapper) {
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
         final Path path = configWrapper.getDestination();
-        final ConfigurationNode yaml;
+        final Object file;
         try {
-            yaml = yamlBuilder().path(path).build().load();
+            file = yamlBuilder().path(path).build().load().raw();
         } catch (final ConfigurateException e) {
             final ConfigDeserializationException ex = new ConfigDeserializationException(e);
             logger.log(Level.SEVERE, "An error has occurred when deserializing config class " + configWrapper.getInstance().getClass().getName() + " from YAML.", ex);
             throw ex;
         }
 
-        final Gson gson = gsonFactory.getInstance();
-        return Maps.immutableOf(gson.fromJson(gson.toJson(yaml.childrenMap(), mapToken), mapToken));
+        if (!(file instanceof Map)) {
+            return Collections.emptyMap();
+        }
+        return Maps.immutableOf((Map<String, Object>)file);
     }
 
     @Override
@@ -114,6 +118,6 @@ public final class YamlSerializer extends AbstractSerializer {
 
     private YamlConfigurationLoader.Builder yamlBuilder() {
         return YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK)
-                .defaultOptions(defaults -> defaults.shouldCopyDefaults(false));
+                .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
     }
 }

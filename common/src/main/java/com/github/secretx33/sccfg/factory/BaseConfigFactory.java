@@ -19,6 +19,7 @@ import com.github.secretx33.sccfg.util.Valid;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
@@ -74,12 +75,13 @@ public class BaseConfigFactory implements ConfigFactory {
         final Map<String, ?> defaults = serializer.getDefaults(instance);
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
         try {
-            final Path destination = basePath.resolve(parseConfigPath(clazz, annotation));
+            final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
+            final Path destination = basePath.resolve(configPath);
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
             final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, configFields, runBeforeReload, runAfterReload);
-            final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(destination);
+            final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             return serializer.loadConfig(wrapper);
         }  catch (final ConfigException e) {

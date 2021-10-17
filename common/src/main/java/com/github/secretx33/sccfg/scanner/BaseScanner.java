@@ -119,15 +119,17 @@ public class BaseScanner implements Scanner {
     }
 
     private Field turnAccessibleNonField(final Field field) {
+        field.setAccessible(true);
         try {
-            field.setAccessible(true);
             Field modifiersField = Field.class.getDeclaredField("modifiers");
             modifiersField.setAccessible(true);
             modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-            return field;
+        } catch (final NoSuchFieldException e) {
+            // Java 9+ throws NoSuchFieldException for that operation, is safe to ignore it
         } catch (final ReflectiveOperationException e) {
             throw new ConfigException(e);
         }
+        return field;
     }
 
     @Override

@@ -43,7 +43,7 @@ public final class BukkitConfigFactory extends BaseConfigFactory {
     }
 
     private void handleReloadAsync(final ConfigWrapper<?> configWrapper) {
-        asyncExecutor.delayedRun(500L, () -> {
+        asyncExecutor.delayedRun(200L, () -> {
             final Object instance = configWrapper.getInstance();
             final Set<MethodWrapper> asyncBefore = configWrapper.getRunBeforeReloadAsyncMethods();
             final Set<MethodWrapper> syncBefore = configWrapper.getRunBeforeReloadSyncMethods();
