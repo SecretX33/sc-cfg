@@ -51,5 +51,5 @@ public interface Serializer {
      * @return the default values for that config instance
      * @throws ConfigSerializationException if serializer could not parse some field
      */
-    Map<String, Object> getDefaults(Object configInstance, NameMap nameMap);
+    Map<String, Object> getCurrentValues(Object configInstance, NameMap nameMap);
 }

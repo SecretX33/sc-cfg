@@ -75,7 +75,7 @@ public class BaseConfigFactory implements ConfigFactory {
         final Serializer serializer = serializerFactory.getFor(annotation.type());
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
         final NameMap nameMap = serializerFactory.getNameMapper().mapFieldNamesUsing(configFields, annotation.nameStrategy());
-        final Map<String, Object> defaults = serializer.getDefaults(instance, nameMap);
+        final Map<String, Object> defaults = serializer.getCurrentValues(instance, nameMap);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
             final Path destination = basePath.resolve(configPath);

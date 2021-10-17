@@ -33,7 +33,7 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
-    public Map<String, Object> getDefaults(final Object configInstance, final NameMap nameMap) {
+    public Map<String, Object> getCurrentValues(final Object configInstance, final NameMap nameMap) {
         checkNotNull(configInstance, "configInstance");
         try {
             final Gson gson = gsonFactory.getInstance();

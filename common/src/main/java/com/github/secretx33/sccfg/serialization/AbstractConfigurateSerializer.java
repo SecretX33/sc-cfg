@@ -78,7 +78,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         final Object config = configWrapper.getInstance();
         final Path path = configWrapper.getDestination();
         createFileIfMissing(config, path);
-        saveToFile(configWrapper, config);
+        saveCurrentInstanceValues(configWrapper);
     }
 
     @Override
@@ -92,7 +92,13 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         return true;
     }
 
-    private void saveToFile(final ConfigWrapper<?> configWrapper, final Object newValues) {
+    private void saveCurrentInstanceValues(final ConfigWrapper<?> configWrapper) {
+        final Object instance = configWrapper.getInstance();
+        final NameMap nameMap = configWrapper.getNameMap();
+        saveToFile(configWrapper, getCurrentValues(instance, nameMap));
+    }
+
+    private void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues) {
         final Path path = configWrapper.getDestination();
         final String json;
         try {

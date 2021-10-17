@@ -14,6 +14,7 @@ dependencies {
     compileOnly(project(":${rootProject.name}-common"))
     compileOnly(kotlin("stdlib"))
     compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
+    implementation("org.spongepowered:configurate-yaml:4.1.2")
 }
 
 tasks.withType<KotlinCompile> {
