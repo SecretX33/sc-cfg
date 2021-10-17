@@ -3,7 +3,7 @@ repositories {
 }
 
 dependencies {
-    api(project(":${rootProject.name}-api"))
-    implementation(project(":${rootProject.name}-common"))
+    api(project(":api"))
+    implementation(project(":common"))
     compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
 }

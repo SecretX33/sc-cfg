@@ -13,7 +13,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.secretx33:sc-cfg:master-SNAPSHOT")
+    implementation("com.github.secretx33.sc-cfg:bukkit:master-SNAPSHOT")
 }
 ```
 
@@ -28,8 +28,9 @@ dependencies {
 
 <dependencies>
     <dependency>
-        <groupId>com.github.secretx33</groupId>
-        <artifactId>sc-cfg</artifactId>
+        <groupId>com.github.secretx33.sc-cfg</groupId>
+        <!-- Replace this with the artifact name -->
+        <artifactId>bukkit</artifactId>
         <version>master-SNAPSHOT</version>
     </dependency>
 </dependencies>
