@@ -45,7 +45,6 @@ public final class Config {
 
     public static void registerConfigs(final Object... configInstances) {
         checkNotNull(configInstances, "configInstances");
-        if(configInstances.length == 0) return;
         Arrays.stream(configInstances).forEach(configFactory::registerInstance);
     }
 
@@ -61,7 +60,6 @@ public final class Config {
 
     public static void saveConfigs(final Object... configInstances) {
         checkNotNull(configInstances, "configInstance");
-        if(configInstances.length == 0) return;
         Arrays.stream(configInstances).forEach(configFactory::saveInstance);
     }
 

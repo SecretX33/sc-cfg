@@ -4,9 +4,42 @@ SC-CFG is a simple, yet powerful library that automatically generate configurati
 
 You won't have to worry about reloading your configuration anymore, SC-CFG handles everything for you, automatically.
 
+### Add the library as dependency
+
+#### Gradle
+```gradle
+repositories {
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.secretx33:sc-cfg:master-SNAPSHOT")
+}
+```
+
+#### Maven
+```maven
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>com.github.secretx33</groupId>
+        <artifactId>sc-cfg</artifactId>
+        <version>master-SNAPSHOT</version>
+    </dependency>
+</dependencies>
+```
+
 ## Usage
 
-Using SC-CFG is as simple as annotating your config class with `@Configuration`. Both public and private fields are supported.
+### Annotate your config class
+
+Using SC-CFG is as simple as annotating your config class with `@Configuration`. Both `public` and `private` fields are supported, `final` or not.
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
@@ -14,12 +47,22 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 // you just have to annotate the class with it
 @Configuration
 public class MyConfig {
+    
     public int someValue = 0;
-    private String someString = "rock";
+    private final String someString = "rock";
 }
 ```
 
-Then getting the singleton instance of the class through the `Config` class.
+Which is serialized to `MyConfig.yml`, automatically.
+
+```yaml
+someValue: 0
+someString: rock
+```
+
+### Get the instance of the config class
+
+Getting the singleton instance of the class through the `Config` class.
 
 ```java
 public class MyPlugin {
@@ -32,15 +75,35 @@ public class MyPlugin {
 }
 ```
 
+### Register an instance of the config class
 
-Which is serialized to `MyConfig.yml`, automatically.
+If your config class cannot have a no args constructor for some reason, like when it needs some dependency injected on it, you can handle the instantiation of the config, registering it later, when is convenient for you.
 
-```yaml
-someValue: 0
-someString: rock
+```java
+public class MyPlugin {
+    
+    @Override
+    public void onEnable() {
+        // config that require some dependency injected
+        MyConfig config = new MyConfig(this);
+                
+        // you can register any config whenever you want
+        Config.registerConfig(config);
+
+        // and even multiple configs at once
+        OtherConfigTwo config2 = new OtherConfigTwo(this);
+        OtherConfigThree config3 = new OtherConfigThree(this);
+  
+        Config.registerConfigs(config2, config3);
+    }
+}
 ```
 
 # Features
+
+### Automatic reload
+
+Config is already reload automatically, whenever there's some modification on the file, you don't have to do anything extra.
 
 ### Save
 Save you config with a single method call.
@@ -60,7 +123,7 @@ public class MyPlugin {
 }
 ```
 
-### Mutiple file types
+### Multiple file types
 The default file type for configurations is `YAML`, but we do support multiple file type like `HOCON` and `JSON`, to switch between then is as easy as changing one option on your `@Configuration` annotation.
 
 ```java
@@ -176,15 +239,26 @@ some-int: 0
 some-screaming-variable: screaming
 ```
 
-### Register type adapters
-Register type adapters for your custom types by simply annotating them with `@RegisterTypeAdapter(YourCustomClass.class)` (you only have to provide type adapters if you get a `ConfigSerializationException` explaining that SC-CFG could not deserialize your field). 
+## Type Adapters
+
+If you got a `ConfigSerializationException` explaining that SC-CFG could not deserialize your field, that's what you are probably looking for. By creating a type adapter, you tell SC-CFG how to serialize and deserialize a certain type.
+
+By default, SC-CFG come with some preconfigured type adapters, but you can always provide custom adapters for any type, and if it happens that one of your type adapter clash with the default ones, your type adapter will override the default one, this is already handled, you don't have to do anything.
+
+### Automatically register type adapters
+Register type adapters for your custom types by simply annotating them with `@RegisterTypeAdapter(YourCustomClass.class)`. 
 
 ```java
+import com.google.gson.JsonSerializer;
+
+// this adapter is automatically registered
 @RegisterTypeAdapter(YourCustomClass.class)
 public class ClassAdapter implements JsonSerializer<YourCustomClass>, JsonDeserializer<YourCustomClass> {
     // ...
 }
 ```
+
+### Manually register type adapters
 
 Sometimes, we have a very specific type which uses [parameterized types](http://www.angelikalanger.com/GenericsFAQ/FAQSections/ParameterizedTypes.html#FAQ001), which our `RegisterTypeAdapter` annotation does not support. If that happens to you, worry not! You can still register your type adapters by using:
 
