@@ -6,7 +6,7 @@ You won't have to worry about reloading your configuration anymore, SC-CFG handl
 
 ## Usage
 
-Using SC-CFG is as simple as annotating your config class with `@Configuration`.
+Using SC-CFG is as simple as annotating your config class with `@Configuration`. Both public and private fields are supported.
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
@@ -70,13 +70,19 @@ public class MyConfig {
 }
 ```
 
+Obs.: For `HOCON` you'll also have to include `configurate-hocon` dependency on your `pom.xml`/`build.gradle` file.
+
+```gradle
+implementation("org.spongepowered:configurate-hocon:4.1.2")
+```
+
 Change the file name and path through your `@Configuration` annotation.
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 
 // all of those annotations are valid options
-//
+
 // @Configuration("myconfig")
 // @Configuration("myconfig.yml")
 // @Configuration("folder/anotherfolder/myconfig.yml")
