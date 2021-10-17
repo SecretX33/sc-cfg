@@ -1,6 +1,7 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 
 import java.util.Map;
 
@@ -18,5 +19,5 @@ public interface Serializer {
      * @return true if defaults were saved to the disk, false if the file already existed
      */
     boolean saveDefault(ConfigWrapper<?> configWrapper);
-    Map<String, Object> getDefaults(Object configInstance);
+    Map<String, Object> getDefaults(Object configInstance, NameMap nameMap);
 }

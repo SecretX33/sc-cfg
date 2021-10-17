@@ -111,11 +111,11 @@ public class BaseScanner implements Scanner {
     @Override
     public Set<Field> getConfigurationFields(final Class<?> clazz) {
         final Set<Field> ignoredFields = getIgnoredFields(clazz);
-        return Arrays.stream(clazz.getDeclaredFields())
+        return Arrays.stream(clazz.getDeclaredFields()).sequential()
                 .filter(field -> !Modifier.isStatic(field.getModifiers())
                         && !ignoredFields.contains(field))
                 .map(this::turnAccessibleNonField)
-                .collect(Collectors.toSet());
+                .collect(Sets.toImmutableLinkedSet());
     }
 
     private Field turnAccessibleNonField(final Field field) {

@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -74,13 +73,14 @@ public class GsonFactory {
         notContainsNull(typeAdapters, "typeAdapters");
         if(typeAdapters.isEmpty()) return;
         checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on this map that is not a type adapter, please pass only type adapters as argument");
+
         final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
                 .map(entry -> {
                     final Type type = TypeToken.get(entry.getKey()).getType();
                     return new AbstractMap.SimpleEntry<>(type, entry.getValue());
                 })
-                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
-        this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, typeAdapters);
+                .collect(Maps.toImmutableMap());
+        this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, newTypeAdapters);
         gson = newInstanceWithTypeAdapters();
     }
 

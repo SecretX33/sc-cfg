@@ -7,6 +7,8 @@ import java.util.function.Supplier;
 
 public final class Preconditions {
 
+    private Preconditions() {}
+
     public static void checkArgument(final boolean expression) {
         if (!expression) {
             throw new IllegalArgumentException();

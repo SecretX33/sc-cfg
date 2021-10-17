@@ -11,6 +11,7 @@ import com.github.secretx33.sccfg.exception.NotInstanceOfConfigException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
@@ -72,15 +73,16 @@ public class BaseConfigFactory implements ConfigFactory {
         final Class<?> clazz = instance.getClass();
         final Configuration annotation = getConfigAnnotation(clazz);
         final Serializer serializer = serializerFactory.getFor(annotation.type());
-        final Map<String, Object> defaults = serializer.getDefaults(instance);
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
+        final NameMap nameMap = serializerFactory.getNameMapper().mapFieldNamesUsing(configFields, annotation.nameStrategy());
+        final Map<String, Object> defaults = serializer.getDefaults(instance, nameMap);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
             final Path destination = basePath.resolve(configPath);
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
-            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, configFields, runBeforeReload, runAfterReload);
+            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, nameMap, configFields, runBeforeReload, runAfterReload);
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             watchedLocation.recordChange(destination);
@@ -120,10 +122,6 @@ public class BaseConfigFactory implements ConfigFactory {
                 .findAny()
                 .map(c -> (Constructor<T>)c)
                 .orElseThrow(() -> new MissingNoArgsConstructorException(clazz));
-    }
-
-    private <T> Map<String, Object> getDefaults(T instance, Configuration annotation) {
-        return serializerFactory.getFor(annotation.type()).getDefaults(instance);
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.github.secretx33.sccfg.serialization;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -13,6 +14,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.AbstractMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,11 +33,16 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
-    public Map<String, Object> getDefaults(final Object configInstance) {
+    public Map<String, Object> getDefaults(final Object configInstance, final NameMap nameMap) {
         checkNotNull(configInstance, "configInstance");
         try {
             final Gson gson = gsonFactory.getInstance();
-            return Maps.immutableOf(gson.fromJson(gson.toJson(configInstance), mapToken));
+            final Map<String, Object> defaults = gson.fromJson(gson.toJson(configInstance), linkedMapToken);
+            // map java names to file names
+            return defaults.entrySet().stream().sequential()
+                    .filter(entry -> nameMap.getFileEquivalent(entry.getKey()) != null)
+                    .map(entry -> new AbstractMap.SimpleEntry<>(nameMap.getFileEquivalent(entry.getKey()), entry.getValue()))
+                    .collect(Maps.toImmutableLinkedMap());
         } catch (final Exception e) {
             throw new ConfigSerializationException(e);
         }
@@ -71,5 +79,5 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @SuppressWarnings("UnstableApiUsage")
-    protected static final Type mapToken = new TypeToken<Map<String, Object>>() {}.getType();
+    protected static final Type linkedMapToken = new TypeToken<LinkedHashMap<String, Object>>() {}.getType();
 }

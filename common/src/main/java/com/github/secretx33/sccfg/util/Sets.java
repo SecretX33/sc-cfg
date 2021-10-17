@@ -8,8 +8,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public final class Sets {
@@ -67,5 +69,13 @@ public final class Sets {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .toArray(size -> (T[]) Array.newInstance(clazz, size));
+    }
+
+    public static <T> Collector<T, ?, LinkedHashSet<T>> toLinkedSet() {
+        return Collectors.toCollection(LinkedHashSet::new);
+    }
+
+    public static <T> Collector<T, ?, Set<T>> toImmutableLinkedSet() {
+        return Collectors.collectingAndThen(toLinkedSet(), Collections::unmodifiableSet);
     }
 }

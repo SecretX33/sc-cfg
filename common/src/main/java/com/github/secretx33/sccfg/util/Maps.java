@@ -2,14 +2,20 @@ package com.github.secretx33.sccfg.util;
 
 import org.jetbrains.annotations.Nullable;
 
+import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class Maps {
+public final class Maps {
+
+    private Maps() {}
 
     public static <K, V> Map<K, V> immutableOf(@Nullable final Map<K, V> map) {
         if (map == null || map.isEmpty()) return Collections.emptyMap();
@@ -36,5 +42,24 @@ public class Maps {
         final Map<K, V> newMap = new HashMap<>(map);
         consumer.accept(newMap);
         return Collections.unmodifiableMap(newMap);
+    }
+
+    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, Map<K, V>> toMap() {
+        return Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue);
+    }
+
+    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, LinkedHashMap<K, V>> toLinkedMap() {
+        return Collectors.toMap(AbstractMap.SimpleEntry::getKey,
+                AbstractMap.SimpleEntry::getValue,
+                (a, b) -> b,
+                LinkedHashMap::new);
+    }
+
+    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, Map<K, V>> toImmutableMap() {
+        return Collectors.collectingAndThen(toMap(), Collections::unmodifiableMap);
+    }
+
+    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, Map<K, V>> toImmutableLinkedMap() {
+        return Collectors.collectingAndThen(toLinkedMap(), Collections::unmodifiableMap);
     }
 }
