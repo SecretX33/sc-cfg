@@ -1,10 +1,10 @@
-package com.github.secretx33.sccfg.factory;
+package com.github.secretx33.sccfg.serialization.gson;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.exception.ConfigException;
-import com.github.secretx33.sccfg.exception.MissingTypeOverrideOnAdapter;
+import com.github.secretx33.sccfg.exception.MissingTypeOverrideOnAdapterException;
 import com.github.secretx33.sccfg.scanner.Scanner;
-import com.github.secretx33.sccfg.serialization.typeadapter.MapDeserializerDoubleAsIntFix;
+import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -54,7 +54,8 @@ public class GsonFactory {
     public Gson newInstanceWithTypeAdapters() {
         checkNotNull(typeAdapters, "typeAdapters");
         final GsonBuilder builder = new GsonBuilder().disableHtmlEscaping()
-                .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC);
+                .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
+                .setExclusionStrategies(new GsonIgnoreFieldExclusionStrategy());
         builder.registerTypeAdapter(GENERIC_MAP, new MapDeserializerDoubleAsIntFix());
         typeAdapters.forEach(builder::registerTypeAdapter);
         return builder.create();
@@ -69,23 +70,16 @@ public class GsonFactory {
         gson = newInstanceWithTypeAdapters();
     }
 
-    public void addTypeAdaptersByClass(final Map<Class<?>, Object> typeAdapters) {
+    public void addTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");
         if(typeAdapters.isEmpty()) return;
         checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on this map that is not a type adapter, please pass only type adapters as argument");
-        final Map<Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
+        final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
                 .map(entry -> {
                     final Type type = TypeToken.get(entry.getKey()).getType();
                     return new AbstractMap.SimpleEntry<>(type, entry.getValue());
                 })
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
-        addTypeAdaptersByType(newTypeAdapters);
-    }
-
-    public void addTypeAdaptersByType(final Map<Type, Object> typeAdapters) {
-        notContainsNull(typeAdapters, "typeAdapters");
-        if(typeAdapters.isEmpty()) return;
-        checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on this map that is not a type adapter, please pass only type adapters as argument");
         this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, typeAdapters);
         gson = newInstanceWithTypeAdapters();
     }
@@ -132,7 +126,7 @@ public class GsonFactory {
 
             final Class<?> annotationFor = annotation.value();
             if(annotationFor.equals(Object.class)) {
-                throw new MissingTypeOverrideOnAdapter(clazz);
+                throw new MissingTypeOverrideOnAdapterException(clazz);
             }
 
             try {

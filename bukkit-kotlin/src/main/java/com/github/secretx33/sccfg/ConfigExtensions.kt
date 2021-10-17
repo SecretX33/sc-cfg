@@ -10,7 +10,7 @@ import java.lang.reflect.Type
  *
  * @return T the singleton instance of T
  * @throws [MissingConfigAnnotationException][com.github.secretx33.sccfg.exception.MissingConfigAnnotationException] if `T` class is not annotated with [Configuration][com.github.secretx33.sccfg.api.annotation.Configuration]
- * @throws [MissingNoArgsConstructor][com.github.secretx33.sccfg.exception.MissingNoArgsConstructor] if `T` class does not have a no args constructor
+ * @throws [MissingNoArgsConstructor][com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException] if `T` class does not have a no args constructor
  */
 inline fun <reified T : Any> getConfig(): T = Config.getConfig(T::class.java)
 
@@ -21,7 +21,7 @@ inline fun <reified T : Any> getConfig(): T = Config.getConfig(T::class.java)
  *
  * @return Lazy<T> lazy delegate of the singleton instance of T
  * @throws [MissingConfigAnnotationException][com.github.secretx33.sccfg.exception.MissingConfigAnnotationException] if `T` class is not annotated with [Configuration][com.github.secretx33.sccfg.api.annotation.Configuration]
- * @throws [MissingNoArgsConstructor][com.github.secretx33.sccfg.exception.MissingNoArgsConstructor] if `T` class does not have a no args constructor
+ * @throws [MissingNoArgsConstructor][com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException] if `T` class does not have a no args constructor
  */
 inline fun <reified T : Any> lazyConfig(): Lazy<T> = lazy { getConfig() }
 
@@ -41,8 +41,5 @@ fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
 
 fun registerTypeAdapter(type: Type, typeAdapter: Any) = Config.registerTypeAdapter(type, typeAdapter)
 
-fun registerTypeAdaptersByClass(typeAdapters: Map<Class<*>, Any>) = Config.registerTypeAdaptersByClass(typeAdapters)
-
-fun registerTypeAdaptersByType(typeAdapters: Map<Type, Any>) = Config.registerTypeAdaptersByType(typeAdapters)
-
+fun registerTypeAdapters(typeAdapters: Map<out Type, Any>) = Config.registerTypeAdapters(typeAdapters)
 

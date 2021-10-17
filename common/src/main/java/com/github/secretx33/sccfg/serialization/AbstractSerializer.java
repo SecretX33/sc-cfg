@@ -2,7 +2,7 @@ package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
-import com.github.secretx33.sccfg.factory.GsonFactory;
+import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -13,10 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +30,7 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
-    public Map<String, ?> getDefaults(final Object configInstance) {
+    public Map<String, Object> getDefaults(final Object configInstance) {
         checkNotNull(configInstance, "configInstance");
         try {
             final Gson gson = gsonFactory.getInstance();
@@ -61,16 +58,11 @@ abstract class AbstractSerializer implements Serializer {
         return true;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
     protected void setValueOnField(final Object instance, final Field field, final Object value) throws IllegalAccessException, JsonSyntaxException {
         final Class<?> requiredType = field.getType();
+        final Class<?> providedType = value.getClass();
 
-        if (Set.class.isAssignableFrom(requiredType) && value instanceof List) {
-            field.set(instance, new HashSet((List)value));
-            return;
-        }
-
-        if (requiredType.isPrimitive() || Number.class.isAssignableFrom(requiredType)) {
+        if (!requiredType.equals(providedType) && !requiredType.isAssignableFrom(providedType)) {
             final Gson gson = gsonFactory.getInstance();
             field.set(instance, gson.fromJson(gson.toJson(value), requiredType));
             return;

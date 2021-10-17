@@ -6,7 +6,7 @@ import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
-import com.github.secretx33.sccfg.exception.MissingNoArgsConstructor;
+import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.exception.NotInstanceOfConfigException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.Serializer;
@@ -72,7 +72,7 @@ public class BaseConfigFactory implements ConfigFactory {
         final Class<?> clazz = instance.getClass();
         final Configuration annotation = getConfigAnnotation(clazz);
         final Serializer serializer = serializerFactory.getFor(annotation.type());
-        final Map<String, ?> defaults = serializer.getDefaults(instance);
+        final Map<String, Object> defaults = serializer.getDefaults(instance);
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
@@ -83,6 +83,7 @@ public class BaseConfigFactory implements ConfigFactory {
             final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, configFields, runBeforeReload, runAfterReload);
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
+            watchedLocation.recordChange(destination);
             return serializer.loadConfig(wrapper);
         }  catch (final ConfigException e) {
             throw e;
@@ -118,10 +119,10 @@ public class BaseConfigFactory implements ConfigFactory {
                 .filter(c -> c.getParameterCount() == 0)
                 .findAny()
                 .map(c -> (Constructor<T>)c)
-                .orElseThrow(() -> new MissingNoArgsConstructor(clazz));
+                .orElseThrow(() -> new MissingNoArgsConstructorException(clazz));
     }
 
-    private <T> Map<String, ?> getDefaults(T instance, Configuration annotation) {
+    private <T> Map<String, Object> getDefaults(T instance, Configuration annotation) {
         return serializerFactory.getFor(annotation.type()).getDefaults(instance);
     }
 

@@ -4,7 +4,7 @@ import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
-import com.github.secretx33.sccfg.factory.GsonFactory;
+import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.gson.JsonSyntaxException;
 import org.spongepowered.configurate.ConfigurateException;

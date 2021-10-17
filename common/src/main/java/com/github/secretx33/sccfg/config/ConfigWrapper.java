@@ -3,6 +3,7 @@ package com.github.secretx33.sccfg.config;
 import com.github.secretx33.sccfg.api.FieldNameStrategy;
 import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.google.common.collect.BiMap;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -19,7 +20,8 @@ public final class ConfigWrapper<T> {
     private final Path destination;
     private final FileType fileType;
     private final FieldNameStrategy nameStrategy;
-    private final Map<String, ?> defaults;
+    private final Map<String, Object> defaults;
+    private final BiMap<String, String> nameMappingJavaToFile;
     private final Set<Field> configFields;
     private final Set<MethodWrapper> runBeforeReloadMethods;
     private final Set<MethodWrapper> runBeforeReloadAsyncMethods;
@@ -32,7 +34,7 @@ public final class ConfigWrapper<T> {
             final T instance,
             final Configuration configAnnotation,
             final Path destination,
-            final Map<String, ?> defaults,
+            final Map<String, Object> defaults,
             final Set<Field> configFields,
             final Set<MethodWrapper> runBeforeReload,
             final Set<MethodWrapper> runAfterReload
@@ -72,7 +74,7 @@ public final class ConfigWrapper<T> {
         return nameStrategy;
     }
 
-    public Map<String, ?> getDefaults() {
+    public Map<String, Object> getDefaults() {
         return defaults;
     }
 

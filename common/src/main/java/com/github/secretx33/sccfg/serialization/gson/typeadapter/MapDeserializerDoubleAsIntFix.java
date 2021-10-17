@@ -1,4 +1,4 @@
-package com.github.secretx33.sccfg.serialization.typeadapter;
+package com.github.secretx33.sccfg.serialization.gson.typeadapter;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonDeserializationContext;

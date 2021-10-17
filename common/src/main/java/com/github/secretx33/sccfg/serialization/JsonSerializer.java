@@ -1,7 +1,7 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
-import com.github.secretx33.sccfg.factory.GsonFactory;
+import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 
 import java.util.logging.Logger;
 

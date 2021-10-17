@@ -47,10 +47,14 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
  */
 public final class FileWatcher extends AbstractFileWatcher {
 
-    /** The base watched path */
+    /**
+     * The base watched path (absolute).
+     */
     private final Path basePath;
 
-    /** A map of watched locations with corresponding listeners */
+    /**
+     * A map of watched locations with corresponding listeners.
+     */
     private final Map<Path, WatchedLocation> watchedLocations = new ConcurrentHashMap<>();
 
     public FileWatcher(final Path basePath) {
@@ -72,7 +76,7 @@ public final class FileWatcher extends AbstractFileWatcher {
      * @return the watched location
      */
     public WatchedLocation getWatcher(Path path) {
-        checkNotNull(path);
+        checkNotNull(path, "path");
         if (path.isAbsolute()) {
             path = basePath.relativize(path);
         } else if(path.startsWith(basePath)) {
@@ -102,9 +106,14 @@ public final class FileWatcher extends AbstractFileWatcher {
      */
     public static final class WatchedLocation {
 
+        /**
+         * Holds an absolute path to the file or folder being watched.
+         */
         private final Path basePath;
 
-        /** A set of files which have been modified recently */
+        /**
+         *  A set of files which have been modified recently.
+         */
         private final ExpiringMap<UUID, Path> recentlyConsumedFiles = new ExpiringMap<>(1, TimeUnit.SECONDS);
 
         /** The listener callback functions */
@@ -134,8 +143,9 @@ public final class FileWatcher extends AbstractFileWatcher {
          * @param path the path of the file
          */
         public void recordChange(final Path path) {
+            final Path relativePath = basePath.relativize(path.toAbsolutePath());
             final Map<UUID, Path> recentlyConsumed = new HashMap<>();
-            callbacks.forEach(cb -> recentlyConsumed.put(cb.getUniqueId(), path));
+            callbacks.forEach(cb -> recentlyConsumed.put(cb.getUniqueId(), relativePath));
             recentlyConsumedFiles.putAll(recentlyConsumed);
         }
 
@@ -148,5 +158,4 @@ public final class FileWatcher extends AbstractFileWatcher {
             callbacks.add(new FileWatcherEventConsumer(listener, modificationTypes));
         }
     }
-
 }

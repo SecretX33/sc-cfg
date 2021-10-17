@@ -23,7 +23,7 @@ public class Maps {
         return immutableCopyApplying(map, m -> m.put(key, value));
     }
 
-    public static <K, V> Map<K, V> immutableCopyPutting(final Map<K, V> map, final Map<K, V> otherMap) {
+    public static <K, V> Map<K, V> immutableCopyPutting(final Map<K, V> map, final Map<? extends K, ? extends V> otherMap) {
         checkNotNull(map, "map");
         checkNotNull(otherMap, "otherMap");
         return immutableCopyApplying(map, m -> m.putAll(otherMap));

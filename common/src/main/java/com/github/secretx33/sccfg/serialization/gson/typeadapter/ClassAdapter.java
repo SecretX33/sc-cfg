@@ -1,4 +1,4 @@
-package com.github.secretx33.sccfg.serializer.typeadapter;
+package com.github.secretx33.sccfg.serialization.gson.typeadapter;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.exception.ConfigException;

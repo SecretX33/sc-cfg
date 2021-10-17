@@ -18,5 +18,5 @@ public interface Serializer {
      * @return true if defaults were saved to the disk, false if the file already existed
      */
     boolean saveDefault(ConfigWrapper<?> configWrapper);
-    Map<String, ?> getDefaults(Object configInstance);
+    Map<String, Object> getDefaults(Object configInstance);
 }

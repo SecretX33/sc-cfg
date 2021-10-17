@@ -2,10 +2,10 @@ package com.github.secretx33.sccfg;
 
 import com.github.secretx33.sccfg.factory.BukkitConfigFactory;
 import com.github.secretx33.sccfg.factory.ConfigFactory;
-import com.github.secretx33.sccfg.factory.GsonFactory;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
 import com.github.secretx33.sccfg.scanner.ScannerFactory;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
+import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
 import org.bukkit.plugin.Plugin;
@@ -64,11 +64,7 @@ public final class Config {
         gsonFactory.addTypeAdapter(type, typeAdapter);
     }
 
-    public static void registerTypeAdaptersByClass(final Map<Class<?>, Object> typeAdapters) {
-        gsonFactory.addTypeAdaptersByClass(typeAdapters);
-    }
-
-    public static void registerTypeAdaptersByType(final Map<Type, Object> typeAdapters) {
-        gsonFactory.addTypeAdaptersByType(typeAdapters);
+    public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
+        gsonFactory.addTypeAdapters(typeAdapters);
     }
 }

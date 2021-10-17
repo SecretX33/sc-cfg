@@ -2,7 +2,7 @@ package com.github.secretx33.sccfg.util;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
-import com.github.secretx33.sccfg.exception.MissingNoArgsConstructor;
+import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
@@ -38,7 +38,7 @@ public final class Valid {
 
         final boolean hasDefaultConstructor = Arrays.stream(clazz.getDeclaredConstructors()).anyMatch(c -> c.getParameterCount() == 0);
         if (!hasDefaultConstructor) {
-            throw new MissingNoArgsConstructor(clazz);
+            throw new MissingNoArgsConstructorException(clazz);
         }
     }
 
@@ -56,6 +56,6 @@ public final class Valid {
         return Arrays.stream(clazz.getDeclaredConstructors())
                 .filter(c -> c.getParameterCount() == 0)
                 .findAny()
-                .orElseThrow(() -> new MissingNoArgsConstructor(clazz));
+                .orElseThrow(() -> new MissingNoArgsConstructorException(clazz));
     }
 }
