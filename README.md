@@ -6,6 +6,16 @@ You won't have to worry about reloading your configuration anymore, SC-CFG handl
 
 ### Add the library as dependency
 
+#### Modules
+
+First, pick what modules you're going to use, currently there are:
+
+- `bukkit` for Spigot 1.8+ and Java 8+
+- `bukkit-kotlin` for Kotlin extensions on Bukkit
+
+[comment]: <> (- `standalone` TBD)
+
+Then add them to your favorite build tool.
 #### Gradle
 ```gradle
 repositories {
@@ -13,6 +23,7 @@ repositories {
 }
 
 dependencies {
+    // replace 'bukkit' with artifact name
     implementation("com.github.secretx33.sc-cfg:bukkit:master-SNAPSHOT")
 }
 ```
@@ -29,7 +40,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>com.github.secretx33.sc-cfg</groupId>
-        <!-- Replace this with the artifact name -->
+        <!-- Replace 'bukkit' with the artifact name -->
         <artifactId>bukkit</artifactId>
         <version>master-SNAPSHOT</version>
     </dependency>

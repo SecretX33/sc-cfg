@@ -5,5 +5,6 @@ repositories {
 dependencies {
     api(project(":api"))
     implementation(project(":common"))
-    compileOnly("org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
+    implementation("com.github.cryptomorin:XSeries:8.4.0")
 }

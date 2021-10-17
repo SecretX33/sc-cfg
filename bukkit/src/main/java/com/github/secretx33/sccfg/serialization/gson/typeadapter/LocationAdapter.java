@@ -16,7 +16,7 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 
 @RegisterTypeAdapter(Location.class)
-public class LocationAdapter implements JsonSerializer<Location>, JsonDeserializer<Location>  {
+public class LocationAdapter implements JsonSerializer<Location>, JsonDeserializer<Location> {
 
     @Nullable
     @Override
