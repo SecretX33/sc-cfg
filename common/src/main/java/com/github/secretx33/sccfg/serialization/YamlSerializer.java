@@ -6,6 +6,7 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.factory.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
+import com.google.gson.JsonSyntaxException;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
@@ -39,10 +40,10 @@ public final class YamlSerializer extends AbstractSerializer {
             .forEach(field -> {
                 final Object newValue = fileValues.get(field.getName());
                 try {
-                    field.set(instance, newValue);
-                } catch (final IllegalArgumentException e) {
+                    setValueOnField(instance, field, newValue);
+                } catch (final IllegalArgumentException | JsonSyntaxException e) {
                     // field type does not match the value deserialized
-                    logger.warning("Could not deserialize config field " + field.getName() + " from file '" + configWrapper.getDestination().getFileName() + "' because the deserialized type " + newValue.getClass().getName() + " does not match the expected type " + field.getType().getName() + ". That usually happens when you make a typo in your configuration file, so please check out that config field and correct any mistakes.");
+                    logger.warning("Could not deserialize config field '" + field.getName() + "' from file '" + configWrapper.getDestination().getFileName() + "' because the deserialized type '" + newValue.getClass().getSimpleName() + "' does not match the expected type '" + field.getType().getSimpleName() + "'. That usually happens when you make a typo in your configuration file, so please check out that config field and correct any mistakes.");
                 } catch (final IllegalAccessException e) {
                     throw new ConfigException(e);
                 }
@@ -57,9 +58,8 @@ public final class YamlSerializer extends AbstractSerializer {
         try {
             file = yamlBuilder().path(path).build().load().raw();
         } catch (final ConfigurateException e) {
-            final ConfigDeserializationException ex = new ConfigDeserializationException(e);
-            logger.log(Level.SEVERE, "An error has occurred when deserializing config class " + configWrapper.getInstance().getClass().getName() + " from YAML.", ex);
-            throw ex;
+            logger.log(Level.SEVERE, "An error has occurred when deserializing file '" + configWrapper.getDestination().getFileName() + "' from YAML. There is probably some kind of typo on it, so it could not be parsed, please fix any typos on the file.", new ConfigDeserializationException(e));
+            return Collections.emptyMap();
         }
 
         if (!(file instanceof Map)) {

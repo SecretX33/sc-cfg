@@ -4,6 +4,7 @@ import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.MissingTypeOverrideOnAdapter;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.serialization.typeadapter.MapDeserializerDoubleAsIntFix;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -11,7 +12,7 @@ import com.google.gson.InstanceCreator;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
-import io.leangen.geantyref.TypeToken;
+import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
@@ -54,6 +55,7 @@ public class GsonFactory {
         checkNotNull(typeAdapters, "typeAdapters");
         final GsonBuilder builder = new GsonBuilder().disableHtmlEscaping()
                 .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC);
+        builder.registerTypeAdapter(GENERIC_MAP, new MapDeserializerDoubleAsIntFix());
         typeAdapters.forEach(builder::registerTypeAdapter);
         return builder.create();
     }
@@ -153,5 +155,5 @@ public class GsonFactory {
         return typeAdapters.stream().allMatch(adapter -> isTypeAdapter(adapter.getClass()));
     }
 
-    public static Gson INSTANCE = new GsonBuilder().disableHtmlEscaping().create();
+    private static final Type GENERIC_MAP = new TypeToken<Map<String, Object>>(){}.getType();
 }

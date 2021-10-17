@@ -62,10 +62,7 @@ public final class BukkitConfigFactory extends BaseConfigFactory {
                     return;
                 }
             }
-
-            // TODO handle config reload
-            System.out.println("Config reloaded...");
-
+            reloadInstance(configWrapper);
             asyncExecutor.runMethodsAsync(instance, asyncAfter);
             syncExecutor.runMethodsSync(instance, syncAfter);
         });

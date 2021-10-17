@@ -6,12 +6,17 @@ import com.github.secretx33.sccfg.factory.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +61,23 @@ abstract class AbstractSerializer implements Serializer {
         return true;
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    protected void setValueOnField(final Object instance, final Field field, final Object value) throws IllegalAccessException, JsonSyntaxException {
+        final Class<?> requiredType = field.getType();
+
+        if (Set.class.isAssignableFrom(requiredType) && value instanceof List) {
+            field.set(instance, new HashSet((List)value));
+            return;
+        }
+
+        if (requiredType.isPrimitive() || Number.class.isAssignableFrom(requiredType)) {
+            final Gson gson = gsonFactory.getInstance();
+            field.set(instance, gson.fromJson(gson.toJson(value), requiredType));
+            return;
+        }
+        field.set(instance, value);
+    }
+
     @SuppressWarnings("UnstableApiUsage")
-    protected static final Type mapToken = new TypeToken<Map<String, ?>>() {}.getType();
+    protected static final Type mapToken = new TypeToken<Map<String, Object>>() {}.getType();
 }

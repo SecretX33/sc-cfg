@@ -160,4 +160,8 @@ public class BaseConfigFactory implements ConfigFactory {
         final Configuration annotation = getConfigAnnotation(clazz);
         serializerFactory.getFor(annotation.type()).saveConfig(wrapper);
     }
+
+    protected void reloadInstance(final ConfigWrapper<?> configWrapper) {
+        serializerFactory.getFor(configWrapper.getFileType()).loadConfig(configWrapper);
+    }
 }
