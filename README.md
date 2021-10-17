@@ -32,6 +32,7 @@ public class MyPlugin {
 }
 ```
 
+
 Which is serialized to `MyConfig.yml`, automatically.
 
 ```yaml
@@ -39,8 +40,9 @@ someValue: 0
 someString: rock
 ```
 
-## Features
+# Features
 
+### Save
 Save you config with a single method call.
 
 ```java
@@ -58,6 +60,7 @@ public class MyPlugin {
 }
 ```
 
+### Mutiple file types
 The default file type for configurations is `YAML`, but we do support multiple file type like `HOCON` and `JSON`, to switch between then is as easy as changing one option on your `@Configuration` annotation.
 
 ```java
@@ -76,6 +79,8 @@ Obs.: For `HOCON` you'll also have to include `configurate-hocon` dependency on 
 implementation("org.spongepowered:configurate-hocon:4.1.2")
 ```
 
+### Set file path and name
+
 Change the file name and path through your `@Configuration` annotation.
 
 ```java
@@ -90,6 +95,8 @@ public class MyConfig {
     // ...
 }
 ```
+
+### Run methods on reload
 
 Run methods before or after the config is reloaded, all you have to do it annotate the method with the respective annotation. Both public and private **no args** methods are supported. 
 
@@ -123,6 +130,8 @@ public class MyConfig {
 }
 ```
 
+### Skip fields
+
 Skip field serialization by using Java `transient`
 keyword, or by using our very own annotation `@IgnoreField`.
 
@@ -138,6 +147,8 @@ public class MyConfig {
     private String someIgnoredString = "rock";
 }
 ```
+
+### Choose the field name scheme
 
 Choose a different name scheme for your configuration fields by modifying your `@Configuration` annotation, currently we do have five options:
 
@@ -165,6 +176,7 @@ some-int: 0
 some-screaming-variable: screaming
 ```
 
+### Register type adapters
 Register type adapters for your custom types by simply annotating them with `@RegisterTypeAdapter(YourCustomClass.class)` (you only have to provide type adapters if you get a `ConfigSerializationException` explaining that SC-CFG could not deserialize your field). 
 
 ```java
