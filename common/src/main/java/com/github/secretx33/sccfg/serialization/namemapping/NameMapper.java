@@ -41,7 +41,7 @@ public final class NameMapper {
     private String mapNameUsingStrategy(final String name, final NameStrategy nameStrategy) {
         checkNotNull(name, "name");
 
-        if(nameStrategy == NameStrategy.NONE) {
+        if (nameStrategy == NameStrategy.NONE) {
             return name;
         }
 

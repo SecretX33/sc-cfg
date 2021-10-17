@@ -18,7 +18,7 @@ dependencies {
 ```
 
 #### Maven
-```maven
+```xml
 <repositories>
     <repository>
         <id>jitpack.io</id>
@@ -103,7 +103,7 @@ public class MyPlugin {
 
 ### Automatic reload
 
-Config is already reload automatically, whenever there's some modification on the file, you don't have to do anything extra.
+Configs are already reload automatically, whenever there's some modification on the file, you don't have to do anything extra.
 
 ### Save
 Save you config with a single method call.
@@ -172,7 +172,7 @@ import com.github.secretx33.sccfg.api.annotation.*;
 public class MyConfig {
     
     @BeforeReload
-    private void doBefore() {
+    public void doBefore() {
         // doing something before config is reloaded
     }
 
@@ -182,12 +182,12 @@ public class MyConfig {
     }
     
     @AfterReload
-    public void doAfter() {
+    private void doAfter() {
         // doing something after config is reloaded
     }
 
     @AfterReload(async = true)
-    private void doAfterAsync() {
+    public void doAfterAsync() {
         // doing another thing after config is reloaded, but async
     }
 }
@@ -246,7 +246,7 @@ If you got a `ConfigSerializationException` explaining that SC-CFG could not des
 By default, SC-CFG come with some preconfigured type adapters, but you can always provide custom adapters for any type, and if it happens that one of your type adapter clash with the default ones, your type adapter will override the default one, this is already handled, you don't have to do anything.
 
 ### Automatically register type adapters
-Register type adapters for your custom types by simply annotating them with `@RegisterTypeAdapter(YourCustomClass.class)`. 
+Register type adapters for your custom types by simply annotating them with `@RegisterTypeAdapter`. 
 
 ```java
 import com.google.gson.JsonSerializer;
@@ -285,5 +285,13 @@ public class MyPlugin {
 
 
 ## Kotlin
+
+TODO
+
+## Bugs or suggestions
+
+Please report all bugs or post suggestions on the [Issue](https://github.com/SecretX33/sc-cfg/issues) section.
+
+## Support
 
 TODO

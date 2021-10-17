@@ -2,7 +2,6 @@ package com.github.secretx33.sccfg.scanner;
 
 import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
-import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.config.MethodWrapper;
@@ -52,14 +51,9 @@ public class BaseScanner implements Scanner {
     @NotNull
     protected Reflections getGenericReflections() {
         return new Reflections(new ConfigurationBuilder()
-                .addScanners(Scanners.TypesAnnotated, Scanners.MethodsAnnotated, Scanners.FieldsAnnotated)
+                .addScanners(Scanners.TypesAnnotated)
                 .addClassLoaders(Sets.toArray(ClassLoader.class, BASE_CLASSLOADERS, extraClassLoaders))
                 .forPackage(basePackage));
-    }
-
-    @Override
-    public Set<Class<?>> getConfigurationClasses() {
-        return reflections.getTypesAnnotatedWith(Configuration.class);
     }
 
     @Override
