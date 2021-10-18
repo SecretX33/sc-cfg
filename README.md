@@ -4,9 +4,9 @@ SC-CFG is a simple, yet powerful library that automatically generate configurati
 
 You won't have to worry about reloading your configuration anymore, SC-CFG handles everything for you, automatically.
 
-### Add the library as dependency
+## Add the library as dependency
 
-#### Modules
+### Modules
 
 First, pick what modules you're going to use, currently there are:
 
