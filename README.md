@@ -139,7 +139,7 @@ public class MyPlugin {
 The default file type for configurations is `YAML`, but we do support multiple file type like `HOCON` and `JSON`, to switch between then is as easy as changing one option on your `@Configuration` annotation.
 
 ```java
-import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.api.*;
 
 // switch your config to hocon
 @Configuration(type = FileType.HOCON)
@@ -154,9 +154,9 @@ Obs.: For `HOCON` you'll also have to include `configurate-hocon` dependency on 
 implementation("org.spongepowered:configurate-hocon:4.1.2")
 ```
 
-### Set file path and name
+### Change file name and path
 
-Change the file name and path through your `@Configuration` annotation.
+You can modify the file name and path through your `@Configuration` annotation.
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
@@ -239,6 +239,7 @@ import com.github.secretx33.sccfg.api.NameStrategy;
 
 @Configuration(nameStrategy = NameStrategy.LOWERCASE_HYPHENATED)
 public class MyConfig {
+    
     public int someInt = 0;
     public final String SOME_SCREAMING_VARIABLE = "screaming";
 }
@@ -253,12 +254,12 @@ some-screaming-variable: screaming
 
 ## Type Adapters
 
-If you got a `ConfigSerializationException` explaining that SC-CFG could not deserialize your field, that's what you are probably looking for. By creating a type adapter, you tell SC-CFG how to serialize and deserialize a certain type.
+If you got a `ConfigSerializationException` explaining that SC-CFG could not deserialize your field, this is probably what you are looking for. By creating a type adapter, you tell SC-CFG how to serialize and deserialize a certain type.
 
 By default, SC-CFG come with some preconfigured type adapters, but you can always provide custom adapters for any type, and if it happens that one of your type adapter clash with the default ones, your type adapter will override the default one, this is already handled, you don't have to do anything.
 
 ### Automatically register type adapters
-Register type adapters for your custom types by simply annotating them with `@RegisterTypeAdapter`. 
+Register type adapters for your custom types simply by annotating them with `@RegisterTypeAdapter`. 
 
 ```java
 import com.google.gson.JsonSerializer;

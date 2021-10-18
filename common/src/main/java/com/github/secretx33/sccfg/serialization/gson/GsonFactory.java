@@ -36,6 +36,7 @@ public class GsonFactory {
     private final Scanner scanner;
     private Map<Type, Object> typeAdapters = Collections.emptyMap();
     private Gson gson;
+    private Gson prettyPrintGson;
 
     public GsonFactory(final Logger logger, final Scanner scanner) {
         this.logger = checkNotNull(logger);
@@ -44,17 +45,36 @@ public class GsonFactory {
     }
 
     public Gson getInstance() {
-        if (gson == null) {
-            gson = newInstanceWithTypeAdapters();
+        Gson instance = gson;
+        if (instance == null) {
+            instance = newInstanceWithTypeAdapters(false);
+            gson = instance;
         }
-        return gson;
+        return instance;
     }
 
-    public Gson newInstanceWithTypeAdapters() {
+    public Gson getPrettyPrintInstance() {
+        Gson instance = prettyPrintGson;
+        if (instance == null) {
+            instance = newInstanceWithTypeAdapters(true);
+            prettyPrintGson = instance;
+        }
+        return instance;
+    }
+
+    private void clearGsonInstances() {
+        gson = null;
+        prettyPrintGson = null;
+    }
+
+    public Gson newInstanceWithTypeAdapters(final boolean prettyPrint) {
         checkNotNull(typeAdapters, "typeAdapters");
         final GsonBuilder builder = new GsonBuilder().disableHtmlEscaping()
                 .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
                 .setExclusionStrategies(new GsonIgnoreFieldExclusionStrategy());
+        if (prettyPrint) {
+            builder.setPrettyPrinting();
+        }
         builder.registerTypeAdapter(GENERIC_MAP, new MapDeserializerDoubleAsIntFix());
         typeAdapters.forEach(builder::registerTypeAdapter);
         return builder.create();
@@ -66,12 +86,12 @@ public class GsonFactory {
         checkArgument(isTypeAdapter(typeAdapter.getClass()), () -> "typeAdapter passed as argument does not implement any of Gson type adapter interfaces, so I could not register " + typeAdapter.getClass().getCanonicalName() + " since it is not a type adapter");
 
         this.typeAdapters = Maps.immutableCopyPutting(typeAdapters, adapterFor, typeAdapter);
-        gson = newInstanceWithTypeAdapters();
+        clearGsonInstances();
     }
 
     public void addTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");
-        if(typeAdapters.isEmpty()) return;
+        if (typeAdapters.isEmpty()) return;
         checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on this map that is not a type adapter, please pass only type adapters as argument");
 
         final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
@@ -81,7 +101,7 @@ public class GsonFactory {
                 })
                 .collect(Maps.toImmutableMap());
         this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, newTypeAdapters);
-        gson = newInstanceWithTypeAdapters();
+        clearGsonInstances();
     }
 
     private void parseTypeAdaptersOnClasspath() {
@@ -91,7 +111,7 @@ public class GsonFactory {
 
         baseTypeAdaptersClasses.forEach(clazz -> {
             final Class<?> annotationFor = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class).value();
-            if(annotationFor.equals(Object.class)) {
+            if (annotationFor.equals(Object.class)) {
                 throw new IllegalStateException("Type adapter class " + clazz.getCanonicalName() + " is missing a type override.");
             }
 
@@ -109,23 +129,23 @@ public class GsonFactory {
                     .findAny()
                     .orElse(null);
 
-            if(constructor == null) {
+            if (constructor == null) {
                 logger.warning("Class " + clazz.getCanonicalName() + " doesn't have a no args constructor, I don't know how to instantiate it!");
                 continue;
             }
             constructor.setAccessible(true);
 
-            if(!isTypeAdapter(clazz)) {
+            if (!isTypeAdapter(clazz)) {
                 logger.warning("Class " + clazz.getCanonicalName() + " does not extend any of Gson typeAdapter interfaces, please double check if that class should be annotated with @RegisterTypeAdapter.");
                 continue;
             }
             final RegisterTypeAdapter annotation = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class);
-            if(annotation == null) {
+            if (annotation == null) {
                 throw new IllegalStateException("annotation should not come null at this point");
             }
 
             final Class<?> annotationFor = annotation.value();
-            if(annotationFor.equals(Object.class)) {
+            if (annotationFor.equals(Object.class)) {
                 throw new MissingTypeOverrideOnAdapterException(clazz);
             }
 
@@ -149,5 +169,5 @@ public class GsonFactory {
         return typeAdapters.stream().allMatch(adapter -> isTypeAdapter(adapter.getClass()));
     }
 
-    private static final Type GENERIC_MAP = new TypeToken<Map<String, Object>>(){}.getType();
+    private static final Type GENERIC_MAP = new TypeToken<Map<String, Object>>() {}.getType();
 }
