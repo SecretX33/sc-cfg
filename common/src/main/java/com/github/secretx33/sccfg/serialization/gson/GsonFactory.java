@@ -2,7 +2,7 @@ package com.github.secretx33.sccfg.serialization.gson;
 
 import com.github.secretx33.sccfg.api.NullClass;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
-import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.exception.MissingTypeOverrideOnAdapterException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
@@ -153,7 +153,7 @@ public class GsonFactory {
             try {
                 newTypeAdapters.put(annotationFor, constructor.newInstance());
             } catch (final ReflectiveOperationException e) {
-                throw new ConfigException(e);
+                throw new ConfigReflectiveOperationException(e);
             }
         }
         typeAdapters = Maps.immutableOf(newTypeAdapters);

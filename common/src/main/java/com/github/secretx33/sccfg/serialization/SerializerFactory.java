@@ -37,7 +37,7 @@ public final class SerializerFactory {
             case YAML:
                 return serializers.computeIfAbsent(fileType, type -> new YamlSerializer(logger, gsonFactory));
             default:
-                throw new ConfigException("Oops, I don't know how to serialize " + fileType + ".");
+                throw new IllegalStateException("Oops, I don't have a registered serializer for " + fileType + " type, what a shame!");
         }
     }
 

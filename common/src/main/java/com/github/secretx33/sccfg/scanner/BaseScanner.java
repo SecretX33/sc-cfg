@@ -5,7 +5,7 @@ import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.config.MethodWrapper;
-import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
 import org.jetbrains.annotations.NotNull;
@@ -121,7 +121,7 @@ public class BaseScanner implements Scanner {
         } catch (final NoSuchFieldException e) {
             // Java 9+ throws NoSuchFieldException for that operation, is safe to ignore it
         } catch (final ReflectiveOperationException e) {
-            throw new ConfigException(e);
+            throw new ConfigReflectiveOperationException(e);
         }
         return field;
     }

@@ -7,7 +7,7 @@ import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import java.util.logging.Logger;
 
-public class HoconSerializer extends AbstractConfigurateSerializer<HoconConfigurationLoader.Builder, HoconConfigurationLoader> {
+public final class HoconSerializer extends AbstractConfigurateSerializer<HoconConfigurationLoader.Builder, HoconConfigurationLoader> {
 
     public HoconSerializer(final Logger logger, final GsonFactory gsonFactory) {
         super(logger, gsonFactory);

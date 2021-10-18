@@ -1,7 +1,7 @@
 package com.github.secretx33.sccfg.serialization.gson.typeadapter;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
-import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -20,8 +20,8 @@ public class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<
         if (json == null) return null;
         try {
             return Class.forName(json.getAsString());
-        } catch (ClassNotFoundException e) {
-            throw new ConfigException(e);
+        } catch (final ClassNotFoundException e) {
+            throw new ConfigDeserializationException(e);
         }
     }
 

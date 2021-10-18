@@ -5,9 +5,7 @@ import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.util.Maps;
-import com.google.gson.JsonSyntaxException;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
@@ -18,8 +16,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
-
 abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoader.Builder<U, L>, L extends AbstractConfigurationLoader<?>> extends AbstractSerializer {
 
     public AbstractConfigurateSerializer(final Logger logger, final GsonFactory gsonFactory) {
@@ -29,33 +25,8 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     abstract AbstractConfigurationLoader.Builder<U, L> fileBuilder();
 
     @Override
-    public <T> ConfigWrapper<T> loadConfig(final ConfigWrapper<T> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper");
-
-        saveDefault(configWrapper);
-        final Object instance = configWrapper.getInstance();
-        final NameMap nameMap = configWrapper.getNameMap();
-        final Map<String, Object> fileValues = loadFromFile(configWrapper);
-
-        configWrapper.getConfigFields().stream()
-                .filter(field -> nameMap.getFileEquivalent(field.getName()) != null)
-                .filter(field -> fileValues.get(nameMap.getFileEquivalent(field.getName())) != null)
-                .forEach(field -> {
-                    final Object newValue = fileValues.get(nameMap.getFileEquivalent(field.getName()));
-                    try {
-                        setValueOnField(instance, field, newValue);
-                    } catch (final IllegalArgumentException | JsonSyntaxException e) {
-                        // field type does not match the value deserialized
-                        logger.warning("Could not deserialize config field '" + field.getName() + "' from file '" + configWrapper.getDestination().getFileName() + "' because the deserialized type '" + newValue.getClass().getSimpleName() + "' does not match the expected type '" + field.getType().getSimpleName() + "'. That usually happens when you make a typo in your configuration file, so please check out that config field and correct any mistakes.");
-                    } catch (final IllegalAccessException e) {
-                        throw new ConfigException(e);
-                    }
-                });
-        return configWrapper;
-    }
-
     @SuppressWarnings("unchecked")
-    private Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
+    protected Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
         final Path path = configWrapper.getDestination();
         final Object file;
         try {
@@ -72,33 +43,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     }
 
     @Override
-    public void saveConfig(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper");
-
-        final Object config = configWrapper.getInstance();
-        final Path path = configWrapper.getDestination();
-        createFileIfMissing(config, path);
-        saveCurrentInstanceValues(configWrapper);
-    }
-
-    @Override
-    public boolean saveDefault(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper");
-
-        final Object config = configWrapper.getInstance();
-        final Path path = configWrapper.getDestination();
-        if(!createFileIfMissing(config, path)) return false;
-        saveToFile(configWrapper, configWrapper.getDefaults());
-        return true;
-    }
-
-    private void saveCurrentInstanceValues(final ConfigWrapper<?> configWrapper) {
-        final Object instance = configWrapper.getInstance();
-        final NameMap nameMap = configWrapper.getNameMap();
-        saveToFile(configWrapper, getCurrentValues(instance, nameMap));
-    }
-
-    private void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues) {
+    protected void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues) {
         final Path path = configWrapper.getDestination();
         final String json;
         try {
