@@ -7,4 +7,8 @@ public class ConfigSerializationException extends ConfigException {
     public ConfigSerializationException(final Throwable cause) {
         super(checkNotNull(cause, "cause"));
     }
+
+    public ConfigSerializationException(final String message, final Throwable cause) {
+        super(checkNotNull(message, "message"), checkNotNull(cause, "cause"));
+    }
 }

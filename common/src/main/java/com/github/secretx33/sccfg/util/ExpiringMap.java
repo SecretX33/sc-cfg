@@ -16,28 +16,28 @@ public final class ExpiringMap<K, V> {
 
     private final Cache<K, V> cache;
 
-    public ExpiringMap(long duration, TimeUnit unit) {
+    public ExpiringMap(final long duration, final TimeUnit unit) {
         checkArgument(duration > 0L, "duration has to be greater than zero");
         this.cache = CacheBuilder.newBuilder().expireAfterWrite(duration, unit).build();
     }
 
-    public boolean contains(K key, V value) {
+    public boolean contains(final K key, final V value) {
         final V currentValue = cache.getIfPresent(key);
         return value.equals(currentValue);
     }
 
-    public boolean containsKey(@Nullable K key) {
+    public boolean containsKey(@Nullable final K key) {
         if (key == null) return false;
         return cache.getIfPresent(key) != null;
     }
 
-    public boolean containsValue(@Nullable V value) {
+    public boolean containsValue(@Nullable final V value) {
         if (value == null) return false;
         return cache.asMap().containsValue(value);
     }
 
     @Nullable
-    public V get(K key) {
+    public V get(final K key) {
         return cache.getIfPresent(key);
     }
 
@@ -46,12 +46,12 @@ public final class ExpiringMap<K, V> {
      *
      * @param key the key to be added to the map
      * @param value the value to be added to the map
-     * @return <code>true</code>if the key with that value was not present before
+     * @return <code>true</code> if the key with that value was not present before
      */
-    public boolean put(K key, V value) {
+    public boolean put(final K key, final V value) {
         final boolean contains = contains(key, value);
         cache.put(key, value);
-        return contains;
+        return !contains;
     }
 
     @Nullable
@@ -61,7 +61,7 @@ public final class ExpiringMap<K, V> {
         return previous;
     }
 
-    public void putAll(@NotNull Map<? extends K, ? extends V> map) {
+    public void putAll(final Map<? extends K, ? extends V> map) {
         cache.putAll(map);
     }
 

@@ -35,17 +35,18 @@ abstract class AbstractSerializer implements Serializer {
     @Override
     public Map<String, Object> getCurrentValues(final Object configInstance, final NameMap nameMap) {
         checkNotNull(configInstance, "configInstance");
+        final Gson gson = gsonFactory.getInstance();
+        final Map<String, Object> defaults;
         try {
-            final Gson gson = gsonFactory.getInstance();
-            final Map<String, Object> defaults = gson.fromJson(gson.toJson(configInstance), linkedMapToken);
-            // map java names to file names
-            return defaults.entrySet().stream().sequential()
-                    .filter(entry -> nameMap.getFileEquivalent(entry.getKey()) != null)
-                    .map(entry -> new AbstractMap.SimpleEntry<>(nameMap.getFileEquivalent(entry.getKey()), entry.getValue()))
-                    .collect(Maps.toImmutableLinkedMap());
+            defaults = gson.fromJson(gson.toJson(configInstance), linkedMapToken);
         } catch (final Exception e) {
-            throw new ConfigSerializationException(e);
+            throw new ConfigSerializationException("sc-cfg doesn't know how to serialize a field in your config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for your custom types", e);
         }
+        // map java names to file names
+        return defaults.entrySet().stream().sequential()
+                .filter(entry -> nameMap.getFileEquivalent(entry.getKey()) != null)
+                .map(entry -> new AbstractMap.SimpleEntry<>(nameMap.getFileEquivalent(entry.getKey()), entry.getValue()))
+                .collect(Maps.toImmutableLinkedMap());
     }
 
     protected boolean createFileIfMissing(final Object configInstance, final Path path) {
