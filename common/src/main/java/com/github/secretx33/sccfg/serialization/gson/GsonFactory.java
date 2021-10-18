@@ -1,5 +1,6 @@
 package com.github.secretx33.sccfg.serialization.gson;
 
+import com.github.secretx33.sccfg.api.NullClass;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.MissingTypeOverrideOnAdapterException;
@@ -111,7 +112,7 @@ public class GsonFactory {
 
         baseTypeAdaptersClasses.forEach(clazz -> {
             final Class<?> annotationFor = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class).value();
-            if (annotationFor.equals(Object.class)) {
+            if (annotationFor.equals(NullClass.class)) {
                 throw new IllegalStateException("Type adapter class " + clazz.getCanonicalName() + " is missing a type override.");
             }
 
@@ -145,7 +146,7 @@ public class GsonFactory {
             }
 
             final Class<?> annotationFor = annotation.value();
-            if (annotationFor.equals(Object.class)) {
+            if (annotationFor.equals(NullClass.class)) {
                 throw new MissingTypeOverrideOnAdapterException(clazz);
             }
 

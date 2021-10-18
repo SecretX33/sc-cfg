@@ -11,7 +11,6 @@ public final class JsonSerializer extends AbstractSerializer {
 
     public JsonSerializer(final Logger logger, final GsonFactory gsonFactory) {
         super(logger, gsonFactory);
-        throw new UnsupportedOperationException("JSON serializer still in development ;)");
     }
 
     @Override
