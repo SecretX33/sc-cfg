@@ -29,6 +29,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     protected Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
         final Path path = configWrapper.getDestination();
         final Object file;
+
         try {
             file = fileBuilder().path(path).build().load().raw();
         } catch (final ConfigurateException e) {
@@ -46,6 +47,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     protected void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues) {
         final Path path = configWrapper.getDestination();
         final String json;
+
         try {
             json = gsonFactory.getInstance().toJson(newValues);
         } catch (final Exception e) {
@@ -66,6 +68,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         try {
             fileBuilder().path(path).build().save(fileNode);
         } catch (final ConfigurateException e) {
+            logger.log(Level.SEVERE, "An error has occurred when saving your config file '" + configWrapper.getInstance().getClass().getName() + " to the disk.", e);
             throw new ConfigException(e);
         }
     }
