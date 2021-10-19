@@ -1,9 +1,7 @@
 package com.github.secretx33.sccfg.serialization.gson;
 
-import com.github.secretx33.sccfg.api.NullClass;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
-import com.github.secretx33.sccfg.exception.MissingTypeOverrideOnAdapterException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
 import com.github.secretx33.sccfg.util.Maps;
@@ -112,9 +110,6 @@ public class GsonFactory {
 
         baseTypeAdaptersClasses.forEach(clazz -> {
             final Class<?> annotationFor = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class).value();
-            if (annotationFor.equals(NullClass.class)) {
-                throw new IllegalStateException("Type adapter class " + clazz.getCanonicalName() + " is missing a type override.");
-            }
 
             try {
                 final Object instance = clazz.getConstructor().newInstance();
@@ -144,14 +139,10 @@ public class GsonFactory {
             if (annotation == null) {
                 throw new IllegalStateException("annotation should not come null at this point");
             }
-
-            final Class<?> annotationFor = annotation.value();
-            if (annotationFor.equals(NullClass.class)) {
-                throw new MissingTypeOverrideOnAdapterException(clazz);
-            }
+            final Class<?> typeAdapterFor = annotation.value();
 
             try {
-                newTypeAdapters.put(annotationFor, constructor.newInstance());
+                newTypeAdapters.put(typeAdapterFor, constructor.newInstance());
             } catch (final ReflectiveOperationException e) {
                 throw new ConfigReflectiveOperationException(e);
             }

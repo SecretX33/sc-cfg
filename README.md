@@ -115,7 +115,7 @@ public class MyPlugin {
 
 ### Automatic reload
 
-Configs are already reload automatically, whenever there's some modification on the file, you don't have to do anything extra.
+Configs are already reload automatically whenever there's some modification on the file, you don't have to do anything extra.
 
 ### Save
 Save you config with a single method call.
@@ -173,7 +173,7 @@ public class MyConfig {
 
 ### Run methods on reload
 
-Run methods before or after the config is reloaded, all you have to do it annotate the method with the respective annotation. Both public and private **no args** methods are supported. 
+Run methods before or after the config is reloaded, all you have to do it annotate the method with the respective annotation. Both `public` and `private` **no args** methods are supported. 
 
 By default, these methods run on the main thread, but you can specify `async` on the annotation parameter to run the method on another thread (ForkJoinPool).
 

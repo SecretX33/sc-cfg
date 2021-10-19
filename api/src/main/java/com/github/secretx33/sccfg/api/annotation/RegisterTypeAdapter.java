@@ -1,7 +1,5 @@
 package com.github.secretx33.sccfg.api.annotation;
 
-import com.github.secretx33.sccfg.api.NullClass;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -21,5 +19,5 @@ public @interface RegisterTypeAdapter {
      * The class that this TypeAdapter serialized and/or deserializes. <b>Requires overriding</b>,
      * if not overridden it'll throw {@code MissingTypeOverrideOnAdapterException}.
      */
-    Class<?> value() default NullClass.class;
+    Class<?> value();
 }
