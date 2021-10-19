@@ -22,7 +22,6 @@
  *  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  *  SOFTWARE.
  */
-
 package com.github.secretx33.sccfg.storage;
 
 import com.github.secretx33.sccfg.exception.ConfigException;

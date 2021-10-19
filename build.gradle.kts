@@ -62,9 +62,18 @@ subprojects {
     }
 
     license {
-        exclude("**")
-        header = rootProject.file("LICENSE")
+        header = rootProject.file("HEADER")
         strictCheck = true
+        ext {
+            set("year", 2021)
+            set("name", "SecretX")
+            set("email", "notyetmidnight@gmail.com")
+        }
+        mapping(mapOf(
+            "java" to "SLASHSTAR_STYLE",
+            "kotlin" to "SLASHSTAR_STYLE"
+        ))
+        exclude("**/*FileWatcher.java")
     }
 
     /*create<MavenPublication>("mavenJava") {
