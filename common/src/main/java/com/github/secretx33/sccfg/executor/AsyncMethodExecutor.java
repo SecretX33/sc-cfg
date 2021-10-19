@@ -38,7 +38,7 @@ public final class AsyncMethodExecutor extends AbstractMethodExecutor implements
 
     @Override
     public void delayedRun(final long millis, final Runnable task) {
-        checkArgument(millis >= 0L);
+        checkArgument(millis >= 0L, () -> "millis: " + millis + " (expected >= 0L)");
         checkNotNull(task, "task");
 
         executor.schedule(task, millis, TimeUnit.MILLISECONDS);

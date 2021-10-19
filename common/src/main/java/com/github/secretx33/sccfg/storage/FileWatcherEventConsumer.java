@@ -34,18 +34,18 @@ public final class FileWatcherEventConsumer {
         checkNotNull(acceptTypes, "acceptTypes");
         checkArgument(acceptTypes.length > 0, "cannot listen to zero modification types");
         this.acceptTypes = Sets.immutableOf(acceptTypes);
-        this.consumer = checkNotNull(consumer);
+        this.consumer = checkNotNull(consumer, "consumer");
     }
 
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final Set<FileModificationType> acceptTypes) {
         checkNotNull(acceptTypes, "acceptTypes");
         checkArgument(!acceptTypes.isEmpty(), "cannot listen to zero modification types");
         this.acceptTypes = acceptTypes;
-        this.consumer = checkNotNull(consumer);
+        this.consumer = checkNotNull(consumer, "consumer");
     }
 
     public void accept(final FileWatcherEvent event) {
-        consumer.accept(checkNotNull(event));
+        consumer.accept(checkNotNull(event, "event"));
     }
 
     public Set<FileModificationType> getAcceptTypes() {

@@ -26,8 +26,8 @@ public final class FileWatcherEvent {
     private final FileModificationType type;
 
     public FileWatcherEvent(final Path file, final FileModificationType type) {
-        this.file = checkNotNull(file);
-        this.type = checkNotNull(type);
+        this.file = checkNotNull(file, "file");
+        this.type = checkNotNull(type, "type");
     }
 
     public Path getFile() {

@@ -71,7 +71,7 @@ subprojects {
         }
         mapping(mapOf(
             "java" to "SLASHSTAR_STYLE",
-            "kotlin" to "SLASHSTAR_STYLE"
+            "kt" to "SLASHSTAR_STYLE"
         ))
         exclude("**/*FileWatcher.java")
     }

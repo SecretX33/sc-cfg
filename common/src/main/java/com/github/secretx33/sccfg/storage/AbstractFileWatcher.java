@@ -102,7 +102,8 @@ public abstract class AbstractFileWatcher implements AutoCloseable  {
      * @param directory the directory
      */
     public void register(final Path directory) {
-        final WatchKey key = register(watchService, checkNotNull(directory));
+        checkNotNull(directory, "directory");
+        final WatchKey key = register(watchService, directory);
         keys.put(key, directory);
     }
 

@@ -119,7 +119,7 @@ public final class FileWatcher extends AbstractFileWatcher {
         private final List<FileWatcherEventConsumer> callbacks = new CopyOnWriteArrayList<>();
 
         WatchedLocation(final Path basePath) {
-            this.basePath = checkNotNull(basePath);
+            this.basePath = checkNotNull(basePath, "basePath");
         }
 
         void onEvent(final FileWatcherEvent event) {

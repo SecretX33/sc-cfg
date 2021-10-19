@@ -53,8 +53,8 @@ public class GsonFactory {
     private Gson prettyPrintGson;
 
     public GsonFactory(final Logger logger, final Scanner scanner) {
-        this.logger = checkNotNull(logger);
-        this.scanner = checkNotNull(scanner);
+        this.logger = checkNotNull(logger, "logger");
+        this.scanner = checkNotNull(scanner, "scanner");
         parseTypeAdaptersOnClasspath();
     }
 

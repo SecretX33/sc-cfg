@@ -28,7 +28,7 @@ public final class MethodWrapper {
 
     public MethodWrapper(final Method method, final boolean async) {
         checkArgument(method.isAccessible(), () -> "method needs to be accessible before it can be wrapped, but '" + method.getName() + "' from class '" + method.getDeclaringClass().getCanonicalName() + "' was not set accessible");
-        this.method = checkNotNull(method);
+        this.method = checkNotNull(method, "method");
         this.async = async;
     }
 

@@ -24,12 +24,6 @@ public final class Preconditions {
 
     private Preconditions() {}
 
-    public static void checkArgument(final boolean expression) {
-        if (!expression) {
-            throw new IllegalArgumentException();
-        }
-    }
-
     public static void checkArgument(boolean expression, final String errorMessage) {
         if (!expression) {
             throw new IllegalArgumentException(errorMessage);
@@ -42,16 +36,9 @@ public final class Preconditions {
         }
     }
 
-    public static <T> T checkNotNull(@Nullable final T reference) {
-        if (reference == null) {
-            throw new NullPointerException("value cannot be null");
-        }
-        return reference;
-    }
-
     public static <T> T checkNotNull(@Nullable final T reference, final String variableName) {
         if (reference == null) {
-            throw new NullPointerException(variableName + "cannot be null");
+            throw new NullPointerException(variableName + " cannot be null");
         }
         return reference;
     }
