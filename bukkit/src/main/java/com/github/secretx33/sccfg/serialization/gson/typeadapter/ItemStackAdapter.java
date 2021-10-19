@@ -42,7 +42,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RegisterTypeAdapter(ItemStack.class)
-public class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> {
+final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> {
 
     @Nullable
     @Override

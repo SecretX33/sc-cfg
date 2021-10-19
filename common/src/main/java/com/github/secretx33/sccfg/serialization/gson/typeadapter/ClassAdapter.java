@@ -27,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Type;
 
 @RegisterTypeAdapter(Class.class)
-public class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<Class<?>> {
+final class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<Class<?>> {
 
     @Nullable
     @Override

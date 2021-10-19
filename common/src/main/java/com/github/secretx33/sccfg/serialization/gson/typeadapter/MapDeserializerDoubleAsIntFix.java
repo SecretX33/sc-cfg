@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class MapDeserializerDoubleAsIntFix implements JsonDeserializer<Map<String, Object>> {
+public final class MapDeserializerDoubleAsIntFix implements JsonDeserializer<Map<String, Object>> {
 
     @Nullable
     @Override

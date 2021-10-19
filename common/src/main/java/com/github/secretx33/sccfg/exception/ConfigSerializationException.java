@@ -17,7 +17,7 @@ package com.github.secretx33.sccfg.exception;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class ConfigSerializationException extends ConfigException {
+public final class ConfigSerializationException extends ConfigException {
 
     public ConfigSerializationException(final Throwable cause) {
         super(checkNotNull(cause, "cause"));

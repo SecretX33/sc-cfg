@@ -21,7 +21,7 @@ import com.google.gson.FieldAttributes;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class GsonIgnoreFieldExclusionStrategy implements ExclusionStrategy {
+public final class GsonIgnoreFieldExclusionStrategy implements ExclusionStrategy {
 
     @Override
     public boolean shouldSkipField(final FieldAttributes fa) {

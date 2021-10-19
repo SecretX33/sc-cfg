@@ -35,7 +35,7 @@ class PackagesTest {
     }
 
     @Test
-    fun givenPackage_whenIsTheEqualToTheOtherPackage_thenReturnTrue() {
+    fun `given package when is equal to the other package then return true`() {
         whenever(mockedPackage.name) doReturn "com.github.secretx33.sccfg"
         val result = Packages.isPackageWithin(mockedPackage, "com.github.secretx33.sccfg")
         assertTrue(result)

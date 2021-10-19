@@ -23,6 +23,7 @@ import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -135,5 +136,51 @@ public final class ConfigWrapper<T> {
     private Set<MethodWrapper> filterSync(final Set<MethodWrapper> method) {
         return method.stream().filter(wrapper -> !wrapper.isAsync())
             .collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ConfigWrapper<?> that = (ConfigWrapper<?>) o;
+        return instance.equals(that.instance)
+                && configAnnotation.equals(that.configAnnotation)
+                && destination.equals(that.destination)
+                && fileType == that.fileType
+                && nameStrategy == that.nameStrategy
+                && defaults.equals(that.defaults)
+                && nameMap.equals(that.nameMap)
+                && configFields.equals(that.configFields)
+                && runBeforeReloadMethods.equals(that.runBeforeReloadMethods)
+                && runBeforeReloadAsyncMethods.equals(that.runBeforeReloadAsyncMethods)
+                && runBeforeReloadSyncMethods.equals(that.runBeforeReloadSyncMethods)
+                && runAfterReloadMethods.equals(that.runAfterReloadMethods)
+                && runAfterReloadAsyncMethods.equals(that.runAfterReloadAsyncMethods)
+                && runAfterReloadSyncMethods.equals(that.runAfterReloadSyncMethods);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, nameMap, configFields, runBeforeReloadMethods, runBeforeReloadAsyncMethods, runBeforeReloadSyncMethods, runAfterReloadMethods, runAfterReloadAsyncMethods, runAfterReloadSyncMethods);
+    }
+
+    @Override
+    public String toString() {
+        return "ConfigWrapper{" +
+                "instance=" + instance +
+                ", configAnnotation=" + configAnnotation +
+                ", destination=" + destination +
+                ", fileType=" + fileType +
+                ", nameStrategy=" + nameStrategy +
+                ", defaults=" + defaults +
+                ", nameMap=" + nameMap +
+                ", configFields=" + configFields +
+                ", runBeforeReloadMethods=" + runBeforeReloadMethods +
+                ", runBeforeReloadAsyncMethods=" + runBeforeReloadAsyncMethods +
+                ", runBeforeReloadSyncMethods=" + runBeforeReloadSyncMethods +
+                ", runAfterReloadMethods=" + runAfterReloadMethods +
+                ", runAfterReloadAsyncMethods=" + runAfterReloadAsyncMethods +
+                ", runAfterReloadSyncMethods=" + runAfterReloadSyncMethods +
+                '}';
     }
 }

@@ -44,7 +44,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
-public class GsonFactory {
+public final class GsonFactory {
 
     private final Logger logger;
     private final Scanner scanner;
@@ -106,7 +106,7 @@ public class GsonFactory {
     public void addTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");
         if (typeAdapters.isEmpty()) return;
-        checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on this map that is not a type adapter, please pass only type adapters as argument");
+        checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on the typeAdapters that is not a type adapter, please pass only type adapters as argument");
 
         final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
                 .map(entry -> {

@@ -59,12 +59,12 @@ public class BaseConfigFactory implements ConfigFactory {
     private final SyncExecutor syncExecutor;
 
     public BaseConfigFactory(
-        final Path basePath,
-        final Scanner scanner,
-        final FileWatcher fileWatcher,
-        final SerializerFactory serializerFactory,
-        final AsyncExecutor asyncExecutor,
-        final SyncExecutor syncExecutor
+            final Path basePath,
+            final Scanner scanner,
+            final FileWatcher fileWatcher,
+            final SerializerFactory serializerFactory,
+            final AsyncExecutor asyncExecutor,
+            final SyncExecutor syncExecutor
     ) {
         this.basePath = checkNotNull(basePath, "basePath");
         this.scanner = checkNotNull(scanner, "scanner");

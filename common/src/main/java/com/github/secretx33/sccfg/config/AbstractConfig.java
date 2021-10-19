@@ -64,10 +64,13 @@ public abstract class AbstractConfig {
     }
 
     public static void registerTypeAdapter(final Type type, final Object typeAdapter) {
+        checkNotNull(type, "type");
+        checkNotNull(typeAdapter, "typeAdapter");
         gsonFactory.addTypeAdapter(type, typeAdapter);
     }
 
     public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
+        checkNotNull(typeAdapters, "typeAdapters");
         gsonFactory.addTypeAdapters(typeAdapters);
     }
 }
