@@ -1,7 +1,3 @@
-plugins {
-    kotlin("jvm") version "1.5.31"
-}
-
 dependencies {
     compileOnly(project(":api"))
     implementation("org.reflections:reflections:0.10.1")

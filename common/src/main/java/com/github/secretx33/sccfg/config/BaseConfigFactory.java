@@ -1,13 +1,13 @@
-package com.github.secretx33.sccfg.factory;
+package com.github.secretx33.sccfg.config;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import com.github.secretx33.sccfg.config.ConfigWrapper;
-import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
-import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
+import com.github.secretx33.sccfg.executor.AsyncExecutor;
+import com.github.secretx33.sccfg.executor.SyncExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
@@ -26,6 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
@@ -38,12 +40,23 @@ public class BaseConfigFactory implements ConfigFactory {
     private final Scanner scanner;
     private final FileWatcher fileWatcher;
     private final SerializerFactory serializerFactory;
+    private final AsyncExecutor asyncExecutor;
+    private final SyncExecutor syncExecutor;
 
-    public BaseConfigFactory(final Path basePath, final Scanner scanner, final FileWatcher fileWatcher,  final SerializerFactory serializerFactory) {
+    public BaseConfigFactory(
+        final Path basePath,
+        final Scanner scanner,
+        final FileWatcher fileWatcher,
+        final SerializerFactory serializerFactory,
+        final AsyncExecutor asyncExecutor,
+        final SyncExecutor syncExecutor
+    ) {
         this.basePath = checkNotNull(basePath, "basePath");
         this.scanner = checkNotNull(scanner, "scanner");
         this.fileWatcher = checkNotNull(fileWatcher, "fileWatcher");
         this.serializerFactory = checkNotNull(serializerFactory, "serializerFactory");
+        this.asyncExecutor = checkNotNull(asyncExecutor, "asyncExecutor");
+        this.syncExecutor = checkNotNull(syncExecutor, "syncExecutor");
     }
 
     @Override
@@ -139,11 +152,35 @@ public class BaseConfigFactory implements ConfigFactory {
         instances.put(clazz, wrapper);
     }
 
-    protected Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
-        return event -> {
-            // TODO handle config reload
-            System.out.println("Config reloaded...");
-        };
+    private Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
+        checkNotNull(configWrapper, "configWrapper");
+        return event -> handleReloadAsync(configWrapper);
+    }
+
+    private void handleReloadAsync(final ConfigWrapper<?> configWrapper) {
+        asyncExecutor.delayedRun(200L, () -> {
+            final Object instance = configWrapper.getInstance();
+            final Set<MethodWrapper> asyncBefore = configWrapper.getRunBeforeReloadAsyncMethods();
+            final Set<MethodWrapper> syncBefore = configWrapper.getRunBeforeReloadSyncMethods();
+            final Set<MethodWrapper> syncAfter = configWrapper.getRunAfterReloadSyncMethods();
+            final Set<MethodWrapper> asyncAfter = configWrapper.getRunAfterReloadAsyncMethods();
+            final int runBeforeCount = asyncBefore.size() + syncBefore.size();
+            final CountDownLatch latch = new CountDownLatch(runBeforeCount);
+
+            asyncExecutor.runMethodsAsyncWithLatch(instance, asyncBefore, latch);
+            syncExecutor.runMethodsSyncWithLatch(instance, syncBefore, latch);
+
+            if(runBeforeCount > 0) {
+                try {
+                    latch.await(4L, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    return;
+                }
+            }
+            reloadInstance(configWrapper);
+            asyncExecutor.runMethodsAsync(instance, asyncAfter);
+            syncExecutor.runMethodsSync(instance, syncAfter);
+        });
     }
 
     @Override

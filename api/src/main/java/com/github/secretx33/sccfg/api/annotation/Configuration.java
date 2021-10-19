@@ -1,7 +1,7 @@
 package com.github.secretx33.sccfg.api.annotation;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
 import com.github.secretx33.sccfg.api.FileType;
+import com.github.secretx33.sccfg.api.NameStrategy;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

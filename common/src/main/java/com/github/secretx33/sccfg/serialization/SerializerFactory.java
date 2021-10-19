@@ -1,7 +1,6 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.api.FileType;
-import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
 

@@ -1,7 +1,7 @@
 package com.github.secretx33.sccfg.config;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
 import com.github.secretx33.sccfg.api.FileType;
+import com.github.secretx33.sccfg.api.NameStrategy;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 

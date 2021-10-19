@@ -1,6 +1,4 @@
-package com.github.secretx33.sccfg.factory;
-
-import com.github.secretx33.sccfg.config.ConfigWrapper;
+package com.github.secretx33.sccfg.config;
 
 public interface ConfigFactory {
 

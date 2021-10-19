@@ -2,6 +2,7 @@ plugins {
     id("java-library")
     id("maven-publish")
     id("com.github.hierynomus.license") version "0.16.1"
+    kotlin("jvm") version "1.5.31"
 }
 
 allprojects {
@@ -17,6 +18,7 @@ subprojects {
     apply(plugin = "java-library")
     apply(plugin = "maven-publish")
     apply(plugin = "license")
+    apply(plugin = "kotlin")
 
     dependencies {
         testImplementation(kotlin("stdlib-jdk8"))
