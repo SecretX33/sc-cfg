@@ -15,30 +15,77 @@
  */
 package com.github.secretx33.sccfg;
 
-import com.github.secretx33.sccfg.config.AbstractConfig;
 import com.github.secretx33.sccfg.config.BukkitConfigFactory;
+import com.github.secretx33.sccfg.config.ConfigFactory;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
+import com.github.secretx33.sccfg.scanner.ScannerFactory;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
+import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Config extends AbstractConfig {
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Map;
+
+import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+
+public final class Config {
 
     private static final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
-
-    static {
-        scannerFactory =  new BukkitScannerFactory(plugin);
-        fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
-        gsonFactory = new GsonFactory(plugin.getLogger(), scannerFactory.getScanner());
-        configFactory = new BukkitConfigFactory(
-                plugin,
-                plugin.getDataFolder().toPath(),
-                scannerFactory.getScanner(),
-                fileWatcher,
-                new SerializerFactory(plugin.getLogger(), gsonFactory));
-    }
+    private static final ScannerFactory scannerFactory = new BukkitScannerFactory(plugin);
+    private static final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
+    private static final GsonFactory gsonFactory = new GsonFactory(plugin.getLogger(), scannerFactory.getScanner());
+    private static final ConfigFactory configFactory = new BukkitConfigFactory(
+            plugin,
+            plugin.getDataFolder().toPath(),
+            scannerFactory.getScanner(),
+            fileWatcher,
+            new SerializerFactory(plugin.getLogger(), gsonFactory));
 
     private Config() {}
+
+    public static <T> T getConfig(final Class<T> configClass) {
+        checkNotNull(configClass, "configClass");
+        return configFactory.getWrapper(configClass).getInstance();
+    }
+
+    public static <T> T registerConfig(final T configInstance) {
+        checkNotNull(configInstance, "configInstance");
+        configFactory.registerInstance(configInstance);
+        return configInstance;
+    }
+
+    public static void registerConfigs(final Object... configInstances) {
+        checkNotNull(configInstances, "configInstances");
+        Arrays.stream(configInstances).forEach(configFactory::registerInstance);
+    }
+
+    public static void saveConfig(final Object configInstance) {
+        checkNotNull(configInstance, "configInstance");
+        configFactory.saveInstance(configInstance);
+    }
+
+    public static void saveConfig(final Class<?> configClazz) {
+        checkNotNull(configClazz, "configClazz");
+        configFactory.saveInstance(configClazz);
+    }
+
+    public static void saveConfigs(final Object... configInstances) {
+        checkNotNull(configInstances, "configInstance");
+        Arrays.stream(configInstances).forEach(configFactory::saveInstance);
+    }
+
+    public static void registerTypeAdapter(final Type type, final Object typeAdapter) {
+        checkNotNull(type, "type");
+        checkNotNull(typeAdapter, "typeAdapter");
+        gsonFactory.addTypeAdapter(type, typeAdapter);
+    }
+
+    public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
+        checkNotNull(typeAdapters, "typeAdapters");
+        gsonFactory.addTypeAdapters(typeAdapters);
+    }
 }
