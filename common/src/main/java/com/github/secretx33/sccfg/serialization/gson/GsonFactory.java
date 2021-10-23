@@ -127,10 +127,12 @@ public final class GsonFactory {
             final Class<?> annotationFor = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class).value();
 
             try {
-                final Object instance = clazz.getConstructor().newInstance();
+                final Constructor<?> constructor = clazz.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                final Object instance = constructor.newInstance();
                 newTypeAdapters.put(annotationFor, checkNotNull(instance, "instance"));
             } catch (final ReflectiveOperationException e) {
-                throw new IllegalStateException("This exception should not be thrown, and will only if sccfg has messed up somehow.", e);
+                throw new IllegalStateException("This exception should not be thrown, and will only if sc-cfg has messed up somehow.", e);
             }
         });
 
