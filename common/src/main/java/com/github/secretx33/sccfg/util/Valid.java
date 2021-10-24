@@ -37,10 +37,7 @@ public final class Valid {
         }
 
         final boolean hasDefaultConstructor = Arrays.stream(clazz.getDeclaredConstructors()).anyMatch(c -> c.getParameterCount() == 0);
-        if (!hasDefaultConstructor) {
-            return false;
-        }
-        return true;
+        return hasDefaultConstructor;
     }
 
     public static void validateConfigClass(final Class<?> clazz) {

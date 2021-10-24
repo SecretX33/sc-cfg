@@ -150,6 +150,24 @@ abstract class AbstractSerializer implements Serializer {
 
     abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
 
+    protected boolean createFileIfMissing(final Object configInstance, final Path path) {
+        checkNotNull(configInstance, "configInstance");
+        checkNotNull(path, "path");
+
+        if (Files.exists(path)) return false;
+        try {
+            final Path parent = path.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
+            }
+            Files.createFile(path);
+        } catch (final IOException e) {
+            logger.log(Level.SEVERE, "An error has occurred when creating config file for class " + configInstance.getClass().getName() + ".", e);
+            throw new ConfigException(e);
+        }
+        return true;
+    }
+
     @Override
     public Map<String, Object> getCurrentValues(
             final Object configInstance,
@@ -177,24 +195,6 @@ abstract class AbstractSerializer implements Serializer {
             });
 
         return Maps.immutableOf(currentValues);
-    }
-
-    protected boolean createFileIfMissing(final Object configInstance, final Path path) {
-        checkNotNull(configInstance, "configInstance");
-        checkNotNull(path, "path");
-
-        if (Files.exists(path)) return false;
-        try {
-            final Path parent = path.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-            Files.createFile(path);
-        } catch (final IOException e) {
-            logger.log(Level.SEVERE, "An error has occurred when creating config file for class " + configInstance.getClass().getName() + ".", e);
-            throw new ConfigException(e);
-        }
-        return true;
     }
 
     protected void setValueOnField(final Object instance, final Field field, final Object value) throws IllegalAccessException, JsonSyntaxException {

@@ -20,6 +20,7 @@ import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +35,7 @@ final class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<C
     public Class<?> deserialize(@Nullable final JsonElement json, final Type typeOfT, JsonDeserializationContext context) {
         if (json == null) return null;
         try {
-            return Class.forName(json.getAsString());
+            return Class.forName(json.getAsJsonPrimitive().getAsString());
         } catch (final ClassNotFoundException e) {
             throw new ConfigDeserializationException(e);
         }
@@ -44,6 +45,6 @@ final class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<C
     @Override
     public JsonElement serialize(@Nullable final Class<?> src, final Type typeOfSrc, final JsonSerializationContext context) {
         if (src == null) return null;
-        return context.serialize(src.getName());
+        return new JsonPrimitive(src.getName());
     }
 }

@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.serialization.gson.typeadapter;
 
 import com.cryptomorin.xseries.XItemStack;
-import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -41,7 +40,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-@RegisterTypeAdapter(ItemStack.class)
+//@RegisterTypeAdapter(ItemStack.class)
 final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> {
 
     @Nullable
@@ -80,7 +79,7 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
         try (final ByteArrayOutputStream baos = new ByteArrayOutputStream();
              final BukkitObjectOutputStream data = new BukkitObjectOutputStream(baos)) {
             data.writeObject(item);
-            final String serializedItem = Base64.getEncoder().withoutPadding().encodeToString(baos.toByteArray());
+            final String serializedItem = Base64.getEncoder().encodeToString(baos.toByteArray());
             return new JsonPrimitive(serializedItem);
         } catch (final IOException e2) {
             e2.addSuppressed(e);
@@ -118,6 +117,5 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
         }
     }
 
-    private static final Type linkedMapType = new TypeToken<LinkedHashMap<String, Object>>() {
-    }.getType();
+    private static final Type linkedMapType = new TypeToken<LinkedHashMap<String, Object>>() {}.getType();
 }

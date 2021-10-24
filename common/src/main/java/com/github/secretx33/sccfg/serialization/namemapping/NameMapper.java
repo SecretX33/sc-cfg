@@ -183,6 +183,6 @@ public final class NameMapper {
     private enum NameScheme {
         CAMEL_CASE,  // camelCase
         SNAKE_CASE,  // snake_case
-        UPPERCASE_SNAKE_CASE;  // SNAKE_CASE
+        UPPERCASE_SNAKE_CASE  // SNAKE_CASE
     }
 }

@@ -110,8 +110,8 @@ public class BaseConfigFactory implements ConfigFactory {
             final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
-            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, nameMap, configFields, runBeforeReload, runAfterReload);
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
+            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, nameMap, configFields, runBeforeReload, runAfterReload, watchedLocation);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             watchedLocation.recordChange(destination);
             return serializer.loadConfig(wrapper);
@@ -207,15 +207,16 @@ public class BaseConfigFactory implements ConfigFactory {
     }
 
     @Override
-    public void saveInstance(Class<?> configClazz) {
+    public void saveInstance(final Class<?> configClazz) {
         checkNotNull(configClazz, "instance");
 
         Valid.validateConfigClass(configClazz);
-        ConfigWrapper<?> wrapper = instances.get(configClazz);
+        final ConfigWrapper<?> wrapper = instances.get(configClazz);
         if (wrapper == null) {
             throw new ConfigNotInitializedException(configClazz);
         }
         final Configuration annotation = getConfigAnnotation(configClazz);
+        wrapper.registerModification();
         serializerFactory.getFor(annotation.type()).saveConfig(wrapper);
     }
 
