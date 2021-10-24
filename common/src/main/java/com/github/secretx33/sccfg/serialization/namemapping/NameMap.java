@@ -37,9 +37,17 @@ public final class NameMap {
         return fileToJavaNames.get(fileName);
     }
 
+    public boolean hasJavaEquivalent(final String fileName) {
+        return fileToJavaNames.containsKey(fileName);
+    }
+
     @Nullable
     public String getFileEquivalent(final String javaName) {
         return javaToFileNames.get(javaName);
+    }
+
+    public boolean hasFileEquivalent(final String javaName) {
+        return javaToFileNames.containsKey(javaName);
     }
 
     @Override

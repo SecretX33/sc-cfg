@@ -24,6 +24,7 @@ import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.util.Maps;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
@@ -34,6 +35,8 @@ import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,27 +58,67 @@ abstract class AbstractSerializer implements Serializer {
 
         saveDefault(configWrapper);
         final Object instance = configWrapper.getInstance();
-        final NameMap nameMap = configWrapper.getNameMap();
-        final Map<String, Object> fileValues = loadFromFile(configWrapper);
+        final Set<Field> configFields = configWrapper.getConfigFields();
+        final Map<String, Object> fileValues = mapFileValuesToJavaValues(configWrapper, loadFromFile(configWrapper));
 
-        configWrapper.getConfigFields().stream()
-                .filter(field -> nameMap.getFileEquivalent(field.getName()) != null)
-                .filter(field -> fileValues.get(nameMap.getFileEquivalent(field.getName())) != null)
-                .forEach(field -> {
-                    final Object newValue = fileValues.get(nameMap.getFileEquivalent(field.getName()));
-                    try {
-                        setValueOnField(instance, field, newValue);
-                    } catch (final IllegalArgumentException | JsonSyntaxException e) {
-                        // field type does not match the value deserialized
-                        logger.warning("Could not deserialize config field '" + field.getName() + "' from file '" + configWrapper.getDestination().getFileName() + "' because the deserialized type '" + newValue.getClass().getSimpleName() + "' does not match the expected type '" + field.getType().getSimpleName() + "'. That usually happens when you make a typo in your configuration file, so please check out that config field and correct any mistakes.");
-                    } catch (final IllegalAccessException e) {
-                        throw new ConfigReflectiveOperationException(e);
-                    }
-                });
+        configFields.stream()
+            .filter(field -> fileValues.containsKey(field.getName()))
+            .forEach(field -> {
+                final Object newValue = fileValues.get(field.getName());
+                try {
+                    setValueOnField(instance, field, newValue);
+                } catch (final IllegalArgumentException | JsonSyntaxException e) {
+                    // field type does not match the value deserialized
+                    logger.warning("Could not deserialize config field '" + field.getName() + "' from file '" + configWrapper.getDestination().getFileName() + "' because the deserialized type '" + newValue.getClass().getSimpleName() + "' does not match the expected type '" + field.getType().getSimpleName() + "'. That usually happens when you make a typo in your configuration file, so please check out that config field and correct any mistakes.");
+                } catch (final IllegalAccessException e) {
+                    throw new ConfigReflectiveOperationException(e);
+                }
+            });
+
         return configWrapper;
     }
 
+    /**
+     * Read all fields from the config file, and return a map with them.
+     *
+     * @param configWrapper the config that should have their file read
+     * @return a map holding all "file names" fields mapped to their "file value"
+     */
     abstract Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper);
+
+    /**
+     * Transform a map of "file names" to "file values" into a map of "java names" to "java values".
+     * The keys are transformed simply by getting the java equivalent from {@code configWrapper#getNameMap()},
+     * and values are transformed by serializing the file values and deserializing them using the
+     * {@link Field#getGenericType()}.
+     *
+     * @param configWrapper the config wrapper related to the {@code fileValues} map
+     * @param fileValues the simple map read from the file, contains only java native serializable types
+     * @return a map of "java names" to "java values" adapted to the config field types
+     */
+    private Map<String, Object> mapFileValuesToJavaValues(final ConfigWrapper<?> configWrapper, final Map<String, Object> fileValues) {
+        final Gson gson = gsonFactory.getInstance();
+        final Set<Field> configFields = configWrapper.getConfigFields();
+        final NameMap nameMap = configWrapper.getNameMap();
+
+        return configFields.stream().sequential()
+            .map(field -> {
+                final String fileName = nameMap.getFileEquivalent(field.getName());
+                if (fileName == null) return null;
+                final Object fileValue = fileValues.get(fileName);
+                if (fileValue == null) return null;
+
+                final Object javaValue;
+                try {
+                    javaValue = gson.fromJson(gson.toJson(fileValue), field.getGenericType());
+                } catch (final JsonParseException e) {
+                    throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field " + field.getName() + " in config class '" + field.getDeclaringClass().getName() + "', consider adding a Type Adapter for this field type", e);
+                }
+                return new AbstractMap.SimpleEntry<>(field.getName(), javaValue);
+            })
+            .filter(Objects::nonNull)
+            .collect(Maps.toImmutableLinkedMap());
+    }
 
     @Override
     public void saveConfig(final ConfigWrapper<?> configWrapper) {
@@ -100,27 +143,40 @@ abstract class AbstractSerializer implements Serializer {
 
     private void saveCurrentInstanceValues(final ConfigWrapper<?> configWrapper) {
         final Object instance = configWrapper.getInstance();
+        final Set<Field> configFields = configWrapper.getConfigFields();
         final NameMap nameMap = configWrapper.getNameMap();
-        saveToFile(configWrapper, getCurrentValues(instance, nameMap));
+        saveToFile(configWrapper, getCurrentValues(instance, configFields, nameMap));
     }
 
     abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
 
     @Override
-    public Map<String, Object> getCurrentValues(final Object configInstance, final NameMap nameMap) {
+    public Map<String, Object> getCurrentValues(
+            final Object configInstance,
+            final Set<Field> configFields,
+            final NameMap nameMap
+    ) {
         checkNotNull(configInstance, "configInstance");
         final Gson gson = gsonFactory.getInstance();
-        final Map<String, Object> defaults;
-        try {
-            defaults = gson.fromJson(gson.toJson(configInstance), linkedMapToken);
-        } catch (final Exception e) {
-            throw new ConfigSerializationException("sc-cfg doesn't know how to serialize a field in your config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for your custom types", e);
-        }
-        // map java names to file names
-        return defaults.entrySet().stream().sequential()
-                .filter(entry -> nameMap.getFileEquivalent(entry.getKey()) != null)
-                .map(entry -> new AbstractMap.SimpleEntry<>(nameMap.getFileEquivalent(entry.getKey()), entry.getValue()))
-                .collect(Maps.toImmutableLinkedMap());
+        final Map<String, Object> currentValues = new LinkedHashMap<>(configFields.size());
+
+        configFields.stream().sequential()
+            .forEach(field -> {
+                final String javaName = field.getName();
+                final String fileName = nameMap.getFileEquivalent(javaName);
+
+                try {
+                    final Object fieldValue = field.get(configInstance);
+                    final Object copyValue = gson.fromJson(gson.toJson(fieldValue, field.getGenericType()), field.getGenericType());
+                    currentValues.put(fileName, copyValue);
+                } catch (final IllegalAccessException e) {
+                    throw new ConfigReflectiveOperationException("Oops! Seems like field " + field.getName() + " from class " + configInstance.getClass().getName() + " was not made accessible, that seems like a bug in sc-cfg, please report this!");
+                } catch (final JsonParseException e) {
+                    throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field " + field.getName() + " in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for this field type", e);
+                }
+            });
+
+        return Maps.immutableOf(currentValues);
     }
 
     protected boolean createFileIfMissing(final Object configInstance, final Path path) {
@@ -142,12 +198,16 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     protected void setValueOnField(final Object instance, final Field field, final Object value) throws IllegalAccessException, JsonSyntaxException {
+        checkNotNull(instance, "instance");
+        checkNotNull(field, "field");
+        checkNotNull(value, "value");
+
         final Class<?> requiredType = field.getType();
         final Class<?> providedType = value.getClass();
 
         if (!requiredType.equals(providedType) && !requiredType.isAssignableFrom(providedType)) {
             final Gson gson = gsonFactory.getInstance();
-            field.set(instance, gson.fromJson(gson.toJson(value), requiredType));
+            field.set(instance, gson.fromJson(gson.toJson(value), field.getGenericType()));
             return;
         }
         field.set(instance, value);

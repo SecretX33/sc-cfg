@@ -20,7 +20,9 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.Set;
 
 public interface Serializer {
 
@@ -62,9 +64,10 @@ public interface Serializer {
      * mapping to the variable names.
      *
      * @param configInstance the config to extract default values from
+     * @param configFields set containing all the fields from {@code configInstance} that should have their value extracted
      * @param nameMap the mapping from the java names to the file names
-     * @return the default values for that config instance
+     * @return the default values for that config instance (the keys are <b>FILE</b> names, not java names)
      * @throws ConfigSerializationException if serializer could not parse some field
      */
-    Map<String, Object> getCurrentValues(Object configInstance, NameMap nameMap);
+    Map<String, Object> getCurrentValues(Object configInstance, Set<Field> configFields, NameMap nameMap);
 }

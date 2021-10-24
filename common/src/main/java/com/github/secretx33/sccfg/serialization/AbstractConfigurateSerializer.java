@@ -64,7 +64,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         final String json;
 
         try {
-            json = gsonFactory.getInstance().toJson(newValues);
+            json = gsonFactory.getInstance().toJson(newValues, linkedMapToken);
         } catch (final Exception e) {
             final ConfigSerializationException ex = new ConfigSerializationException(e);
             logger.log(Level.SEVERE, "An error has occurred when serializing config class " + configWrapper.getInstance().getClass().getName(), ex);
