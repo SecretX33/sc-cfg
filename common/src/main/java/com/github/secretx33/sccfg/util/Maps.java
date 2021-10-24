@@ -34,6 +34,9 @@ public final class Maps {
 
     public static <K, V> Map<K, V> immutableOf(@Nullable final Map<K, V> map) {
         if (map == null || map.isEmpty()) return Collections.emptyMap();
+        if ("java.util.Collections$UnmodifiableMap".equals(map.getClass().getName())) {
+            return map;
+        }
         return Collections.unmodifiableMap(map);
     }
 

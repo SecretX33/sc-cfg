@@ -67,11 +67,11 @@ abstract class AbstractSerializer implements Serializer {
                 final Object newValue = fileValues.get(field.getName());
                 try {
                     setValueOnField(instance, field, newValue);
+                } catch (final IllegalAccessException e) {
+                    throw new ConfigReflectiveOperationException("Oops! Seems like field '" + field.getName() + "' from class '" + instance.getClass().getName() + "' was not made accessible, that seems like a bug in sc-cfg, please report this!");
                 } catch (final IllegalArgumentException | JsonSyntaxException e) {
                     // field type does not match the value deserialized
                     logger.warning("Could not deserialize config field '" + field.getName() + "' from file '" + configWrapper.getDestination().getFileName() + "' because the deserialized type '" + newValue.getClass().getSimpleName() + "' does not match the expected type '" + field.getType().getSimpleName() + "'. That usually happens when you make a typo in your configuration file, so please check out that config field and correct any mistakes.");
-                } catch (final IllegalAccessException e) {
-                    throw new ConfigReflectiveOperationException(e);
                 }
             });
 
@@ -188,9 +188,9 @@ abstract class AbstractSerializer implements Serializer {
                     final Object copyValue = gson.fromJson(gson.toJson(fieldValue, field.getGenericType()), field.getGenericType());
                     currentValues.put(fileName, copyValue);
                 } catch (final IllegalAccessException e) {
-                    throw new ConfigReflectiveOperationException("Oops! Seems like field " + field.getName() + " from class " + configInstance.getClass().getName() + " was not made accessible, that seems like a bug in sc-cfg, please report this!");
-                } catch (final JsonParseException e) {
-                    throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field " + field.getName() + " in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for this field type", e);
+                    throw new ConfigReflectiveOperationException("Oops! Seems like field '" + field.getName() + "' from class '" + configInstance.getClass().getName() + "' was not made accessible, that seems like a bug in sc-cfg, please report this!");
+                } catch (final RuntimeException e) {
+                    throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + field.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + field.getGenericType() + ".", e);
                 }
             });
 
