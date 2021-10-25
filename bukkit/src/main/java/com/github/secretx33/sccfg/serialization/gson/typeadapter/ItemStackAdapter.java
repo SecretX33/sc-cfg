@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.serialization.gson.typeadapter;
 
 import com.cryptomorin.xseries.XItemStack;
+import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -40,7 +41,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-//@RegisterTypeAdapter(ItemStack.class)
+@RegisterTypeAdapter(ItemStack.class)
 final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeserializer<ItemStack> {
 
     @Nullable
@@ -72,7 +73,7 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
     private JsonElement serializeItemUsingXItemStack(final ItemStack item, final JsonSerializationContext context) {
         final ConfigurationSection section = new MemoryConfiguration();
         XItemStack.serialize(item, section);
-        return context.serialize(section.getValues(true), linkedMapType);
+        return context.serialize(section.getValues(false), linkedMapType);
     }
 
     private JsonPrimitive serializeItemUsingBukkit(final ItemStack item, final Exception e) {
