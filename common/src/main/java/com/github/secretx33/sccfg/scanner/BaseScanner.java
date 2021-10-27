@@ -31,14 +31,19 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
@@ -87,7 +92,8 @@ public class BaseScanner implements Scanner {
 
     @Override
     public Set<MethodWrapper> getBeforeReloadMethods(final Class<?> clazz) {
-        return getZeroArgsInstanceMethods(() -> getMethodsAnnotatedWith(clazz, BeforeReload.class),
+        checkNotNull(clazz, "clazz");
+        return getZeroArgsInstanceMethods(getMethodsAnnotatedWith(clazz, BeforeReload.class),
             method -> {
                 final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
                 final boolean async = reloadAnnotation.async();
@@ -97,7 +103,8 @@ public class BaseScanner implements Scanner {
 
     @Override
     public Set<MethodWrapper> getAfterReloadMethods(final Class<?> clazz) {
-        return getZeroArgsInstanceMethods(() -> getMethodsAnnotatedWith(clazz, AfterReload.class),
+        checkNotNull(clazz, "clazz");
+        return getZeroArgsInstanceMethods(getMethodsAnnotatedWith(clazz, AfterReload.class),
                 method -> {
                     final AfterReload reloadAnnotation = method.getDeclaredAnnotation(AfterReload.class);
                     final boolean async = reloadAnnotation.async();
@@ -106,28 +113,28 @@ public class BaseScanner implements Scanner {
     }
 
     protected Set<MethodWrapper> getZeroArgsInstanceMethods(
-        final Supplier<Set<Method>> methods,
+        final Stream<Method> methods,
         final Function<Method, MethodWrapper> mapper
     ) {
-        return methods.get().stream()
-                .filter(method -> method.getParameterCount() == 0
+        return methods.filter(method -> method.getParameterCount() == 0
                         && !Modifier.isStatic(method.getModifiers()))
                 .peek(method -> method.setAccessible(true))
                 .map(mapper)
-                .collect(Collectors.toSet());
+                .collect(Sets.toImmutableLinkedSet());
     }
 
     @Override
     public Set<Field> getConfigurationFields(final Class<?> clazz) {
+        checkNotNull(clazz, "clazz");
         final Set<Field> ignoredFields = getIgnoredFields(clazz);
-        return Arrays.stream(clazz.getDeclaredFields()).sequential()
+        return getAllMembers(clazz, Class::getDeclaredFields)
                 .filter(field -> !Modifier.isStatic(field.getModifiers())
                         && !ignoredFields.contains(field))
-                .map(this::turnAccessibleNonField)
+                .map(this::turnAccessibleNonFinalField)
                 .collect(Sets.toImmutableLinkedSet());
     }
 
-    private Field turnAccessibleNonField(final Field field) {
+    private Field turnAccessibleNonFinalField(final Field field) {
         field.setAccessible(true);
         try {
             Field modifiersField = Field.class.getDeclaredField("modifiers");
@@ -143,21 +150,48 @@ public class BaseScanner implements Scanner {
 
     @Override
     public Set<Field> getIgnoredFields(final Class<?> clazz) {
-        return getFieldsAnnotatedWith(clazz, IgnoreField.class).stream()
+        checkNotNull(clazz, "clazz");
+        return getFieldsAnnotatedWith(clazz, IgnoreField.class)
                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .peek(field -> field.setAccessible(true))
                 .collect(Collectors.toSet());
     }
 
-    private Set<Method> getMethodsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
-        return Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.getDeclaredAnnotation(annotationClass) != null)
-                .collect(Collectors.toSet());
+    private Stream<Method> getMethodsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
+        return getAllMembers(clazz, Class::getDeclaredMethods)
+                .filter(method -> method.getDeclaredAnnotation(annotationClass) != null);
     }
 
-    private Set<Field> getFieldsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
-        return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.getDeclaredAnnotation(annotationClass) != null)
-                .collect(Collectors.toSet());
+    private Stream<Field> getFieldsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
+        return getAllMembers(clazz, Class::getDeclaredFields)
+                .filter(field -> field.getDeclaredAnnotation(annotationClass) != null);
+    }
+
+    private <T extends Member> Stream<T> getAllMembers(final Class<?> clazz, final Function<Class<?>, T[]> selector) {
+        // class does not inherit from another class, so just go through its fields
+        if (clazz.getSuperclass() == null || Object.class.equals(clazz.getSuperclass())) {
+            return Arrays.stream(selector.apply(clazz)).sequential();
+        }
+
+        // collect all classes incl. parents
+        Class<?> currentClass = clazz;
+        final List<Class<?>> classes = new ArrayList<>();
+        while (currentClass != null && !currentClass.equals(Object.class)) {
+            classes.add(currentClass);
+            currentClass = currentClass.getSuperclass();
+        }
+
+        // and add all members from all classes (incl. parents) if they were not added yet
+        final Set<T> members = new LinkedHashSet<>();
+        // the check is done by keeping track of the added members' names
+        final Set<String> memberNames = new HashSet<>();
+
+        classes.stream().sequential().flatMap(clz -> Arrays.stream(selector.apply(clz)))
+            .forEachOrdered(member -> {
+                if (memberNames.add(member.getName())) {
+                    members.add(member);
+                }
+            });
+        return members.stream().sequential();
     }
 }
