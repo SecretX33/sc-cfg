@@ -51,7 +51,7 @@ dependencies {
 
 ### Annotate your config class
 
-Using SC-CFG is as simple as annotating your config class with `@Configuration`. Both `public` and `private` fields are supported, `final` or not.
+Using SC-CFG is as simple as annotating your config class with `@Configuration`. Both `public` and `private` fields are supported, `final` or not, in both the own class and parents.
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
@@ -173,7 +173,7 @@ public class MyConfig {
 
 ### Run methods on reload
 
-Run methods before or after the config is reloaded, all you have to do it annotate the method with the respective annotation. Both `public` and `private` **no args** methods are supported. 
+Run methods before or after the config is reloaded, all you have to do it annotate the method with the respective annotation. Both `public` and `private` **no args** methods are supported. They can be on the base class, or any parent class.
 
 By default, these methods run on the main thread, but you can specify `async` on the annotation parameter to run the method on another thread (ForkJoinPool).
 
