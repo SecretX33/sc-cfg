@@ -13,21 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.serialization.namemapping;
+package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
-
-/**
- * Applies the transformation represented by a {@link NameStrategy} on a string.
- */
-public interface NameMapper {
-
-    /**
-     * Applies the necessary steps to transform a {@code string} into a string that will fit the
-     * specified {@link NameStrategy} pattern.
-     *
-     * @param string the string to be transformed
-     * @return a string that fits the specified {@link NameStrategy} pattern
-     */
-    String applyStrategy(final String string);
+enum NameScheme {
+    CAMEL_CASE,  // camelCase
+    SNAKE_CASE,  // snake_case
+    UPPERCASE_SNAKE_CASE  // SNAKE_CASE
 }

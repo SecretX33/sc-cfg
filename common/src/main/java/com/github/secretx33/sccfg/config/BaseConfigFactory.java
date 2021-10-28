@@ -15,6 +15,7 @@
  */
 package com.github.secretx33.sccfg.config;
 
+import com.github.secretx33.sccfg.api.NameStrategy;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
@@ -26,11 +27,14 @@ import com.github.secretx33.sccfg.executor.SyncExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
-import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMapperFactory;
 import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
+import com.github.secretx33.sccfg.util.Sets;
 import com.github.secretx33.sccfg.util.Valid;
+import com.github.secretx33.sccfg.wrapper.ConfigEntry;
 import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 
@@ -48,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
+import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public class BaseConfigFactory implements ConfigFactory {
@@ -59,6 +64,7 @@ public class BaseConfigFactory implements ConfigFactory {
     private final SerializerFactory serializerFactory;
     private final AsyncExecutor asyncExecutor;
     private final SyncExecutor syncExecutor;
+    private final NameMapperFactory nameMapperFactory;
 
     public BaseConfigFactory(
             final Path basePath,
@@ -66,7 +72,8 @@ public class BaseConfigFactory implements ConfigFactory {
             final FileWatcher fileWatcher,
             final SerializerFactory serializerFactory,
             final AsyncExecutor asyncExecutor,
-            final SyncExecutor syncExecutor
+            final SyncExecutor syncExecutor,
+            final NameMapperFactory nameMapperFactory
     ) {
         this.basePath = checkNotNull(basePath, "basePath");
         this.scanner = checkNotNull(scanner, "scanner");
@@ -74,6 +81,7 @@ public class BaseConfigFactory implements ConfigFactory {
         this.serializerFactory = checkNotNull(serializerFactory, "serializerFactory");
         this.asyncExecutor = checkNotNull(asyncExecutor, "asyncExecutor");
         this.syncExecutor = checkNotNull(syncExecutor, "syncExecutor");
+        this.nameMapperFactory = checkNotNull(nameMapperFactory, "nameMapperFactory");
     }
 
     @Override
@@ -104,8 +112,8 @@ public class BaseConfigFactory implements ConfigFactory {
         final Configuration annotation = getConfigAnnotation(clazz);
         final Serializer serializer = serializerFactory.getSerializer(annotation.type());
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
-        final NameMap nameMap = serializerFactory.getNameMapper().mapFieldNamesUsing(configFields, annotation.nameStrategy());
-        final Map<String, Object> defaults = serializer.getCurrentValues(instance, configFields, nameMap);
+        final Set<ConfigEntry> configEntries = mapConfigEntries(instance, configFields, annotation.nameStrategy());
+        final Map<String, Object> defaults = serializer.getCurrentValues(instance, configEntries);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
             final Path destination = basePath.resolve(configPath);
@@ -113,7 +121,7 @@ public class BaseConfigFactory implements ConfigFactory {
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
-            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, nameMap, configFields, runBeforeReload, runAfterReload, watchedLocation);
+            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, configEntries, runBeforeReload, runAfterReload, watchedLocation);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             watchedLocation.recordChange(destination);
             return serializer.loadConfig(wrapper);
@@ -122,6 +130,31 @@ public class BaseConfigFactory implements ConfigFactory {
         } catch (final Exception e) {
             throw new ConfigException(e);
         }
+    }
+
+    private Configuration getConfigAnnotation(final Class<?> clazz) {
+        final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
+        if(annotation == null) {
+            throw new MissingConfigAnnotationException(clazz);
+        }
+        return annotation;
+    }
+
+    private Set<ConfigEntry> mapConfigEntries(final Object instance, final Set<Field> fields, final NameStrategy strategy) {
+        final NameMapper mapper = nameMapperFactory.getMapper(strategy);
+
+        return fields.stream().sequential().map(field -> {
+            final com.github.secretx33.sccfg.api.annotation.Path pathAnnotation = field.getDeclaredAnnotation(com.github.secretx33.sccfg.api.annotation.Path.class);
+            final String path;
+            if (pathAnnotation == null) {
+                path = "";
+            } else {
+                path = pathAnnotation.value();
+                checkNotBlank(path, () -> "@Path annotation does not support null, empty or blank values, but you passed one of these three as parameter on your field " + field.getName() + " (which belongs to class " + field.getDeclaringClass().getSimpleName() + ")");
+            }
+            final String nameOnFile = mapper.applyStrategy(field.getName());
+            return new ConfigEntry(instance, field, nameOnFile, path);
+        }).collect(Sets.toSet());
     }
 
     private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {
@@ -137,14 +170,6 @@ public class BaseConfigFactory implements ConfigFactory {
         return value + extension;
     }
 
-    private Configuration getConfigAnnotation(final Class<?> clazz) {
-        final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
-        if(annotation == null) {
-            throw new MissingConfigAnnotationException(clazz);
-        }
-        return annotation;
-    }
-
     @SuppressWarnings("unchecked")
     private <T> Constructor<T> getDefaultConstructor(Class<T> clazz) {
         return Arrays.stream(clazz.getDeclaredConstructors())
@@ -152,21 +177,6 @@ public class BaseConfigFactory implements ConfigFactory {
                 .findAny()
                 .map(c -> (Constructor<T>)c)
                 .orElseThrow(() -> new MissingNoArgsConstructorException(clazz));
-    }
-
-    @Override
-    public void registerInstance(final Object instance) {
-        checkNotNull(instance, "instance");
-        checkArgument(!(instance instanceof Class<?>), "cannot register classes as instances of configuration");
-
-        final Class<?> clazz = instance.getClass();
-        Valid.validateConfigClass(clazz);
-
-        if(instances.containsKey(clazz)) {
-            throw new ConfigOverrideException(clazz);
-        }
-        final ConfigWrapper<?> wrapper = wrapInstance(instance);
-        instances.put(clazz, wrapper);
     }
 
     private Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
@@ -198,6 +208,21 @@ public class BaseConfigFactory implements ConfigFactory {
             asyncExecutor.runMethodsAsync(instance, asyncAfter);
             syncExecutor.runMethodsSync(instance, syncAfter);
         });
+    }
+
+    @Override
+    public void registerInstance(final Object instance) {
+        checkNotNull(instance, "instance");
+        checkArgument(!(instance instanceof Class<?>), "cannot register classes as instances of configuration");
+
+        final Class<?> clazz = instance.getClass();
+        Valid.validateConfigClass(clazz);
+
+        if(instances.containsKey(clazz)) {
+            throw new ConfigOverrideException(clazz);
+        }
+        final ConfigWrapper<?> wrapper = wrapInstance(instance);
+        instances.put(clazz, wrapper);
     }
 
     @Override

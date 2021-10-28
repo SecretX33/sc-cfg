@@ -18,7 +18,6 @@ package com.github.secretx33.sccfg.wrapper;
 import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.api.NameStrategy;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.util.Sets;
 
@@ -37,7 +36,6 @@ public final class ConfigWrapper<T> {
     private final FileType fileType;
     private final NameStrategy nameStrategy;
     private final Map<String, Object> defaults;
-    private final NameMap nameMap;
     private final Set<ConfigEntry> configEntries;
     private final Set<MethodWrapper> runBeforeReloadMethods;
     private final Set<MethodWrapper> runBeforeReloadAsyncMethods;
@@ -52,7 +50,6 @@ public final class ConfigWrapper<T> {
             final Configuration configAnnotation,
             final Path destination,
             final Map<String, Object> defaults,
-            final NameMap nameMap,
             final Set<ConfigEntry> configEntries,
             final Set<MethodWrapper> runBeforeReload,
             final Set<MethodWrapper> runAfterReload,
@@ -64,7 +61,6 @@ public final class ConfigWrapper<T> {
         this.fileType = checkNotNull(configAnnotation.type(), "type");
         this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy");
         this.defaults = checkNotNull(defaults, "defaults");
-        this.nameMap = checkNotNull(nameMap, "nameMap");
         this.configEntries = checkNotNull(configEntries, "configEntries");
         this.runBeforeReloadMethods = checkNotNull(runBeforeReload, "runBeforeReload");
         this.runBeforeReloadAsyncMethods = filterAsync(runBeforeReloadMethods);
@@ -97,10 +93,6 @@ public final class ConfigWrapper<T> {
 
     public Map<String, Object> getDefaults() {
         return defaults;
-    }
-
-    public NameMap getNameMap() {
-        return nameMap;
     }
 
     public Set<ConfigEntry> getConfigEntries() {
@@ -157,7 +149,6 @@ public final class ConfigWrapper<T> {
                 && fileType == that.fileType
                 && nameStrategy == that.nameStrategy
                 && defaults.equals(that.defaults)
-                && nameMap.equals(that.nameMap)
                 && configEntries.equals(that.configEntries)
                 && runBeforeReloadMethods.equals(that.runBeforeReloadMethods)
                 && runBeforeReloadAsyncMethods.equals(that.runBeforeReloadAsyncMethods)
@@ -170,7 +161,7 @@ public final class ConfigWrapper<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, nameMap, configEntries, runBeforeReloadMethods, runBeforeReloadAsyncMethods, runBeforeReloadSyncMethods, runAfterReloadMethods, runAfterReloadAsyncMethods, runAfterReloadSyncMethods, watchedLocation);
+        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, configEntries, runBeforeReloadMethods, runBeforeReloadAsyncMethods, runBeforeReloadSyncMethods, runAfterReloadMethods, runAfterReloadAsyncMethods, runAfterReloadSyncMethods, watchedLocation);
     }
 
     @Override
@@ -182,7 +173,6 @@ public final class ConfigWrapper<T> {
                 ", fileType=" + fileType +
                 ", nameStrategy=" + nameStrategy +
                 ", defaults=" + defaults +
-                ", nameMap=" + nameMap +
                 ", configEntries=" + configEntries +
                 ", runBeforeReloadMethods=" + runBeforeReloadMethods +
                 ", runBeforeReloadAsyncMethods=" + runBeforeReloadAsyncMethods +

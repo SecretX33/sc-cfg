@@ -37,6 +37,12 @@ public final class Preconditions {
         }
     }
 
+    public static void checkState(boolean expression, final Supplier<String> errorMessage) {
+        if (!expression) {
+            throw new IllegalStateException(errorMessage.get());
+        }
+    }
+
     public static <T> T checkNotNull(@Nullable final T reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " cannot be null");
@@ -60,6 +66,16 @@ public final class Preconditions {
         }
         if (reference.trim().isEmpty()) {
             throw new IllegalArgumentException(variableName + " string cannot be blank");
+        }
+        return reference;
+    }
+
+    public static String checkNotBlank(@Nullable final String reference, final Supplier<String> errorMessage) {
+        if (reference == null) {
+            throw new NullPointerException(errorMessage.get());
+        }
+        if (reference.trim().isEmpty()) {
+            throw new IllegalArgumentException(errorMessage.get());
         }
         return reference;
     }

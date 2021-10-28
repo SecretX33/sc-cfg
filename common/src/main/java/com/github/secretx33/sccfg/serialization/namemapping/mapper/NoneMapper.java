@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.serialization.namemapping;
+package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
 
-/**
- * Applies the transformation represented by a {@link NameStrategy} on a string.
- */
-public interface NameMapper {
+import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
 
-    /**
-     * Applies the necessary steps to transform a {@code string} into a string that will fit the
-     * specified {@link NameStrategy} pattern.
-     *
-     * @param string the string to be transformed
-     * @return a string that fits the specified {@link NameStrategy} pattern
-     */
-    String applyStrategy(final String string);
+public final class NoneMapper implements NameMapper {
+
+    @Override
+    public String applyStrategy(String string) {
+        checkNotBlank(string, "name");
+        return string;
+    }
 }

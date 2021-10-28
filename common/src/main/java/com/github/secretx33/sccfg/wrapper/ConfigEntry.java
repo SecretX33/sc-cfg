@@ -1,12 +1,29 @@
+/*
+ * Copyright (C) 2021 SecretX <notyetmidnight@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.github.secretx33.sccfg.wrapper;
+
+import com.github.secretx33.sccfg.exception.ConfigException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.checkState;
 
 /**
  * Represents an entry of a config instance, and holds relevant data of that particular field, like
@@ -41,7 +58,8 @@ public class ConfigEntry {
         this.field = checkNotNull(field, "field");
         this.nameOnFile = checkNotBlank(nameOnFile, "nameOnFile");
         this.path = checkNotNull(path, "path");
-        checkArgument(field.getDeclaringClass().isAssignableFrom(instance.getClass()), () -> "field passed as argument belongs to class '" + field.getDeclaringClass().getName() + "', but instance passed as argument is an instance of '" + instance.getClass().getName() + "' which does not inherit from " + field.getDeclaringClass().getName() + " class!");
+        checkState(field.getDeclaringClass().isAssignableFrom(instance.getClass()), () -> "field passed as argument belongs to class '" + field.getDeclaringClass().getName() + "', but instance passed as argument is an instance of '" + instance.getClass().getName() + "' which does not inherit from " + field.getDeclaringClass().getName() + " class!");
+        checkState(field.isAccessible(), () -> "field must be made accessible in order to be wrapped into a ConfigEntry (since sc-cfg library relies on accessing it), but field " + field.getName() + " from class " + field.getDeclaringClass().getName() + " was not!");
     }
 
     public String getName() {
@@ -52,12 +70,20 @@ public class ConfigEntry {
         return nameOnFile;
     }
 
-    public Type getType() {
+    public Class<?> getType() {
+        return field.getType();
+    }
+
+    public Type getGenericType() {
         return field.getGenericType();
     }
 
     public String getPath() {
         return path;
+    }
+
+    public Class<?> getOwnerClass() {
+        return instance.getClass();
     }
 
     /**
@@ -70,15 +96,34 @@ public class ConfigEntry {
     }
 
     /**
+     * Get the current value of this config entry.
+     *
+     * @return the current value of this config entry
+     */
+    public Object get() {
+        try {
+            return field.get(instance);
+        } catch (final IllegalAccessException e) {
+            // this should never be thrown
+            throw new ConfigException(e);
+        }
+    }
+
+    /**
      * Attempt to set a value on this entry, throwing {@code IllegalAccessException} if value is not
      * compatible with the {@code field} type.
      *
-     * @param value the value that should be set on this particular entry
-     * @throws IllegalAccessException if the {@code value} provided type is not compatible with the
-     * {@code field} type
+     * @param value the value that should be set on this config entry
+     * @throws IllegalArgumentException if the {@code value} provided type is not compatible with the
+     * {@link ConfigEntry#field} type
      */
-    public void set(final Object value) throws IllegalAccessException {
-        field.set(instance, checkNotNull(value, "value"));
+    public void set(final Object value) throws IllegalArgumentException {
+        try {
+            field.set(instance, value);
+        } catch (final IllegalAccessException e) {
+            // this should never be thrown
+            throw new ConfigException(e);
+        }
     }
 
     @Override
