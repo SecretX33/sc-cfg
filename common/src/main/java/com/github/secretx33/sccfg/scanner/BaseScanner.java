@@ -42,7 +42,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -80,14 +79,14 @@ public class BaseScanner implements Scanner {
     public Set<Class<?>> getBaseRegisterTypeAdapters() {
         return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
                 .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Collectors.toSet());
+                .collect(Sets.toSet());
     }
 
     @Override
     public Set<Class<?>> getCustomRegisterTypeAdapters() {
         return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
                 .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Collectors.toSet());
+                .collect(Sets.toSet());
     }
 
     @Override
@@ -120,7 +119,7 @@ public class BaseScanner implements Scanner {
                         && !Modifier.isStatic(method.getModifiers()))
                 .peek(method -> method.setAccessible(true))
                 .map(mapper)
-                .collect(Sets.toImmutableLinkedSet());
+                .collect(Sets.toSet());
     }
 
     @Override
@@ -131,7 +130,7 @@ public class BaseScanner implements Scanner {
                 .filter(field -> !Modifier.isStatic(field.getModifiers())
                         && !ignoredFields.contains(field))
                 .map(this::turnAccessibleNonFinalField)
-                .collect(Sets.toImmutableLinkedSet());
+                .collect(Sets.toSet());
     }
 
     private Field turnAccessibleNonFinalField(final Field field) {
@@ -154,7 +153,7 @@ public class BaseScanner implements Scanner {
         return getFieldsAnnotatedWith(clazz, IgnoreField.class)
                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .peek(field -> field.setAccessible(true))
-                .collect(Collectors.toSet());
+                .collect(Sets.toSet());
     }
 
     private Stream<Method> getMethodsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {

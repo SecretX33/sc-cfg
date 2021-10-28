@@ -22,6 +22,7 @@ import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.util.Maps;
+import com.github.secretx33.sccfg.util.Pair;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
@@ -32,7 +33,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -114,10 +114,10 @@ abstract class AbstractSerializer implements Serializer {
                 } catch (final JsonParseException e) {
                     throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field " + field.getName() + " in config class '" + field.getDeclaringClass().getName() + "', consider adding a Type Adapter for this field type", e);
                 }
-                return new AbstractMap.SimpleEntry<>(field.getName(), javaValue);
+                return new Pair<>(field.getName(), javaValue);
             })
             .filter(Objects::nonNull)
-            .collect(Maps.toImmutableLinkedMap());
+            .collect(Maps.toMap());
     }
 
     @Override

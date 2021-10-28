@@ -20,13 +20,13 @@ import com.github.secretx33.sccfg.api.NameStrategy;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.storage.FileWatcher;
+import com.github.secretx33.sccfg.util.Sets;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
@@ -141,12 +141,12 @@ public final class ConfigWrapper<T> {
 
     private Set<MethodWrapper> filterAsync(final Set<MethodWrapper> method) {
         return method.stream().filter(MethodWrapper::isAsync)
-            .collect(Collectors.toSet());
+            .collect(Sets.toSet());
     }
 
     private Set<MethodWrapper> filterSync(final Set<MethodWrapper> method) {
         return method.stream().filter(wrapper -> !wrapper.isAsync())
-            .collect(Collectors.toSet());
+            .collect(Sets.toSet());
     }
 
     @Override

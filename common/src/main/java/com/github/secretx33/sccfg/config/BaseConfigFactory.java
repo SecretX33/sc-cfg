@@ -100,7 +100,7 @@ public class BaseConfigFactory implements ConfigFactory {
 
         final Class<?> clazz = instance.getClass();
         final Configuration annotation = getConfigAnnotation(clazz);
-        final Serializer serializer = serializerFactory.getFor(annotation.type());
+        final Serializer serializer = serializerFactory.getSerializer(annotation.type());
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
         final NameMap nameMap = serializerFactory.getNameMapper().mapFieldNamesUsing(configFields, annotation.nameStrategy());
         final Map<String, Object> defaults = serializer.getCurrentValues(instance, configFields, nameMap);
@@ -217,10 +217,10 @@ public class BaseConfigFactory implements ConfigFactory {
         }
         final Configuration annotation = getConfigAnnotation(configClazz);
         wrapper.registerModification();
-        serializerFactory.getFor(annotation.type()).saveConfig(wrapper);
+        serializerFactory.getSerializer(annotation.type()).saveConfig(wrapper);
     }
 
     protected void reloadInstance(final ConfigWrapper<?> configWrapper) {
-        serializerFactory.getFor(configWrapper.getFileType()).loadConfig(configWrapper);
+        serializerFactory.getSerializer(configWrapper.getFileType()).loadConfig(configWrapper);
     }
 }

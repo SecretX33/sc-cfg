@@ -37,7 +37,7 @@ public final class Sets {
     public static <T, S extends T> Set<T> of(final S... elements) {
         return Arrays.stream(elements)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+                .collect(Sets.toMutableSet());
     }
 
     @SafeVarargs
@@ -45,7 +45,7 @@ public final class Sets {
         if (elements.length == 0) return new HashSet<>();
         return EnumSet.copyOf(Arrays.stream(elements)
                 .filter(Objects::nonNull)
-                .collect(Collectors.toSet()));
+                .collect(Sets.toMutableSet()));
     }
 
     @SafeVarargs
@@ -86,11 +86,11 @@ public final class Sets {
                 .toArray(size -> (T[]) Array.newInstance(clazz, size));
     }
 
-    public static <T> Collector<T, ?, LinkedHashSet<T>> toLinkedSet() {
+    private static <T> Collector<T, ?, LinkedHashSet<T>> toMutableSet() {
         return Collectors.toCollection(LinkedHashSet::new);
     }
 
-    public static <T> Collector<T, ?, Set<T>> toImmutableLinkedSet() {
-        return Collectors.collectingAndThen(toLinkedSet(), Collections::unmodifiableSet);
+    public static <T> Collector<T, ?, Set<T>> toSet() {
+        return Collectors.collectingAndThen(toMutableSet(), Collections::unmodifiableSet);
     }
 }

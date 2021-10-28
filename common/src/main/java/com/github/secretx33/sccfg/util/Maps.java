@@ -17,7 +17,6 @@ package com.github.secretx33.sccfg.util;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -62,22 +61,14 @@ public final class Maps {
         return Collections.unmodifiableMap(newMap);
     }
 
-    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, Map<K, V>> toMap() {
-        return Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue);
-    }
-
-    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, LinkedHashMap<K, V>> toLinkedMap() {
-        return Collectors.toMap(AbstractMap.SimpleEntry::getKey,
-                AbstractMap.SimpleEntry::getValue,
+    private static <K, V> Collector<Pair<K, V>, ?, LinkedHashMap<K, V>> toMutableMap() {
+        return Collectors.toMap(Pair::getFirst,
+                Pair::getSecond,
                 (a, b) -> b,
                 LinkedHashMap::new);
     }
 
-    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, Map<K, V>> toImmutableMap() {
-        return Collectors.collectingAndThen(toMap(), Collections::unmodifiableMap);
-    }
-
-    public static <K, V> Collector<AbstractMap.SimpleEntry<K, V>, ?, Map<K, V>> toImmutableLinkedMap() {
-        return Collectors.collectingAndThen(toLinkedMap(), Collections::unmodifiableMap);
+    public static <K, V> Collector<Pair<K, V>, ?, Map<K, V>> toMap() {
+        return Collectors.collectingAndThen(toMutableMap(), Collections::unmodifiableMap);
     }
 }

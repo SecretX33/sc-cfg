@@ -20,6 +20,7 @@ import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
 import com.github.secretx33.sccfg.util.Maps;
+import com.github.secretx33.sccfg.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -31,7 +32,6 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -111,9 +111,9 @@ public final class GsonFactory {
         final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
                 .map(entry -> {
                     final Type type = TypeToken.get(entry.getKey()).getType();
-                    return new AbstractMap.SimpleEntry<>(type, entry.getValue());
+                    return new Pair<>(type, entry.getValue());
                 })
-                .collect(Maps.toImmutableMap());
+                .collect(Maps.toMap());
         this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, newTypeAdapters);
         clearGsonInstances();
     }

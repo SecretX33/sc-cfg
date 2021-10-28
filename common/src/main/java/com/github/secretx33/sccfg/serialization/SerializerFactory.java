@@ -37,12 +37,8 @@ public final class SerializerFactory {
         this.gsonFactory = checkNotNull(gsonFactory, "gsonFactory");
     }
 
-    public Serializer getFor(final FileType fileType) {
+    public Serializer getSerializer(final FileType fileType) {
         checkNotNull(fileType, "fileType");
-        return getSerializer(fileType);
-    }
-
-    private Serializer getSerializer(final FileType fileType) {
         switch(fileType) {
             case HOCON:
                 return serializers.computeIfAbsent(fileType, type -> new HoconSerializer(logger, gsonFactory));

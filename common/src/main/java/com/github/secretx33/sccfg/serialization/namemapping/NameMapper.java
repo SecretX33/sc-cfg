@@ -36,7 +36,7 @@ public final class NameMapper {
     public NameMap mapFieldNamesUsing(final Set<Field> fields, final NameStrategy nameStrategy) {
         final Set<String> names = fields.stream().sequential()
                 .map(Field::getName)
-                .collect(Sets.toImmutableLinkedSet());
+                .collect(Sets.toSet());
         return mapNamesUsing(names, nameStrategy);
     }
 
