@@ -19,7 +19,7 @@ import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
-import com.github.secretx33.sccfg.config.MethodWrapper;
+import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;

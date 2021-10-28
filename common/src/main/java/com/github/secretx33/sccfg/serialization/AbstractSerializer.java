@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;

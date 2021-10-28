@@ -31,6 +31,8 @@ import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 import com.github.secretx33.sccfg.util.Valid;
+import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
+import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -202,25 +204,25 @@ public class BaseConfigFactory implements ConfigFactory {
     public void saveInstance(final Object instance) {
         checkNotNull(instance, "instance");
         checkArgument(!(instance instanceof Class<?>), "cannot save instance of clazz");
-
         saveInstance(instance.getClass());
     }
 
     @Override
     public void saveInstance(final Class<?> configClazz) {
-        checkNotNull(configClazz, "instance");
+        checkNotNull(configClazz, "configClazz");
 
         Valid.validateConfigClass(configClazz);
         final ConfigWrapper<?> wrapper = instances.get(configClazz);
         if (wrapper == null) {
             throw new ConfigNotInitializedException(configClazz);
         }
-        final Configuration annotation = getConfigAnnotation(configClazz);
-        wrapper.registerModification();
-        serializerFactory.getSerializer(annotation.type()).saveConfig(wrapper);
+        final Serializer serializer = serializerFactory.getSerializer(wrapper.getFileType());
+        serializer.saveConfig(wrapper);
     }
 
     protected void reloadInstance(final ConfigWrapper<?> configWrapper) {
-        serializerFactory.getSerializer(configWrapper.getFileType()).loadConfig(configWrapper);
+        checkNotNull(configWrapper, "configWrapper");
+        final Serializer serializer = serializerFactory.getSerializer(configWrapper.getFileType());
+        serializer.loadConfig(configWrapper);
     }
 }

@@ -22,7 +22,8 @@ import java.util.function.Supplier;
 
 public final class Preconditions {
 
-    private Preconditions() {}
+    private Preconditions() {
+    }
 
     public static void checkArgument(boolean expression, final String errorMessage) {
         if (!expression) {
@@ -46,6 +47,19 @@ public final class Preconditions {
     public static <T> T checkNotNull(@Nullable final T reference, final Supplier<String> errorMessage) {
         if (reference == null) {
             throw new NullPointerException(errorMessage.get());
+        }
+        return reference;
+    }
+
+    public static String checkNotBlank(@Nullable final String reference, final String variableName) {
+        if (reference == null) {
+            throw new NullPointerException(variableName + " string cannot be null");
+        }
+        if (reference.isEmpty()) {
+            throw new IllegalArgumentException(variableName + " string cannot be empty");
+        }
+        if (reference.trim().isEmpty()) {
+            throw new IllegalArgumentException(variableName + " string cannot be blank");
         }
         return reference;
     }

@@ -15,6 +15,8 @@
  */
 package com.github.secretx33.sccfg.config;
 
+import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
+
 public interface ConfigFactory {
 
     <T> ConfigWrapper<T> getWrapper(Class<T> configClazz);

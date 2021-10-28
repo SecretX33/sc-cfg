@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
@@ -34,7 +34,7 @@ public interface Serializer {
      * @param <T> the inner type of that ConfigWrapper
      * @return the ConfigWrapper passed as argument, for convenience
      * @throws ConfigException if a field from the config was not accessible, but this exception
-     * should not happen unless some java modification breaks something related to field access.
+     * should not happen unless some java modification breaks something related to field access
      */
     <T> ConfigWrapper<T> loadConfig(ConfigWrapper<T> configWrapper);
 
