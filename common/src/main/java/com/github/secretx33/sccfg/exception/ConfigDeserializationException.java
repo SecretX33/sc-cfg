@@ -22,4 +22,8 @@ public final class ConfigDeserializationException extends ConfigException {
     public ConfigDeserializationException(final Throwable cause) {
         super(checkNotNull(cause, "cause"));
     }
+
+    public ConfigDeserializationException(String message, Throwable cause) {
+        super(message, checkNotNull(cause, "cause"));
+    }
 }

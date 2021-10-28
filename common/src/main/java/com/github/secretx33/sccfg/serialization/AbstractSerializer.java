@@ -15,26 +15,23 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
-import com.github.secretx33.sccfg.util.Pair;
 import com.github.secretx33.sccfg.wrapper.ConfigEntry;
 import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonSyntaxException;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -57,7 +54,7 @@ abstract class AbstractSerializer implements Serializer {
 
         saveDefault(configWrapper);
         final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
-        final Map<String, Object> fileValues = mapFileValuesToJavaValues(configWrapper, loadFromFile(configWrapper));
+        final Map<String, Object> fileValues = loadFromFile(configWrapper);
 
         configEntries.stream()
             .filter(configEntry -> fileValues.containsKey(configEntry.getName()))
@@ -79,41 +76,23 @@ abstract class AbstractSerializer implements Serializer {
      * Read all fields from the config file, and return a map with them.
      *
      * @param configWrapper the config that should have their file read
-     * @return a map holding all "file names" fields mapped to their "file value"
+     * @return a map holding all "java names" fields mapped to their "java value"
+     * @throws ConfigDeserializationException if sc-cfg could not deserialize a config entry
+     * back to its java value (that happens when sc-cfg is missing a Type Adapter for that
+     * specific type)
      */
     abstract Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper);
 
     /**
-     * Transform a map of "file names" to "file values" into a map of "java names" to "java values".
-     * The keys are transformed simply by getting the java equivalent from {@code configWrapper#getNameMap()},
-     * and values are transformed by serializing the file values and deserializing them using the
-     * {@link Field#getGenericType()}.
+     * Save all values from the config into its file.
      *
-     * @param configWrapper the config wrapper related to the {@code fileValues} map
-     * @param fileValues the simple map read from the file, contains only java native serializable types
-     * @return a map of "java names" to "java values" adapted to the config field types
+     * @param configWrapper the config that should have their values saved
+     * @param newValues the new values that should replace the current ones on the file
+     * @throws ConfigSerializationException if sc-cfg could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigException when the file could not be saved because of some disk error
      */
-    private Map<String, Object> mapFileValuesToJavaValues(final ConfigWrapper<?> configWrapper, final Map<String, Object> fileValues) {
-        final Gson gson = gsonFactory.getInstance();
-        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
-
-        return configEntries.stream().sequential()
-            .map(configEntry -> {
-                final String fileName = configEntry.getNameOnFile();
-                final Object fileValue = fileValues.get(fileName);
-                if (fileValue == null) return null;
-
-                final Object javaValue;
-                try {
-                    javaValue = gson.fromJson(gson.toJson(fileValue), configEntry.getGenericType());
-                } catch (final JsonParseException e) {
-                    throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field " + configEntry.getName() + " in config class '" + configEntry.getOwnerClass().getName() + "', consider adding a Type Adapter for this field type", e);
-                }
-                return new Pair<>(configEntry.getName(), javaValue);
-            })
-            .filter(Objects::nonNull)
-            .collect(Maps.toMap());
-    }
+    abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
 
     @Override
     public void saveConfig(final ConfigWrapper<?> configWrapper) {
@@ -131,7 +110,7 @@ abstract class AbstractSerializer implements Serializer {
 
         final Object config = configWrapper.getInstance();
         final Path path = configWrapper.getDestination();
-        if(!createFileIfMissing(config, path)) return false;
+        if (!createFileIfMissing(config, path)) return false;
         saveToFile(configWrapper, configWrapper.getDefaults());
         return true;
     }
@@ -142,13 +121,17 @@ abstract class AbstractSerializer implements Serializer {
         saveToFile(configWrapper, getCurrentValues(instance, configEntries));
     }
 
-    abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
-
     protected boolean createFileIfMissing(final Object configInstance, final Path path) {
         checkNotNull(configInstance, "configInstance");
         checkNotNull(path, "path");
 
-        if (Files.exists(path)) return false;
+        if (Files.exists(path)) {
+            if (!Files.isRegularFile(path)) {
+                throw new ConfigException("File '" + path.getFileName() + "' was expected to be a file, but it's not (it's probably a folder).");
+            }
+            return false;
+        }
+
         try {
             final Path parent = path.getParent();
             if (parent != null) {
@@ -170,18 +153,17 @@ abstract class AbstractSerializer implements Serializer {
         final Gson gson = gsonFactory.getInstance();
         final Map<String, Object> currentValues = new LinkedHashMap<>(configEntries.size());
 
-        configEntries.stream().sequential()
-            .forEach(configEntry -> {
-                final String nameOnFile = configEntry.getNameOnFile();
+        configEntries.forEach(configEntry -> {
+            final String nameOnFile = configEntry.getNameOnFile();
 
-                try {
-                    final Type fieldType = configEntry.getGenericType();
-                    final Object copyValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), fieldType);
-                    currentValues.put(nameOnFile, copyValue);
-                } catch (final RuntimeException e) {
-                    throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + configEntry.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + configEntry.getGenericType() + ".", e);
-                }
-            });
+            try {
+                final Type fieldType = configEntry.getGenericType();
+                final Object copyValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), fieldType);
+                currentValues.put(nameOnFile, copyValue);
+            } catch (final RuntimeException e) {
+                throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + configEntry.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + configEntry.getGenericType() + ".", e);
+            }
+        });
 
         return Maps.immutableOf(currentValues);
     }

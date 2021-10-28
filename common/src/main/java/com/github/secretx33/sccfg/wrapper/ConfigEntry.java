@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.wrapper;
 
-import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -105,7 +105,7 @@ public class ConfigEntry {
             return field.get(instance);
         } catch (final IllegalAccessException e) {
             // this should never be thrown
-            throw new ConfigException(e);
+            throw new ConfigReflectiveOperationException(e);
         }
     }
 
@@ -122,7 +122,7 @@ public class ConfigEntry {
             field.set(instance, value);
         } catch (final IllegalAccessException e) {
             // this should never be thrown
-            throw new ConfigException(e);
+            throw new ConfigReflectiveOperationException(e);
         }
     }
 

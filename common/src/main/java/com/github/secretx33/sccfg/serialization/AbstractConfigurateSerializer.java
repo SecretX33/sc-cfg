@@ -15,19 +15,26 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
+import com.github.secretx33.sccfg.wrapper.ConfigEntry;
+import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 
+import java.lang.reflect.Type;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,23 +46,43 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
     abstract AbstractConfigurationLoader.Builder<U, L> fileBuilder();
 
+    /**
+     * Loads a file, transforming the read value from "file names" to "file values" into a map of
+     * "java names" to "java values". The keys are transformed fields' {@link ConfigEntry#getName()},
+     * and values are transformed by serializing the file values and deserializing them using the
+     * {@link ConfigEntry#getGenericType()}.
+     *
+     * @param configWrapper the config that should have their file read
+     * @return a map holding the "java names" mapped to the converted "java values"
+     */
     @Override
-    @SuppressWarnings("unchecked")
     protected Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
-        final Path path = configWrapper.getDestination();
-        final Object file;
+        final Path filePath = configWrapper.getDestination();
+        final ConfigurationNode file;
 
         try {
-            file = fileBuilder().path(path).build().load().raw();
+            file = fileBuilder().path(filePath).build().load();
         } catch (final ConfigurateException e) {
             logger.log(Level.SEVERE, "An error has occurred when deserializing file '" + configWrapper.getDestination().getFileName() + "' from " + configWrapper.getFileType() + ". There is probably some kind of typo on it, so it could not be parsed, please fix any typos on the file.", new ConfigDeserializationException(e));
             return Collections.emptyMap();
         }
 
-        if (!(file instanceof Map)) {
-            return Collections.emptyMap();
-        }
-        return Maps.immutableOf((Map<String, Object>)file);
+        final Gson gson = gsonFactory.getInstance();
+        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
+        final Map<String, Object> values = new LinkedHashMap<>();
+
+        configEntries.forEach(entry -> {
+            final Type type = entry.getGenericType();
+            final String path = entry.isAtRoot() ? entry.getNameOnFile() : (entry.getPath() + "." + entry.getNameOnFile());
+            final ConfigurationNode node = file.node(Arrays.stream(path.split("\\.")).iterator());
+            try {
+                final Object value = gson.fromJson(gson.toJson(node.raw()), type);
+                values.put(entry.getName(), value);
+            } catch (final JsonParseException e) {
+                throw new ConfigDeserializationException("sc-cfg doesn't know how to deserialize field " + entry.getName() + " in config class '" + entry.getOwnerClass().getName() + "', consider adding a Type Adapter for this field type", e);
+            }
+        });
+        return Maps.immutableOf(values);
     }
 
     @Override
