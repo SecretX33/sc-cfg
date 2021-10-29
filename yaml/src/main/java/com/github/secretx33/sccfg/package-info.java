@@ -13,21 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.api;
+@DefaultQualifier(value = NotNull.class, locations = {TypeUseLocation.PARAMETER, TypeUseLocation.RECEIVER, TypeUseLocation.RETURN, TypeUseLocation.CONSTRUCTOR_RESULT})
+package com.github.secretx33.sccfg;
 
-/**
- * The type the config file will be.
- */
-public enum FileType {
-    HOCON(".conf", "HoconSerializer"),
-    JSON(".json", "JsonSerializer"),
-    YAML(".yml", "YamlSerializer");
-
-    public final String extension;
-    public final String className;
-
-    FileType(final String extension, final String className) {
-        this.extension = extension;
-        this.className = className;
-    }
-}
+import org.checkerframework.framework.qual.DefaultQualifier;
+import org.checkerframework.framework.qual.TypeUseLocation;
+import org.jetbrains.annotations.NotNull;

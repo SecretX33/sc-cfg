@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.api;
+package com.github.secretx33.sccfg.exception;
 
-/**
- * The type the config file will be.
- */
-public enum FileType {
-    HOCON(".conf", "HoconSerializer"),
-    JSON(".json", "JsonSerializer"),
-    YAML(".yml", "YamlSerializer");
+import com.github.secretx33.sccfg.api.FileType;
 
-    public final String extension;
-    public final String className;
-
-    FileType(final String extension, final String className) {
-        this.extension = extension;
-        this.className = className;
+public final class MissingSerializerDependency extends ConfigException {
+    public MissingSerializerDependency(final FileType fileType, final Throwable cause) {
+        super("You forgot to add sc-cfg " + fileType + " serializer to your project, sc-cfg will not be able to serialize your config class of type " + fileType + " unless you add the required serializer.", cause);
     }
 }

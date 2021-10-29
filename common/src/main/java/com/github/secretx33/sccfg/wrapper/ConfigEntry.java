@@ -29,7 +29,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkState;
  * Represents an entry of a config instance, and holds relevant data of that particular field, like
  * where it should be stored at (relative to the root of the file), what name should be used, etc.
  */
-public class ConfigEntry {
+public final class ConfigEntry {
 
     /**
      * The instance of a config class.

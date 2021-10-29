@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("java-library")
     id("maven-publish")
@@ -45,6 +47,13 @@ subprojects {
         sourceCompatibility = "1.8"
         targetCompatibility = "1.8"
         options.encoding = "UTF-8"
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs = listOf("-Xjsr305=strict")
+            jvmTarget = "1.8"
+        }
     }
 
     publishing {
