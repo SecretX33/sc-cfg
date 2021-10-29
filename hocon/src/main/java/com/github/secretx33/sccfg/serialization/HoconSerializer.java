@@ -22,6 +22,7 @@ import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import java.util.logging.Logger;
 
+@SuppressWarnings("unused")
 public final class HoconSerializer extends AbstractConfigurateSerializer<HoconConfigurationLoader.Builder, HoconConfigurationLoader> {
 
     public HoconSerializer(final Logger logger, final GsonFactory gsonFactory) {

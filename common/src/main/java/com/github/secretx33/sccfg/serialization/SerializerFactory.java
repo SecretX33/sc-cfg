@@ -47,14 +47,14 @@ public final class SerializerFactory {
     private Serializer serializerFor(final FileType fileType) {
         checkNotNull(fileType, "fileType");
 
-        final String className = getClass().getPackage().getName() + "." + fileType.className;
+        final String className = getClass().getPackage().getName() + "." + fileType.getClassName();
         try {
             final Constructor<?> constructor = Class.forName(className).getDeclaredConstructor(Logger.class, GsonFactory.class);
             constructor.setAccessible(true);
             return (Serializer) constructor.newInstance(logger, gsonFactory);
         } catch (final ClassNotFoundException e) {
             final MissingSerializerDependency ex = new MissingSerializerDependency(fileType, e);
-            logger.log(Level.SEVERE, "Could not create a serializer for type " + fileType, ex);
+            logger.log(Level.SEVERE, "Could not create a serializer for type " + fileType + " (" + fileType.getExtension() + ")", ex);
             throw ex;
         } catch (final ReflectiveOperationException e) {
             throw new ConfigReflectiveOperationException("If you are reading this, it means that sc-cfg was not able to instantiate serializer class of file type " + fileType + ", and that there's a problem with sc-cfg, please report this!", e);

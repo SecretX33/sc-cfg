@@ -23,6 +23,7 @@ import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.util.logging.Logger;
 
+@SuppressWarnings("unused")
 public final class YamlSerializer extends AbstractConfigurateSerializer<YamlConfigurationLoader.Builder, YamlConfigurationLoader> {
 
     public YamlSerializer(final Logger logger, final GsonFactory gsonFactory) {

@@ -172,7 +172,7 @@ public class BaseConfigFactory implements ConfigFactory {
     private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {
         final String value = configuration.value().trim();
         final String lowerCasedValue = value.toLowerCase(Locale.US);
-        final String extension = configuration.type().extension;
+        final String extension = configuration.type().getExtension();
         if (value.isEmpty()) {
             return clazz.getName() + extension;
         }

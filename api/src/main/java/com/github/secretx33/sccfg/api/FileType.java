@@ -23,11 +23,19 @@ public enum FileType {
     JSON(".json", "JsonSerializer"),
     YAML(".yml", "YamlSerializer");
 
-    public final String extension;
-    public final String className;
+    private final String extension;
+    private final String className;
 
     FileType(final String extension, final String className) {
         this.extension = extension;
         this.className = className;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public String getClassName() {
+        return className;
     }
 }

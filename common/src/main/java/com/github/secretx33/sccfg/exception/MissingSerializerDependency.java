@@ -17,6 +17,14 @@ package com.github.secretx33.sccfg.exception;
 
 import com.github.secretx33.sccfg.api.FileType;
 
+/**
+ * Thrown when the consumer forget to add a serializer dependency. It may not seem too important to have
+ * a dedicated exception for this, but it actually is!<br><br>
+ *
+ * Exceptions with descriptive names help the user quickly catch and fix any mistake, and also help us to
+ * help them, since the exception name alone is enough for us to know exactly what's wrong with their
+ * project.
+ */
 public final class MissingSerializerDependency extends ConfigException {
     public MissingSerializerDependency(final FileType fileType, final Throwable cause) {
         super("You forgot to add sc-cfg " + fileType + " serializer to your project, sc-cfg will not be able to serialize your config class of type " + fileType + " unless you add the required serializer.", cause);
