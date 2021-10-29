@@ -15,7 +15,6 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
@@ -75,11 +74,8 @@ abstract class AbstractSerializer implements Serializer {
     /**
      * Read all fields from the config file, and return a map with them.
      *
-     * @param configWrapper the config that should have their file read
-     * @return a map holding all "java names" fields mapped to their "java value"
-     * @throws ConfigDeserializationException if sc-cfg could not deserialize a config entry
-     * back to its java value (that happens when sc-cfg is missing a Type Adapter for that
-     * specific type)
+     * @param configWrapper the config that should have its file read
+     * @return a map holding all "java names" fields mapped to their "file value"
      */
     abstract Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper);
 

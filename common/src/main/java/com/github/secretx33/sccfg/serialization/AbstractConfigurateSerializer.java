@@ -22,13 +22,10 @@ import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
 import com.github.secretx33.sccfg.wrapper.ConfigEntry;
 import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 
-import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,12 +45,12 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
     /**
      * Loads a file, transforming the read value from "file names" to "file values" into a map of
-     * "java names" to "java values". The keys are transformed fields' {@link ConfigEntry#getName()},
-     * and values are transformed by serializing the file values and deserializing them using the
-     * {@link ConfigEntry#getGenericType()}.
+     * "java names" to "file values". The keys are transformed fields' {@link ConfigEntry#getName()},
+     * and values are kept intact (since they'll be converted only if needed when setting them into
+     * the config field).
      *
-     * @param configWrapper the config that should have their file read
-     * @return a map holding the "java names" mapped to the converted "java values"
+     * @param configWrapper the config that should have its file read
+     * @return a map holding the "java names" mapped to "file values"
      */
     @Override
     protected Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
@@ -67,19 +64,14 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
             return Collections.emptyMap();
         }
 
-        final Gson gson = gsonFactory.getInstance();
         final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
         final Map<String, Object> values = new LinkedHashMap<>();
 
         configEntries.forEach(entry -> {
-            final Type type = entry.getGenericType();
             final String path = entry.isAtRoot() ? entry.getNameOnFile() : (entry.getPath() + "." + entry.getNameOnFile());
-            final ConfigurationNode node = file.node(Arrays.stream(path.split("\\.")).iterator());
-            try {
-                final Object value = gson.fromJson(gson.toJson(node.raw()), type);
+            final Object value = file.node(Arrays.asList(path.split("\\."))).raw();
+            if (value != null) {
                 values.put(entry.getName(), value);
-            } catch (final JsonParseException e) {
-                throw new ConfigDeserializationException("sc-cfg doesn't know how to deserialize field " + entry.getName() + " in config class '" + entry.getOwnerClass().getName() + "', consider adding a Type Adapter for this field type", e);
             }
         });
         return Maps.immutableOf(values);
