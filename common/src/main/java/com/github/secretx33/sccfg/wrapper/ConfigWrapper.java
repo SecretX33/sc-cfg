@@ -16,7 +16,7 @@
 package com.github.secretx33.sccfg.wrapper;
 
 import com.github.secretx33.sccfg.api.FileType;
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.util.Sets;
@@ -34,7 +34,7 @@ public final class ConfigWrapper<T> {
     private final Configuration configAnnotation;
     private final Path destination;
     private final FileType fileType;
-    private final NameStrategy nameStrategy;
+    private final Naming nameStrategy;
     private final Map<String, Object> defaults;
     private final Set<ConfigEntry> configEntries;
     private final Set<MethodWrapper> runBeforeReloadMethods;
@@ -59,7 +59,7 @@ public final class ConfigWrapper<T> {
         this.configAnnotation = checkNotNull(configAnnotation, "configAnnotation");
         this.destination = checkNotNull(destination, "destination");
         this.fileType = checkNotNull(configAnnotation.type(), "type");
-        this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy");
+        this.nameStrategy = checkNotNull(configAnnotation.naming(), "nameStrategy");
         this.defaults = checkNotNull(defaults, "defaults");
         this.configEntries = checkNotNull(configEntries, "configEntries");
         this.runBeforeReloadMethods = checkNotNull(runBeforeReload, "runBeforeReload");
@@ -87,7 +87,7 @@ public final class ConfigWrapper<T> {
         return fileType;
     }
 
-    public NameStrategy getNameStrategy() {
+    public Naming getNameStrategy() {
         return nameStrategy;
     }
 

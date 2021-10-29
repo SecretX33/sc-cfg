@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.config;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
@@ -112,7 +112,7 @@ public class BaseConfigFactory implements ConfigFactory {
         final Configuration annotation = getConfigAnnotation(clazz);
         final Serializer serializer = serializerFactory.getSerializer(annotation.type());
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
-        final Set<ConfigEntry> configEntries = mapConfigEntries(instance, configFields, annotation.nameStrategy());
+        final Set<ConfigEntry> configEntries = mapConfigEntries(instance, configFields, annotation.naming());
         final Map<String, Object> defaults = serializer.getCurrentValues(instance, configEntries);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
@@ -140,7 +140,7 @@ public class BaseConfigFactory implements ConfigFactory {
         return annotation;
     }
 
-    private Set<ConfigEntry> mapConfigEntries(final Object instance, final Set<Field> fields, final NameStrategy strategy) {
+    private Set<ConfigEntry> mapConfigEntries(final Object instance, final Set<Field> fields, final Naming strategy) {
         final NameMapper mapper = nameMapperFactory.getMapper(strategy);
 
         return fields.stream().sequential().map(field -> {

@@ -15,19 +15,19 @@
  */
 package com.github.secretx33.sccfg.serialization.namemapping;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 
 /**
- * Applies the transformation represented by a {@link NameStrategy} on a string.
+ * Applies the transformation represented by a {@link Naming} on a string.
  */
 public interface NameMapper {
 
     /**
      * Applies the necessary steps to transform a {@code string} into a string that will fit the
-     * specified {@link NameStrategy} pattern.
+     * specified {@link Naming} pattern.
      *
      * @param string the string to be transformed
-     * @return a string that fits the specified {@link NameStrategy} pattern
+     * @return a string that fits the specified {@link Naming} pattern
      */
     String applyStrategy(final String string);
 }

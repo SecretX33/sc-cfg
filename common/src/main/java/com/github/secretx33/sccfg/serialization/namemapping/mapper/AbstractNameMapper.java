@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
 import org.intellij.lang.annotations.Language;
 
@@ -29,9 +29,9 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 abstract class AbstractNameMapper implements NameMapper {
 
-    protected final NameStrategy nameStrategy;
+    protected final Naming nameStrategy;
 
-    public AbstractNameMapper(final NameStrategy nameStrategy) {
+    public AbstractNameMapper(final Naming nameStrategy) {
         this.nameStrategy = checkNotNull(nameStrategy, "nameStrategy");
     }
 

@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.serialization.namemapping;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.LowercaseHyphenatedMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.LowercaseUnderlinedMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.NoneMapper;
@@ -29,9 +29,9 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class NameMapperFactory {
 
-    private final Map<NameStrategy, NameMapper> nameMappers = new EnumMap<>(NameStrategy.class);
+    private final Map<Naming, NameMapper> nameMappers = new EnumMap<>(Naming.class);
 
-    public NameMapper getMapper(final NameStrategy strategy) {
+    public NameMapper getMapper(final Naming strategy) {
         checkNotNull(strategy, "strategy");
         switch (strategy) {
             case NONE:

@@ -15,14 +15,14 @@
  */
 package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 
 import java.util.Locale;
 
 public final class UppercaseHyphenatedMapper extends AbstractNameMapper {
 
-    public UppercaseHyphenatedMapper(final NameStrategy nameStrategy) {
-        super(nameStrategy);
+    public UppercaseHyphenatedMapper(final Naming naming) {
+        super(naming);
     }
 
     @Override

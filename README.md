@@ -223,9 +223,9 @@ public class MyConfig {
 }
 ```
 
-### Choose the field name scheme
+### Choose the field naming scheme
 
-Choose a different name scheme for your configuration fields by modifying your `@Configuration` annotation, currently we do have five options:
+Choose a different naming scheme for your configuration fields by modifying your `@Configuration` annotation, currently we do have five options:
 
 1. `NONE` (default)
 2. `LOWERCASE_HYPHENATED`
@@ -235,9 +235,9 @@ Choose a different name scheme for your configuration fields by modifying your `
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 
-@Configuration(nameStrategy = NameStrategy.LOWERCASE_HYPHENATED)
+@Configuration(naming = Naming.LOWERCASE_HYPHENATED)
 public class MyConfig {
     
     public int someInt = 0;

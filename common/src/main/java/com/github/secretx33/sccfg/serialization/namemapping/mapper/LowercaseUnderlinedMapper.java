@@ -15,13 +15,13 @@
  */
 package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 
 import java.util.Locale;
 
 public final class LowercaseUnderlinedMapper extends AbstractNameMapper {
 
-    public LowercaseUnderlinedMapper(NameStrategy nameStrategy) {
+    public LowercaseUnderlinedMapper(Naming nameStrategy) {
         super(nameStrategy);
     }
 

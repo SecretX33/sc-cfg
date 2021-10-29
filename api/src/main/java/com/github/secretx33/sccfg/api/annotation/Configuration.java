@@ -16,7 +16,7 @@
 package com.github.secretx33.sccfg.api.annotation;
 
 import com.github.secretx33.sccfg.api.FileType;
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -51,5 +51,5 @@ public @interface Configuration {
      * Specifies what kind of transformation should be applied to the name of the properties inside
      * the configuration file, default is "none".
      */
-    NameStrategy nameStrategy() default NameStrategy.NONE;
+    Naming naming() default Naming.NONE;
 }
