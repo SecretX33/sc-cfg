@@ -223,9 +223,62 @@ public class MyConfig {
 }
 ```
 
-### Choose the field naming scheme
+### Change the path of a field
 
-Choose a different naming scheme for your configuration fields by modifying your `@Configuration` annotation, currently we do have five options:
+To change the path of a field, all you have to do is annotate it with `@Path` and provide the new path.
+
+```java
+import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.api.annotation.Path;
+
+@Configuration
+public class MyConfig {
+    
+    // annotate the field with @Path and provide the new path,
+    // separate each layer with a dot
+    @Path("options.general")
+    public int someInt = 0;
+    @Path("options.general.other")
+    public int someString = "rock";
+}
+```
+Will be serialized to:
+
+```yml
+options:
+  general:
+    someInt: 0
+    other:
+      someString: "rock"
+```
+
+
+### Modify the name of a field
+
+To set a custom name on a single field, you can annotate it with `@Name` and provide the new name. Note that this does override any selected `Naming`. 
+
+```java
+import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.api.annotation.Name;
+
+@Configuration
+public class MyConfig {
+    
+    // annotate the field with @Name, and provide any name you'd like
+    @Name("otherNameOnField")
+    public int someInt = 0;
+}
+```
+
+Will be serialized to:
+
+```yml
+otherNameOnField: 0
+```
+
+### Modify the name of all fields
+
+Choose a different `Naming` scheme for your configuration fields by modifying your `@Configuration` annotation, currently we do have five options:
 
 1. `NONE` (default)
 2. `LOWERCASE_HYPHENATED`

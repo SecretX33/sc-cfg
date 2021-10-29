@@ -17,6 +17,7 @@ package com.github.secretx33.sccfg.config;
 
 import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.api.annotation.Name;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.exception.ConfigOverrideException;
@@ -125,7 +126,7 @@ public class BaseConfigFactory implements ConfigFactory {
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             watchedLocation.recordChange(destination);
             return serializer.loadConfig(wrapper);
-        }  catch (final ConfigException e) {
+        } catch (final ConfigException e) {
             throw e;
         } catch (final Exception e) {
             throw new ConfigException(e);
@@ -134,7 +135,7 @@ public class BaseConfigFactory implements ConfigFactory {
 
     private Configuration getConfigAnnotation(final Class<?> clazz) {
         final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
-        if(annotation == null) {
+        if (annotation == null) {
             throw new MissingConfigAnnotationException(clazz);
         }
         return annotation;
@@ -146,13 +147,24 @@ public class BaseConfigFactory implements ConfigFactory {
         return fields.stream().sequential().map(field -> {
             final com.github.secretx33.sccfg.api.annotation.Path pathAnnotation = field.getDeclaredAnnotation(com.github.secretx33.sccfg.api.annotation.Path.class);
             final String path;
+
             if (pathAnnotation == null) {
                 path = "";
             } else {
                 path = pathAnnotation.value();
                 checkNotBlank(path, () -> "@Path annotation does not support null, empty or blank values, but you passed one of these three as parameter on your field " + field.getName() + " (which belongs to class " + field.getDeclaringClass().getSimpleName() + ")");
             }
-            final String nameOnFile = mapper.applyStrategy(field.getName());
+
+            final Name nameAnnotation = field.getDeclaredAnnotation(Name.class);
+            final String nameOnFile;
+
+            if (nameAnnotation == null) {
+                nameOnFile = mapper.applyStrategy(field.getName());
+            } else {
+                nameOnFile = nameAnnotation.value();
+                checkNotBlank(path, () -> "@Name annotation does not support null, empty or blank values, but you passed one of these three as parameter on your field " + field.getName() + " (which belongs to class " + field.getDeclaringClass().getSimpleName() + ")");
+            }
+
             return new ConfigEntry(instance, field, nameOnFile, path);
         }).collect(Sets.toSet());
     }
@@ -164,7 +176,7 @@ public class BaseConfigFactory implements ConfigFactory {
         if (value.isEmpty()) {
             return clazz.getName() + extension;
         }
-        if(lowerCasedValue.endsWith(extension)) {
+        if (lowerCasedValue.endsWith(extension)) {
             return value.substring(0, lowerCasedValue.lastIndexOf(extension)) + extension;
         }
         return value + extension;
@@ -175,7 +187,7 @@ public class BaseConfigFactory implements ConfigFactory {
         return Arrays.stream(clazz.getDeclaredConstructors())
                 .filter(c -> c.getParameterCount() == 0)
                 .findAny()
-                .map(c -> (Constructor<T>)c)
+                .map(c -> (Constructor<T>) c)
                 .orElseThrow(() -> new MissingNoArgsConstructorException(clazz));
     }
 
@@ -197,7 +209,7 @@ public class BaseConfigFactory implements ConfigFactory {
             asyncExecutor.runMethodsAsyncWithLatch(instance, asyncBefore, latch);
             syncExecutor.runMethodsSyncWithLatch(instance, syncBefore, latch);
 
-            if(runBeforeCount > 0) {
+            if (runBeforeCount > 0) {
                 try {
                     latch.await(4L, TimeUnit.SECONDS);
                 } catch (InterruptedException e) {
@@ -218,7 +230,7 @@ public class BaseConfigFactory implements ConfigFactory {
         final Class<?> clazz = instance.getClass();
         Valid.validateConfigClass(clazz);
 
-        if(instances.containsKey(clazz)) {
+        if (instances.containsKey(clazz)) {
             throw new ConfigOverrideException(clazz);
         }
         final ConfigWrapper<?> wrapper = wrapInstance(instance);

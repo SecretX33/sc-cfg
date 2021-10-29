@@ -15,19 +15,17 @@
  */
 package com.github.secretx33.sccfg.exception;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+public final class ConfigOverlappingPath extends ConfigSerializationException {
 
-public class ConfigSerializationException extends ConfigException {
-
-    public ConfigSerializationException(final String message) {
-        super(checkNotNull(message, "message"));
+    public ConfigOverlappingPath(final String message) {
+        super(message);
     }
 
-    public ConfigSerializationException(final Throwable cause) {
-        super(checkNotNull(cause, "cause"));
+    public ConfigOverlappingPath(final Throwable cause) {
+        super(cause);
     }
 
-    public ConfigSerializationException(final String message, final Throwable cause) {
-        super(checkNotNull(message, "message"), checkNotNull(cause, "cause"));
+    public ConfigOverlappingPath(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }
