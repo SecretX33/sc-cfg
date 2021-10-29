@@ -91,16 +91,6 @@ abstract class AbstractSerializer implements Serializer {
     abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
 
     @Override
-    public void saveConfig(final ConfigWrapper<?> configWrapper) {
-        checkNotNull(configWrapper, "configWrapper");
-
-        final Object config = configWrapper.getInstance();
-        final Path path = configWrapper.getDestination();
-        createFileIfMissing(config, path);
-        saveCurrentInstanceValues(configWrapper);
-    }
-
-    @Override
     public boolean saveDefault(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
@@ -109,12 +99,6 @@ abstract class AbstractSerializer implements Serializer {
         if (!createFileIfMissing(config, path)) return false;
         saveToFile(configWrapper, configWrapper.getDefaults());
         return true;
-    }
-
-    private void saveCurrentInstanceValues(final ConfigWrapper<?> configWrapper) {
-        final Object instance = configWrapper.getInstance();
-        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
-        saveToFile(configWrapper, getCurrentValues(instance, configEntries));
     }
 
     protected boolean createFileIfMissing(final Object configInstance, final Path path) {
@@ -142,22 +126,66 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
+    public void saveConfig(final ConfigWrapper<?> configWrapper) {
+        checkNotNull(configWrapper, "configWrapper");
+
+        final Object config = configWrapper.getInstance();
+        final Path path = configWrapper.getDestination();
+        createFileIfMissing(config, path);
+        saveCurrentInstanceValues(configWrapper);
+    }
+
+    private void saveCurrentInstanceValues(final ConfigWrapper<?> configWrapper) {
+        final Object instance = configWrapper.getInstance();
+        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
+        saveToFile(configWrapper, getCurrentValues(instance, configEntries));
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public Map<String, Object> getCurrentValues(final Object configInstance, final Set<ConfigEntry> configEntries) {
         checkNotNull(configInstance, "configInstance");
         checkNotNull(configEntries, "configEntries");
 
         final Gson gson = gsonFactory.getInstance();
-        final Map<String, Object> currentValues = new LinkedHashMap<>(configEntries.size());
+        final Map<String, Object> currentValues = new LinkedHashMap<>();
 
         configEntries.forEach(configEntry -> {
             final String nameOnFile = configEntry.getNameOnFile();
+            final Type fieldType;
+            final Object copyValue;
 
             try {
-                final Type fieldType = configEntry.getGenericType();
-                final Object copyValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), fieldType);
-                currentValues.put(nameOnFile, copyValue);
+                fieldType = configEntry.getGenericType();
+                copyValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), fieldType);
             } catch (final RuntimeException e) {
                 throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + configEntry.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + configEntry.getGenericType() + ".", e);
+            }
+
+            if (configEntry.isAtRoot()) {
+                currentValues.put(nameOnFile, copyValue);
+            } else {
+                final String[] composedPath = configEntry.getPath().split("\\.");
+                Map<Object, Object> currentLayer = null;
+
+                for(int i = 0; i < composedPath.length; i++) {
+                    final Object object;
+                    if (i == 0) {
+                        object = currentValues.computeIfAbsent(composedPath[i], n -> new LinkedHashMap<>());
+                    } else {
+                        object = currentLayer.computeIfAbsent(composedPath[i], n -> new LinkedHashMap<>());
+                    }
+
+                    if (object instanceof Map<?, ?>) {
+                        currentLayer = (Map<Object, Object>)object;
+                    } else {
+                        currentLayer = new LinkedHashMap<>();
+                    }
+                }
+
+                if (currentLayer != null) {
+                    currentLayer.put(nameOnFile, copyValue);
+                }
             }
         });
 

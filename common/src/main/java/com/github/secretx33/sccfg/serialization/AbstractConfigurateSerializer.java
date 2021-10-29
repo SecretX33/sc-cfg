@@ -68,7 +68,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         final Map<String, Object> values = new LinkedHashMap<>();
 
         configEntries.forEach(entry -> {
-            final String path = entry.isAtRoot() ? entry.getNameOnFile() : (entry.getPath() + "." + entry.getNameOnFile());
+            final String path = entry.getPathWithName();
             final Object value = file.node(Arrays.asList(path.split("\\."))).raw();
             if (value != null) {
                 values.put(entry.getName(), value);

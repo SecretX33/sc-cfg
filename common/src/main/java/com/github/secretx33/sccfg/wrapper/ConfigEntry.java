@@ -70,6 +70,18 @@ public class ConfigEntry {
         return nameOnFile;
     }
 
+    /**
+     * Return the "full path" of this entry, e.g. if the {@link ConfigEntry#path} is "general" and
+     * the {@link ConfigEntry#nameOnFile} is "my-entry", then the return of this method will be
+     * "general.my-entry".
+     *
+     * @return the "full path" of this entry, or only the {@code nameOnFile} if the config
+     * should be placed at root of the file
+     */
+    public String getPathWithName() {
+        return isAtRoot() ? getNameOnFile() : (getPath() + "." + getNameOnFile());
+    }
+
     public Class<?> getType() {
         return field.getType();
     }
