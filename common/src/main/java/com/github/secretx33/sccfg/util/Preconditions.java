@@ -15,6 +15,7 @@
  */
 package com.github.secretx33.sccfg.util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -25,24 +26,28 @@ public final class Preconditions {
     private Preconditions() {
     }
 
+    @Contract("false, _ -> fail")
     public static void checkArgument(boolean expression, final String errorMessage) {
         if (!expression) {
             throw new IllegalArgumentException(errorMessage);
         }
     }
 
+    @Contract("false, _ -> fail")
     public static void checkArgument(boolean expression, final Supplier<String> errorMessage) {
         if (!expression) {
             throw new IllegalArgumentException(errorMessage.get());
         }
     }
 
+    @Contract("false, _ -> fail")
     public static void checkState(boolean expression, final Supplier<String> errorMessage) {
         if (!expression) {
             throw new IllegalStateException(errorMessage.get());
         }
     }
 
+    @Contract("null, _ -> fail; _, _ -> param1")
     public static <T> T checkNotNull(@Nullable final T reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " cannot be null");
@@ -50,6 +55,7 @@ public final class Preconditions {
         return reference;
     }
 
+    @Contract("null, _ -> fail; _, _ -> param1")
     public static <T> T checkNotNull(@Nullable final T reference, final Supplier<String> errorMessage) {
         if (reference == null) {
             throw new NullPointerException(errorMessage.get());
@@ -57,6 +63,7 @@ public final class Preconditions {
         return reference;
     }
 
+    @Contract("null, _ -> fail")
     public static String checkNotBlank(@Nullable final String reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " string cannot be null");
@@ -70,6 +77,7 @@ public final class Preconditions {
         return reference;
     }
 
+    @Contract("null, _ -> fail")
     public static String checkNotBlank(@Nullable final String reference, final Supplier<String> errorMessage) {
         if (reference == null) {
             throw new NullPointerException(errorMessage.get());
@@ -80,6 +88,7 @@ public final class Preconditions {
         return reference;
     }
 
+    @Contract("null, _ -> fail")
     public static <K, V> Map<K, V> notContainsNull(@Nullable final Map<K, V> reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " cannot be null");

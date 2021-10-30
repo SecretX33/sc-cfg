@@ -30,7 +30,7 @@ public final class HoconSerializer extends AbstractConfigurateSerializer<HoconCo
     }
 
     @Override
-    AbstractConfigurationLoader.Builder<HoconConfigurationLoader.Builder, HoconConfigurationLoader> fileBuilder() {
+    protected AbstractConfigurationLoader.Builder<HoconConfigurationLoader.Builder, HoconConfigurationLoader> fileBuilder() {
         return HoconConfigurationLoader.builder().prettyPrinting(true)
                 .emitComments(true)
                 .emitJsonCompatible(false)

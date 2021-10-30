@@ -15,6 +15,7 @@
  */
 package com.github.secretx33.sccfg.storage;
 
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.util.Sets;
 
 import java.nio.file.Path;
@@ -67,6 +68,6 @@ public enum FileModificationType {
             return FileModificationType.DELETE;
         if(event.kind().equals(StandardWatchEventKinds.OVERFLOW))
             return FileModificationType.OVERFLOW;
-        throw new IllegalStateException("Could not convert unknown event " + event.kind().toString() + " to a FileModificationType");
+        throw new ConfigInternalErrorException("Could not convert unknown event " + event.kind().toString() + " to a FileModificationType");
     }
 }

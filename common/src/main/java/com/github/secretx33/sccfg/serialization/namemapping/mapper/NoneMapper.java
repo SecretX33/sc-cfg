@@ -23,7 +23,6 @@ public final class NoneMapper implements NameMapper {
 
     @Override
     public String applyStrategy(String string) {
-        checkNotBlank(string, "name");
-        return string;
+        return checkNotBlank(string, "string");
     }
 }

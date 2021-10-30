@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
 import com.github.secretx33.sccfg.api.Naming;
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 
 import java.util.Locale;
 
@@ -34,7 +35,7 @@ public final class UppercaseUnderlinedMapper extends AbstractNameMapper {
             case UPPERCASE_SNAKE_CASE:
                 return name.toUpperCase(Locale.US);
             default:
-                throw new IllegalStateException("Missing conversion from '" + nameScheme + "' to nameStrategy '" + nameStrategy + "'");
+                throw new ConfigInternalErrorException("Missing conversion from '" + nameScheme + "' to nameStrategy '" + nameStrategy + "'");
         }
     }
 }

@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.serialization.namemapping;
 
 import com.github.secretx33.sccfg.api.Naming;
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.LowercaseHyphenatedMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.LowercaseUnderlinedMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.NoneMapper;
@@ -45,7 +46,7 @@ public final class NameMapperFactory {
             case UPPERCASE_UNDERLINED:
                 return nameMappers.computeIfAbsent(strategy, UppercaseUnderlinedMapper::new);
             default:
-                throw new IllegalStateException("Oops, I don't have a registered name mapper for name strategy " + strategy + ", what a shame!");
+                throw new ConfigInternalErrorException("Oops, I don't have a registered name mapper for name strategy " + strategy + ", what a shame!");
         }
     }
 }

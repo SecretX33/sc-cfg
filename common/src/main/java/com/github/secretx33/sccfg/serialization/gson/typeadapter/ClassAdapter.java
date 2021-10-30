@@ -34,10 +34,11 @@ final class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<C
     @Override
     public Class<?> deserialize(@Nullable final JsonElement json, final Type typeOfT, JsonDeserializationContext context) {
         if (json == null) return null;
+        final String className = json.getAsJsonPrimitive().getAsString();
         try {
-            return Class.forName(json.getAsJsonPrimitive().getAsString());
+            return Class.forName(className);
         } catch (final ClassNotFoundException e) {
-            throw new ConfigDeserializationException(e);
+            throw new ConfigDeserializationException("Could not find class " + className, e);
         }
     }
 

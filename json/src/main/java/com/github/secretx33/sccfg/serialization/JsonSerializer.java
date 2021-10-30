@@ -30,7 +30,7 @@ public final class JsonSerializer extends AbstractConfigurateSerializer<GsonConf
     }
 
     @Override
-    AbstractConfigurationLoader.Builder<GsonConfigurationLoader.Builder, GsonConfigurationLoader> fileBuilder() {
+    protected AbstractConfigurationLoader.Builder<GsonConfigurationLoader.Builder, GsonConfigurationLoader> fileBuilder() {
         return GsonConfigurationLoader.builder()
                 .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
     }

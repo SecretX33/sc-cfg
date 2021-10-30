@@ -31,7 +31,7 @@ public final class YamlSerializer extends AbstractConfigurateSerializer<YamlConf
     }
 
     @Override
-    AbstractConfigurationLoader.Builder<YamlConfigurationLoader.Builder, YamlConfigurationLoader> fileBuilder() {
+    protected AbstractConfigurationLoader.Builder<YamlConfigurationLoader.Builder, YamlConfigurationLoader> fileBuilder() {
         return YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK)
                 .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
     }
