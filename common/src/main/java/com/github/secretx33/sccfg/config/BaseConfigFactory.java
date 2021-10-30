@@ -162,7 +162,7 @@ public class BaseConfigFactory implements ConfigFactory {
                 nameOnFile = mapper.applyStrategy(field.getName());
             } else {
                 nameOnFile = nameAnnotation.value();
-                checkNotBlank(path, () -> "@Name annotation does not support null, empty or blank values, but you passed one of these three as parameter on your field " + field.getName() + " (which belongs to class " + field.getDeclaringClass().getSimpleName() + ")");
+                checkNotBlank(nameOnFile, () -> "@Name annotation does not support null, empty or blank values, but you passed one of these three as value of @Name annotation on your field '" + field.getName() + "' (which belongs to class '" + field.getDeclaringClass().getSimpleName() + "')");
             }
 
             return new ConfigEntry(instance, field, nameOnFile, path);

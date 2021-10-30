@@ -17,15 +17,20 @@ package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
+import com.github.secretx33.sccfg.exception.ConfigOverlappingPath;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
 import com.github.secretx33.sccfg.wrapper.ConfigEntry;
 import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
+import com.google.gson.Gson;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
+import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,6 +40,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+
 abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoader.Builder<U, L>, L extends AbstractConfigurationLoader<?>> extends AbstractSerializer {
 
     public AbstractConfigurateSerializer(final Logger logger, final GsonFactory gsonFactory) {
@@ -42,6 +49,15 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     }
 
     abstract AbstractConfigurationLoader.Builder<U, L> fileBuilder();
+
+    /**
+     * Created a new, empty node compatible with the {@code <L>} configuration loader.
+     *
+     * @return An empty configuration node
+     */
+    private ConfigurationNode emptyNode() {
+        return fileBuilder().build().createNode();
+    }
 
     /**
      * Loads a file, transforming the read value from "file names" to "file values" into a map of
@@ -68,8 +84,8 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         final Map<String, Object> values = new LinkedHashMap<>();
 
         configEntries.forEach(entry -> {
-            final String path = entry.getPathWithName();
-            final Object value = file.node(Arrays.asList(path.split("\\."))).raw();
+            final String pathOnFile = entry.getFullPathOnFile();
+            final Object value = file.node(Arrays.asList(pathOnFile.split("\\."))).raw();
             if (value != null) {
                 values.put(entry.getName(), value);
             }
@@ -105,5 +121,42 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
             logger.log(Level.SEVERE, "An error has occurred when saving your config file '" + configWrapper.getInstance().getClass().getName() + " to the disk.", e);
             throw new ConfigException(e);
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getCurrentValues(final Object configInstance, final Set<ConfigEntry> configEntries) {
+        checkNotNull(configInstance, "configInstance");
+        checkNotNull(configEntries, "configEntries");
+
+        final ConfigurationNode root = emptyNode();
+        final Gson gson = gsonFactory.getInstance();
+
+        configEntries.forEach(configEntry -> {
+            final String pathOnFile = configEntry.getFullPathOnFile();
+            final Object serializableValue;
+
+            try {
+                final Type fieldType = configEntry.getGenericType();
+                serializableValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), Object.class);
+            } catch (final RuntimeException e) {
+                throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + configEntry.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + configEntry.getGenericType() + ".", e);
+            }
+
+            final ConfigurationNode node = root.node(Arrays.asList(pathOnFile.split("\\.")));
+
+            if (!node.isNull()) {
+                throw new ConfigOverlappingPath("There is an overlapping config on key '" + configEntry.getPathOnFile() + "' of config instance of class " + configInstance.getClass().getSimpleName() + ", which prevented the serialization of field '" + configEntry.getName() + "'. Please structure your paths in a way that ensure that there is no possibility of collision between two properties.");
+            }
+
+            try {
+                node.set(serializableValue);
+            } catch (final SerializationException e) {
+                // should not be thrown
+                throw new ConfigInternalErrorException("configurate could not serialize value " + serializableValue + " (class " + serializableValue.getClass() + ")" + ", which should not happen because Gson should already taken care of serializing this class to something serializable", e);
+            }
+        });
+
+        return (root.raw() instanceof Map<?, ?>) ? Maps.immutableOf((Map<String, Object>)root.raw()) : Collections.emptyMap();
     }
 }

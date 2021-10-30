@@ -16,10 +16,8 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.exception.ConfigException;
-import com.github.secretx33.sccfg.exception.ConfigOverlappingPath;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import com.github.secretx33.sccfg.util.Maps;
 import com.github.secretx33.sccfg.wrapper.ConfigEntry;
 import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 import com.google.common.reflect.TypeToken;
@@ -30,13 +28,11 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
@@ -142,58 +138,6 @@ abstract class AbstractSerializer implements Serializer {
         final Object instance = configWrapper.getInstance();
         final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
         saveToFile(configWrapper, getCurrentValues(instance, configEntries));
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public Map<String, Object> getCurrentValues(final Object configInstance, final Set<ConfigEntry> configEntries) {
-        checkNotNull(configInstance, "configInstance");
-        checkNotNull(configEntries, "configEntries");
-
-        final Gson gson = gsonFactory.getInstance();
-        final Map<String, Object> currentValues = new LinkedHashMap<>();
-
-        configEntries.forEach(configEntry -> {
-            final String nameOnFile = configEntry.getNameOnFile();
-            final Type fieldType;
-            final Object copyValue;
-
-            try {
-                fieldType = configEntry.getGenericType();
-                copyValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), fieldType);
-            } catch (final RuntimeException e) {
-                throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + configEntry.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + configEntry.getGenericType() + ".", e);
-            }
-
-            if (configEntry.isAtRoot()) {
-                currentValues.put(nameOnFile, copyValue);
-            } else {
-                final String[] composedPath = configEntry.getPath().split("\\.");
-                Map<Object, Object> currentLayer = null;
-
-                for(int i = 0; i < composedPath.length; i++) {
-                    final Object object;
-                    if (i == 0) {
-                        object = currentValues.computeIfAbsent(composedPath[i], n -> new LinkedHashMap<>());
-                    } else {
-                        object = currentLayer.computeIfAbsent(composedPath[i], n -> new LinkedHashMap<>());
-                    }
-
-                    if (object instanceof Map<?, ?>) {
-                        currentLayer = (Map<Object, Object>)object;
-                    } else {
-                        final String subKey = Arrays.stream(Arrays.copyOfRange(composedPath, 0, i + 1)).map(Object::toString).collect(Collectors.joining("."));
-                        throw new ConfigOverlappingPath("There is an overlapping config on key '" + subKey + "' on config instance of class " + configInstance.getClass().getSimpleName() + ", which prevented the serialization of entry '" + configEntry.getName() + "'. Please structure your paths in a way that ensure that there is no possibility of collision between two properties.");
-                    }
-                }
-
-                if (currentLayer != null) {
-                    currentLayer.put(nameOnFile, copyValue);
-                }
-            }
-        });
-
-        return Maps.immutableOf(currentValues);
     }
 
     protected void setValueOnField(final ConfigEntry configEntry, Object value) throws IllegalArgumentException, JsonSyntaxException {

@@ -58,16 +58,37 @@ public final class ConfigEntry {
         this.field = checkNotNull(field, "field");
         this.nameOnFile = checkNotBlank(nameOnFile, "nameOnFile");
         this.path = checkNotNull(path, "path");
-        checkState(field.getDeclaringClass().isAssignableFrom(instance.getClass()), () -> "field passed as argument belongs to class '" + field.getDeclaringClass().getName() + "', but instance passed as argument is an instance of '" + instance.getClass().getName() + "' which does not inherit from " + field.getDeclaringClass().getName() + " class!");
-        checkState(field.isAccessible(), () -> "field must be made accessible in order to be wrapped into a ConfigEntry (since sc-cfg library relies on accessing it), but field " + field.getName() + " from class " + field.getDeclaringClass().getName() + " was not!");
+        checkState(field.getDeclaringClass().isAssignableFrom(instance.getClass()), () -> "field passed as argument belongs to class '" + field.getDeclaringClass().getName() + "', but instance passed as argument is an instance of '" + instance.getClass().getName() + "' which does not inherit from class '" + field.getDeclaringClass().getName() + "'!");
+        checkState(field.isAccessible(), () -> "field must be made accessible in order to be wrapped into a ConfigEntry (since sc-cfg library relies on accessing it), but field '" + field.getName() + "' from class '" + field.getDeclaringClass().getName() + "' was not!");
     }
 
+    /**
+     * Get the name of this entry, which is its "java name".
+     *
+     * @return the name of the field, which is also the name of the entry
+     */
     public String getName() {
         return field.getName();
     }
 
+    /**
+     * Get what name this field should name on the file, doesn't include the path, this is only the
+     * entry name.
+     *
+     * @return the name that this entry should have on the file
+     */
     public String getNameOnFile() {
         return nameOnFile;
+    }
+
+    /**
+     * Returns the path of this entry relative to the root of the file. Empty means that this entry
+     * should be placed on root of the config file.
+     *
+     * @return the path of this entry relative to the root of the file.
+     */
+    public String getPathOnFile() {
+        return path;
     }
 
     /**
@@ -78,22 +99,34 @@ public final class ConfigEntry {
      * @return the "full path" of this entry, or only the {@code nameOnFile} if the config
      * should be placed at root of the file
      */
-    public String getPathWithName() {
-        return isAtRoot() ? getNameOnFile() : (getPath() + "." + getNameOnFile());
+    public String getFullPathOnFile() {
+        return isAtRoot() ? getNameOnFile() : (getPathOnFile() + "." + getNameOnFile());
     }
 
+    /**
+     * Get the class of the field.
+     *
+     * @return the class of the field
+     */
     public Class<?> getType() {
         return field.getType();
     }
 
+    /**
+     * Get the full {@link Type} of this entry, which include any generics used.
+     *
+     * @return the {@code Type} of this entry
+     */
     public Type getGenericType() {
         return field.getGenericType();
     }
 
-    public String getPath() {
-        return path;
-    }
-
+    /**
+     * Get the config class.
+     *
+     * @return the config class that for which this field belongs (it might not be exactly the owner
+     * of the field, it can also be a field from a parent class).
+     */
     public Class<?> getOwnerClass() {
         return instance.getClass();
     }
