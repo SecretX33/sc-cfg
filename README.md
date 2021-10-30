@@ -56,7 +56,7 @@ Using SC-CFG is as simple as annotating your config class with `@Configuration`.
 ```java
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 
-// you just have to annotate the class with it
+// you just have to annotate the class
 @Configuration
 public class MyConfig {
     
@@ -77,7 +77,7 @@ someString: rock
 Getting the singleton instance of the class through the `Config` class.
 
 ```java
-public class MyPlugin {
+public class MyPlugin extends JavaPlugin {
     
     @Override
     public void onEnable() {
@@ -92,7 +92,7 @@ public class MyPlugin {
 If your config class cannot have a no args constructor for some reason, like when it needs some dependency injected on it, you can handle the instantiation of the config, registering it later, when is convenient for you.
 
 ```java
-public class MyPlugin {
+public class MyPlugin extends JavaPlugin {
     
     @Override
     public void onEnable() {
@@ -121,7 +121,7 @@ Configs are already reload automatically whenever there's some modification on t
 Save you config with a single method call.
 
 ```java
-public class MyPlugin {
+public class MyPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
@@ -173,7 +173,7 @@ public class MyConfig {
 
 ### Run methods on reload
 
-Run methods before or after the config is reloaded, all you have to do it annotate the method with the respective annotation. Both `public` and `private` **no args** methods are supported. They can be on the base class, or any parent class.
+Run methods before or after the config is reloaded, all you have to do it annotate them with the respective annotation. Both `public` and `private` **no args** methods are supported. They can be on the base class, or any parent class.
 
 By default, these methods run on the main thread, but you can specify `async` on the annotation parameter to run the method on another thread (ForkJoinPool).
 
@@ -205,19 +205,19 @@ public class MyConfig {
 }
 ```
 
-### Skip fields
+### Ignore fields
 
-Skip field serialization by using Java `transient`
-keyword, or by using our very own annotation `@IgnoreField`.
+Ignore field serialization by using Java `transient`
+keyword, or by using our very own annotation `@IgnoreField`. Ignored fields doesn't get serialized to the config file, and doesn't have their value modified by sc-cfg.
 
 ```java
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 
 public class MyConfig {
-    // skip transient fields
+    // ignore transient fields
     public transient int someIgnoredInt = 0;
     
-    // skip fields annotated with @IgnoreField too
+    // ignore fields annotated with @IgnoreField too
     @IgnoreField
     private String someIgnoredString = "rock";
 }
@@ -251,7 +251,6 @@ options:
     other:
       someString: "rock"
 ```
-
 
 ### Modify the name of a field
 
@@ -331,7 +330,7 @@ Sometimes, we have a very specific type which uses [parameterized types](http://
 ```java
 import com.google.gson.reflect.TypeToken;
 
-public class MyPlugin {
+public class MyPlugin extends JavaPlugin {
     
     @Override
     public void onEnable() {
@@ -348,7 +347,6 @@ public class MyPlugin {
     }
 }
 ```
-
 
 ## Kotlin
 
