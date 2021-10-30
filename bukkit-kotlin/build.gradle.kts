@@ -3,6 +3,7 @@ repositories {
 }
 
 dependencies {
+    compileOnly(project(":common"))
     api(project(":bukkit"))
     compileOnly(kotlin("stdlib"))
     compileOnly("org.spigotmc:spigot-api:1.17-R0.1-SNAPSHOT")
