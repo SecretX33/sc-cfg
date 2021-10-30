@@ -29,7 +29,8 @@ public @interface Path {
 
     /**
      * Where this property should be saved relative to the root of the file. Use {@code .} (dot) to
-     * separate between layers (like a {@code Map}). Cannot be blank, otherwise will throw {@code IllegalArgumentException}.<br><br>
+     * separate between layers (like a {@code Map}). Cannot be empty or blank, otherwise will throw
+     * {@code IllegalArgumentException}.<br><br>
      *
      * <b>Examples:</b><br><br>
      *

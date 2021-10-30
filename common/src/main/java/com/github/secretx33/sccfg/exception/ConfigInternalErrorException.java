@@ -6,17 +6,15 @@ package com.github.secretx33.sccfg.exception;
  */
 public class ConfigInternalErrorException extends ConfigException {
 
-    public ConfigInternalErrorException() {}
-
-    public ConfigInternalErrorException(String message) {
+    public ConfigInternalErrorException(final String message) {
         super(message);
     }
 
-    public ConfigInternalErrorException(String message, Throwable cause) {
+    public ConfigInternalErrorException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
-    public ConfigInternalErrorException(Throwable cause) {
+    public ConfigInternalErrorException(final Throwable cause) {
         super(cause);
     }
 }

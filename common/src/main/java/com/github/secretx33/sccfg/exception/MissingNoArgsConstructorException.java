@@ -17,6 +17,14 @@ package com.github.secretx33.sccfg.exception;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
+/**
+ * Thrown when the consumer calls {@code Config.getConfig(SomeClass.class)} and the {@code SomeClass}
+ * doesn't have a "no-args" (zero args) constructor. <br><br>
+ *
+ * There are two possible fixes for this issue: <br><br>
+ * 1. Create a zero args constructor on {@code SomeClass}.<br>
+ * 2. Instantiate {@code SomeClass} yourself, and register it later using {@code Config.registerConfig(configInstance)}.
+ */
 public final class MissingNoArgsConstructorException extends ConfigException {
 
     public MissingNoArgsConstructorException(final Class<?> clazz) {

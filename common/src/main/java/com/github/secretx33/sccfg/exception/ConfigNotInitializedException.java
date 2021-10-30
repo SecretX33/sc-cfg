@@ -17,6 +17,12 @@ package com.github.secretx33.sccfg.exception;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
+/**
+ * Thrown when the consumer tries to use a configuration which was not initialized or registered yet.
+ * <br><br>To fix this issue, you have to either get the instance of your config (which makes sc-cfg
+ * initialize it), or register an existing instance of your config class, so sc-cfg will be aware of
+ * it.
+ */
 public final class ConfigNotInitializedException extends ConfigException {
 
     public ConfigNotInitializedException(final Class<?> clazz) {

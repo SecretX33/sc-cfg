@@ -15,19 +15,24 @@
  */
 package com.github.secretx33.sccfg.exception;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
-
+/**
+ * Thrown when sc-cfg could not serialize a field from your config class, and it usually means that
+ * you'll have to register a custom Type Adapter for your custom type.
+ *
+ * @see <a href="https://secretx.gitbook.io/sc-cfg/features/type-adapters">Type Adapters (on Wiki)</a>
+ * for more details.
+ */
 public class ConfigSerializationException extends ConfigException {
 
     public ConfigSerializationException(final String message) {
-        super(checkNotNull(message, "message"));
+        super(message);
     }
 
     public ConfigSerializationException(final Throwable cause) {
-        super(checkNotNull(cause, "cause"));
+        super(cause);
     }
 
     public ConfigSerializationException(final String message, final Throwable cause) {
-        super(checkNotNull(message, "message"), checkNotNull(cause, "cause"));
+        super(message, cause);
     }
 }
