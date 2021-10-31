@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg
 
 import com.github.secretx33.sccfg.api.annotation.Configuration
+import com.github.secretx33.sccfg.exception.ConfigDeserializationException
 import com.github.secretx33.sccfg.exception.ConfigException
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException
 import com.github.secretx33.sccfg.exception.ConfigOverrideException
@@ -23,6 +24,7 @@ import com.github.secretx33.sccfg.exception.ConfigSerializationException
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException
 import java.lang.reflect.Type
+import kotlin.reflect.KClass
 
 
 /**
@@ -108,6 +110,52 @@ inline fun <reified T : Any> saveConfig() = Config.saveConfig(T::class.java)
  * @throws ConfigException if an error occurs while saving the config to the disk
  */
 fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
+
+/**
+ * Save the default values of this config instance to the disk.
+ *
+ * @param config Any
+ * @param reloadAfterwards Boolean if config instance should be reloaded to reflect the new, default
+ * values that were saved to the disk
+ * @param overrideIfExists Boolean if true, the config file will be overwritten if it exists, else it
+ * won't be touched
+ * @return Boolean true if the file was saved to the disk, false if the file already existed or some
+ * exception has occurred
+ * @throws ConfigSerializationException if serializer could not serialize a config entry
+ * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+ * @throws ConfigDeserializationException if serializer could not deserialize a config entry
+ * back to its java value (that happens when sc-cfg is missing a Type Adapter for that
+ * specific type)
+ * @throws ConfigException if an error occurs while saving the config to the disk
+ */
+fun saveDefaults(
+    config: Any,
+    reloadAfterwards: Boolean = true,
+    overrideIfExists: Boolean = false
+): Boolean = Config.saveDefaults(config, reloadAfterwards, overrideIfExists)
+
+/**
+ * Save the default values of this config class to the disk.
+ *
+ * @param configClass KClass<out Any> the config class
+ * @param reloadAfterwards Boolean if config instance should be reloaded to reflect the new, default
+ * values that were saved to the disk
+ * @param overrideIfExists Boolean if true, the config file will be overwritten if it exists, else it
+ * won't be touched
+ * @return Boolean true if the file was saved to the disk, false if the file already existed or some
+ * exception has occurred
+ * @throws ConfigSerializationException if serializer could not serialize a config entry
+ * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+ * @throws ConfigDeserializationException if serializer could not deserialize a config entry
+ * back to its java value (that happens when sc-cfg is missing a Type Adapter for that
+ * specific type)
+ * @throws ConfigException if an error occurs while saving the config to the disk
+ */
+fun saveDefaults(
+    configClass: KClass<out Any>,
+    reloadAfterwards: Boolean = true,
+    overrideIfExists: Boolean = false
+): Boolean = Config.saveDefaults(configClass, reloadAfterwards, overrideIfExists)
 
 /**
  * Extension to register a Gson type adapter for a given type.

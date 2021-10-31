@@ -18,6 +18,7 @@ package com.github.secretx33.sccfg;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.config.BukkitConfigFactory;
 import com.github.secretx33.sccfg.config.ConfigFactory;
+import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.exception.ConfigOverrideException;
@@ -160,31 +161,42 @@ public final class Config {
     /**
      * See method linked below for documentation.
      *
-     * @see Config#saveDefaults(Class, boolean, boolean)
+     * @see Config#saveDefaults(Object, boolean, boolean)
      */
-    public static void saveDefaults(final Object configInstance) {
+    public static boolean saveDefaults(final Object configInstance) {
         checkNotNull(configInstance, "configInstance");
-        saveDefaults(configInstance.getClass());
+        return saveDefaults(configInstance.getClass());
     }
 
     /**
      * See method linked below for documentation.
      *
-     * @see Config#saveDefaults(Class, boolean, boolean)
+     * @see Config#saveDefaults(Object, boolean, boolean)
      */
-    public static void saveDefaults(final Object configInstance, boolean reloadAfterwards) {
+    public static boolean saveDefaults(final Object configInstance, boolean reloadAfterwards) {
         checkNotNull(configInstance, "configInstance");
-        saveDefaults(configInstance.getClass(), reloadAfterwards);
+        return saveDefaults(configInstance.getClass(), reloadAfterwards);
     }
 
     /**
-     * See method linked below for documentation.
+     * Save the default values of this config instance to the disk.
      *
-     * @see Config#saveDefaults(Class, boolean, boolean)
+     * @param configInstance the config instance
+     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
+     * that were saved to the disk
+     * @param overrideIfExists if true, the config file will be overwritten if it exists, else it won't
+     * be touched
+     * @return true if the file was saved to the disk, false if the file already existed or some exception has occurred
+     * @throws ConfigSerializationException if serializer could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigDeserializationException if serializer could not deserialize a config entry
+     * back to its java value (that happens when sc-cfg is missing a Type Adapter for that
+     * specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
      */
-    public static void saveDefaults(final Object configInstance, boolean reloadAfterwards, boolean overrideIfExists) {
+    public static boolean saveDefaults(final Object configInstance, boolean reloadAfterwards, boolean overrideIfExists) {
         checkNotNull(configInstance, "configInstance");
-        saveDefaults(configInstance.getClass(), reloadAfterwards, overrideIfExists);
+        return saveDefaults(configInstance.getClass(), reloadAfterwards, overrideIfExists);
     }
 
     /**
@@ -192,8 +204,8 @@ public final class Config {
      *
      * @see Config#saveDefaults(Class, boolean, boolean)
      */
-    public static void saveDefaults(final Class<?> configClass) {
-        saveDefaults(configClass, true);
+    public static boolean saveDefaults(final Class<?> configClass) {
+        return saveDefaults(configClass, true);
     }
 
     /**
@@ -201,8 +213,8 @@ public final class Config {
      *
      * @see Config#saveDefaults(Class, boolean, boolean)
      */
-    public static void saveDefaults(final Class<?> configClass, boolean reloadAfterwards) {
-        saveDefaults(configClass, reloadAfterwards, false);
+    public static boolean saveDefaults(final Class<?> configClass, boolean reloadAfterwards) {
+        return saveDefaults(configClass, reloadAfterwards, false);
     }
 
     /**
@@ -214,6 +226,12 @@ public final class Config {
      * @param overrideIfExists if true, the config file will be overwritten if it exists, else it won't
      * be touched
      * @return true if the file was saved to the disk, false if the file already existed or some exception has occurred
+     * @throws ConfigSerializationException if serializer could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigDeserializationException if serializer could not deserialize a config entry
+     * back to its java value (that happens when sc-cfg is missing a Type Adapter for that
+     * specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
      */
     public static boolean saveDefaults(final Class<?> configClass, boolean reloadAfterwards, boolean overrideIfExists) {
         checkNotNull(configClass, "configClass");
@@ -226,6 +244,8 @@ public final class Config {
      *
      * @param type the type that the {@code typeAdapter} handles
      * @param typeAdapter the instance of a type adapter
+     * @throws IllegalArgumentException if {@code typeAdapter} is not an instance of a valid type
+     * adapter
      */
     public static void registerTypeAdapter(final Type type, final Object typeAdapter) {
         checkNotNull(type, "type");
@@ -239,6 +259,8 @@ public final class Config {
      *
      * @param typeAdapters map containing the type that the {@code typeAdapter} handles mapped to
      * the instance of a type adapter
+     * @throws IllegalArgumentException if any of the values from {@code typeAdapters} map is not
+     * an instance of a valid type adapter
      */
     public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");

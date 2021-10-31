@@ -64,7 +64,8 @@ public interface Serializer {
      *
      * @param configWrapper the wrapper for the config instance
      * @return true if defaults were saved to the disk, false if the file already existed
-     * @throws ConfigSerializationException if serializer could not parse some field
+     * @throws ConfigSerializationException if serializer could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
      * @throws ConfigException if an error occurs while saving the config to the disk
      */
     boolean saveDefaults(ConfigWrapper<?> configWrapper, boolean overrideIfExists);
