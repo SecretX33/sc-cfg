@@ -127,7 +127,6 @@ public class BaseConfigFactory implements ConfigFactory {
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
             final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, configEntries, runBeforeReload, runAfterReload, watchedLocation);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
-            watchedLocation.recordChange(destination);
             return serializer.loadConfig(wrapper);
         } catch (final ConfigException e) {
             throw e;

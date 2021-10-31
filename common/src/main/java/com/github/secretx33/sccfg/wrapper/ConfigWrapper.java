@@ -127,7 +127,7 @@ public final class ConfigWrapper<T> {
     /**
      * Used to prevent trigger of reload methods when saving the config to the disk.
      */
-    public void registerModification() {
+    public void registerFileModification() {
         watchedLocation.recordChange(destination);
     }
 

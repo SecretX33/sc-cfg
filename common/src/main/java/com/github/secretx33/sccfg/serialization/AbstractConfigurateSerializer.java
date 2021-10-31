@@ -125,6 +125,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
             throw ex;
         }
 
+        configWrapper.registerFileModification();
         try {
             fileBuilder().path(path).build().save(fileNode);
         } catch (final ConfigurateException e) {
@@ -143,16 +144,15 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         final Gson gson = gsonFactory.getInstance();
 
         configEntries.forEach(configEntry -> {
-            final String pathOnFile = configEntry.getFullPathOnFile();
             final Object serializableValue;
 
             try {
-                final Type fieldType = configEntry.getGenericType();
-                serializableValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), Object.class);
+                serializableValue = mapToSerializableValue(gson, configEntry);
             } catch (final RuntimeException e) {
                 throw new ConfigSerializationException("sc-cfg doesn't know how to serialize field '" + configEntry.getName() + "' in config class '" + configInstance.getClass().getName() + "', consider adding a Type Adapter for " + configEntry.getGenericType() + ".", e);
             }
 
+            final String pathOnFile = configEntry.getFullPathOnFile();
             final ConfigurationNode node = root.node(Arrays.asList(pathOnFile.split("\\.")));
 
             if (!node.isNull()) {
@@ -168,5 +168,16 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         });
 
         return (root.raw() instanceof Map<?, ?>) ? Maps.immutableOf((Map<String, Object>)root.raw()) : Collections.emptyMap();
+    }
+
+    private Object mapToSerializableValue(final Gson gson, final ConfigEntry configEntry) {
+        final Class<?> fieldClass = configEntry.getType();
+        final Type fieldType = configEntry.getGenericType();
+        Type targetType = Object.class;
+
+        if (fieldClass.isPrimitive() || Number.class.isAssignableFrom(fieldClass)) {
+            targetType = fieldClass;
+        }
+        return gson.fromJson(gson.toJson(configEntry.get(), fieldType), targetType);
     }
 }

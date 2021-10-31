@@ -93,9 +93,9 @@ abstract class AbstractSerializer implements Serializer {
     public final boolean saveDefaults(final ConfigWrapper<?> configWrapper, final boolean overrideIfExists) {
         checkNotNull(configWrapper, "configWrapper");
 
-        final Object config = configWrapper.getInstance();
         final Path path = configWrapper.getDestination();
         if (overrideIfExists && Files.isRegularFile(path)) {
+            configWrapper.registerFileModification();
             try {
                 Files.delete(path);
             } catch (final IOException e) {
@@ -103,14 +103,14 @@ abstract class AbstractSerializer implements Serializer {
                 return false;
             }
         }
-        if (!createFileIfMissing(config, path)) return false;
+        if (!createFileIfMissing(configWrapper)) return false;
         saveToFile(configWrapper, configWrapper.getDefaults());
         return true;
     }
 
-    protected final boolean createFileIfMissing(final Object configInstance, final Path path) {
-        checkNotNull(configInstance, "configInstance");
-        checkNotNull(path, "path");
+    protected final boolean createFileIfMissing(final ConfigWrapper<?> configWrapper) {
+        checkNotNull(configWrapper, "configWrapper");
+        final Path path = configWrapper.getDestination();
 
         if (Files.exists(path)) {
             if (!Files.isRegularFile(path)) {
@@ -120,13 +120,14 @@ abstract class AbstractSerializer implements Serializer {
         }
 
         try {
+            configWrapper.registerFileModification();
             final Path parent = path.getParent();
             if (parent != null) {
                 Files.createDirectories(parent);
             }
             Files.createFile(path);
         } catch (final IOException e) {
-            logger.log(Level.SEVERE, "An error has occurred when creating config file for class " + configInstance.getClass().getName() + ".", e);
+            logger.log(Level.SEVERE, "An error has occurred when creating config file for class " + configWrapper.getInstance().getClass().getName() + ".", e);
             throw new ConfigException(e);
         }
         return true;
@@ -136,9 +137,7 @@ abstract class AbstractSerializer implements Serializer {
     public final void saveConfig(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
-        final Object config = configWrapper.getInstance();
-        final Path path = configWrapper.getDestination();
-        createFileIfMissing(config, path);
+        createFileIfMissing(configWrapper);
         saveCurrentInstanceValues(configWrapper);
     }
 

@@ -36,6 +36,7 @@ public final class MapDeserializerDoubleAsIntFix implements JsonDeserializer<Map
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, Object> deserialize(@Nullable final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) {
+        if (json == null || json.isJsonNull()) return null;
         return (Map<String, Object>) read(json);
     }
 

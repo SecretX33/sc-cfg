@@ -33,7 +33,7 @@ final class ClassAdapter implements JsonSerializer<Class<?>>, JsonDeserializer<C
     @Nullable
     @Override
     public Class<?> deserialize(@Nullable final JsonElement json, final Type typeOfT, JsonDeserializationContext context) {
-        if (json == null) return null;
+        if (json == null || json.isJsonNull()) return null;
         final String className = json.getAsJsonPrimitive().getAsString();
         try {
             return Class.forName(className);
