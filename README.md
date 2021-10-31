@@ -79,7 +79,7 @@ someString: rock
 
 ### Get the instance of the config class
 
-To get the singleton instance of the class through the `Config` class, do as follow.
+To get the singleton instance of the class through the `Config` class, do as follows.
 
 ```java
 public class MyPlugin extends JavaPlugin {

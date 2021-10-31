@@ -173,9 +173,9 @@ public final class Config {
      *
      * @see Config#saveDefaults(Object, boolean, boolean)
      */
-    public static boolean saveDefaults(final Object configInstance, boolean reloadAfterwards) {
+    public static boolean saveDefaults(final Object configInstance, boolean overrideIfExists) {
         checkNotNull(configInstance, "configInstance");
-        return saveDefaults(configInstance.getClass(), reloadAfterwards);
+        return saveDefaults(configInstance.getClass(), overrideIfExists);
     }
 
     /**
@@ -194,7 +194,7 @@ public final class Config {
      * specific type)
      * @throws ConfigException if an error occurs while saving the config to the disk
      */
-    public static boolean saveDefaults(final Object configInstance, boolean reloadAfterwards, boolean overrideIfExists) {
+    public static boolean saveDefaults(final Object configInstance, boolean overrideIfExists, boolean reloadAfterwards) {
         checkNotNull(configInstance, "configInstance");
         return saveDefaults(configInstance.getClass(), reloadAfterwards, overrideIfExists);
     }
@@ -205,7 +205,7 @@ public final class Config {
      * @see Config#saveDefaults(Class, boolean, boolean)
      */
     public static boolean saveDefaults(final Class<?> configClass) {
-        return saveDefaults(configClass, true);
+        return saveDefaults(configClass, false);
     }
 
     /**
@@ -213,18 +213,18 @@ public final class Config {
      *
      * @see Config#saveDefaults(Class, boolean, boolean)
      */
-    public static boolean saveDefaults(final Class<?> configClass, boolean reloadAfterwards) {
-        return saveDefaults(configClass, reloadAfterwards, false);
+    public static boolean saveDefaults(final Class<?> configClass, boolean overrideIfExists) {
+        return saveDefaults(configClass, overrideIfExists, true);
     }
 
     /**
      * Save the default values of this config class to the disk.
      *
      * @param configClass the config class
-     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
-     * that were saved to the disk
      * @param overrideIfExists if true, the config file will be overwritten if it exists, else it won't
      * be touched
+     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
+     * that were saved to the disk
      * @return true if the file was saved to the disk, false if the file already existed or some exception has occurred
      * @throws ConfigSerializationException if serializer could not serialize a config entry
      * (that happens when sc-cfg is missing a Type Adapter for that specific type)
@@ -233,9 +233,9 @@ public final class Config {
      * specific type)
      * @throws ConfigException if an error occurs while saving the config to the disk
      */
-    public static boolean saveDefaults(final Class<?> configClass, boolean reloadAfterwards, boolean overrideIfExists) {
+    public static boolean saveDefaults(final Class<?> configClass, boolean overrideIfExists, boolean reloadAfterwards) {
         checkNotNull(configClass, "configClass");
-        return configFactory.saveDefaults(configClass, reloadAfterwards, overrideIfExists);
+        return configFactory.saveDefaults(configClass, overrideIfExists, reloadAfterwards);
     }
 
     /**

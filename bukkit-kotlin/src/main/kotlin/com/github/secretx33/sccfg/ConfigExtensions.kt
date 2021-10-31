@@ -115,10 +115,10 @@ fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
  * Save the default values of this config instance to the disk.
  *
  * @param config Any
- * @param reloadAfterwards Boolean if config instance should be reloaded to reflect the new, default
- * values that were saved to the disk
  * @param overrideIfExists Boolean if true, the config file will be overwritten if it exists, else it
  * won't be touched
+ * @param reloadAfterwards Boolean if config instance should be reloaded to reflect the new, default
+ * values that were saved to the disk
  * @return Boolean true if the file was saved to the disk, false if the file already existed or some
  * exception has occurred
  * @throws ConfigSerializationException if serializer could not serialize a config entry
@@ -130,18 +130,18 @@ fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
  */
 fun saveDefaults(
     config: Any,
+    overrideIfExists: Boolean = false,
     reloadAfterwards: Boolean = true,
-    overrideIfExists: Boolean = false
-): Boolean = Config.saveDefaults(config, reloadAfterwards, overrideIfExists)
+): Boolean = Config.saveDefaults(config, overrideIfExists, reloadAfterwards)
 
 /**
  * Save the default values of this config class to the disk.
  *
  * @param configClass KClass<out Any> the config class
- * @param reloadAfterwards Boolean if config instance should be reloaded to reflect the new, default
- * values that were saved to the disk
  * @param overrideIfExists Boolean if true, the config file will be overwritten if it exists, else it
  * won't be touched
+ * @param reloadAfterwards Boolean if config instance should be reloaded to reflect the new, default
+ * values that were saved to the disk
  * @return Boolean true if the file was saved to the disk, false if the file already existed or some
  * exception has occurred
  * @throws ConfigSerializationException if serializer could not serialize a config entry
@@ -153,9 +153,9 @@ fun saveDefaults(
  */
 fun saveDefaults(
     configClass: KClass<out Any>,
+    overrideIfExists: Boolean = false,
     reloadAfterwards: Boolean = true,
-    overrideIfExists: Boolean = false
-): Boolean = Config.saveDefaults(configClass, reloadAfterwards, overrideIfExists)
+): Boolean = Config.saveDefaults(configClass, overrideIfExists, reloadAfterwards)
 
 /**
  * Extension to register a Gson type adapter for a given type.

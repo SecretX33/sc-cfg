@@ -72,11 +72,11 @@ public interface ConfigFactory {
      * Save the default values of this config class to the disk.
      *
      * @param configClass the config class
-     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
-     * that were saved to the disk
      * @param overrideIfExists if true, the config file will be overwritten if it exists, else it won't
      * be touched
+     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
+     * that were saved to the disk
      * @return true if the file was saved to the disk, false if the file already existed or some exception has occurred
      */
-    boolean saveDefaults(final Class<?> configClass, final boolean reloadAfterwards, final boolean overrideIfExists);
+    boolean saveDefaults(final Class<?> configClass, final boolean overrideIfExists, final boolean reloadAfterwards);
 }
