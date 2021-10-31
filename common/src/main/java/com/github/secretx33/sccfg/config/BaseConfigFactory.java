@@ -55,6 +55,7 @@ import java.util.function.Consumer;
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 public class BaseConfigFactory implements ConfigFactory {
 
@@ -87,13 +88,13 @@ public class BaseConfigFactory implements ConfigFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> ConfigWrapper<T> getWrapper(final Class<T> configClazz) {
-        checkNotNull(configClazz, "configClazz");
-        return (ConfigWrapper<T>) instances.computeIfAbsent(configClazz, this::newWrappedConfigInstance);
+    public <T> ConfigWrapper<T> getWrapper(final Class<T> configClass) {
+        checkNotNull(configClass, "configClass");
+        return (ConfigWrapper<T>) instances.computeIfAbsent(configClass, this::newWrappedConfigInstance);
     }
 
     private <T> ConfigWrapper<T> newWrappedConfigInstance(final Class<T> clazz) {
-        Valid.validateConfigClass(clazz);
+        Valid.validateConfigClassWithDefaultConstructor(clazz);
         final Constructor<T> constructor = getDefaultConstructor(clazz);
         try {
             final T instance = constructor.newInstance();
@@ -141,8 +142,12 @@ public class BaseConfigFactory implements ConfigFactory {
         return annotation;
     }
 
-    private Set<ConfigEntry> mapConfigEntries(final Object instance, final Set<Field> fields, final Naming strategy) {
-        final NameMapper mapper = nameMapperFactory.getMapper(strategy);
+    private Set<ConfigEntry> mapConfigEntries(final Object instance, final Set<Field> fields, final Naming naming) {
+        checkNotNull(instance, "instance");
+        notContainsNull(fields, "fields");
+        checkNotNull(naming, "naming");
+
+        final NameMapper mapper = nameMapperFactory.getMapper(naming);
 
         return fields.stream().sequential().map(field -> {
             final com.github.secretx33.sccfg.api.annotation.Path pathAnnotation = field.getDeclaredAnnotation(com.github.secretx33.sccfg.api.annotation.Path.class);
@@ -233,7 +238,7 @@ public class BaseConfigFactory implements ConfigFactory {
         if (instances.containsKey(clazz)) {
             throw new ConfigOverrideException(clazz);
         }
-        final ConfigWrapper<?> wrapper = wrapInstance(instance);
+        final ConfigWrapper<?> wrapper = checkNotNull(wrapInstance(instance), "wrapInstance(instance)");
         instances.put(clazz, wrapper);
     }
 
@@ -245,13 +250,13 @@ public class BaseConfigFactory implements ConfigFactory {
     }
 
     @Override
-    public void saveInstance(final Class<?> configClazz) {
-        checkNotNull(configClazz, "configClazz");
+    public void saveInstance(final Class<?> configClass) {
+        checkNotNull(configClass, "configClass");
 
-        Valid.validateConfigClass(configClazz);
-        final ConfigWrapper<?> wrapper = instances.get(configClazz);
+        Valid.validateConfigClass(configClass);
+        final ConfigWrapper<?> wrapper = instances.get(configClass);
         if (wrapper == null) {
-            throw new ConfigNotInitializedException(configClazz);
+            throw new ConfigNotInitializedException(configClass);
         }
         final Serializer serializer = serializerFactory.getSerializer(wrapper.getFileType());
         serializer.saveConfig(wrapper);

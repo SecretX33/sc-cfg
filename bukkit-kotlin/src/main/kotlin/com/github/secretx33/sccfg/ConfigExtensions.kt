@@ -16,8 +16,10 @@
 package com.github.secretx33.sccfg
 
 import com.github.secretx33.sccfg.api.annotation.Configuration
+import com.github.secretx33.sccfg.exception.ConfigException
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException
 import com.github.secretx33.sccfg.exception.ConfigOverrideException
+import com.github.secretx33.sccfg.exception.ConfigSerializationException
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException
 import java.lang.reflect.Type
@@ -50,44 +52,46 @@ inline fun <reified T : Any> lazyConfig(): Lazy<T> = lazy { getConfig() }
 /**
  * Extension for registering your instance of a configuration class.
  *
- * @param instance T the config instance
+ * @param config T the config instance
  * @return T the config instance
- * @throws [ConfigOverrideException] if `instance` class is already registered
  * @throws [MissingConfigAnnotationException] if `instance` class is not annotated with [Configuration]
- * @throws [MissingNoArgsConstructorException] if `instance` class does not have a no-args constructor
+ * @throws [ConfigOverrideException] if `instance` class is already registered
  */
-inline fun <reified T : Any> registerConfig(instance: T): T = Config.registerConfig(instance)
+inline fun <reified T : Any> registerConfig(config: T): T = Config.registerConfig(config)
 
 /**
  * Extension for registering multiple instances of a configuration classes.
  *
- * @param instances Array<out Any> the config instances
- * @throws [ConfigOverrideException] if there's already a registered instance of the passed instances classes
+ * @param configs Array<out Any> the config instances
  * @throws [MissingConfigAnnotationException] if any instance class is not annotated with [Configuration]
- * @throws [MissingNoArgsConstructorException] if any instance class does not have a no-args constructor
+ * @throws [ConfigOverrideException] if there's already a registered instance of the passed instances classes
  */
-fun registerConfigs(vararg instances: Any) = Config.registerConfigs(instances)
+fun registerConfigs(vararg configs: Any) = Config.registerConfigs(configs)
 
 /**
  * Extension to persist a config instance to the disk (save the current values to the disk).
  *
  * @param config Any the config instance
- * @throws [ConfigNotInitializedException] if `config` is an instance of a config that was not registered.
- * @throws [MissingConfigAnnotationException] if `config` class is not annotated with [Configuration]
- * @throws [MissingNoArgsConstructorException] if `config` class does not have a no-args constructor
+ * @throws MissingConfigAnnotationException if `config` class is not annotated with [Configuration]
+ * @throws ConfigNotInitializedException if `config` is an instance of a class that was not
+ * initiated or registered yet
+ * @throws ConfigSerializationException if serializer could not serialize a config entry
+ * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+ * @throws ConfigException if an error occurs while saving the config to the disk
  */
 fun saveConfig(config: Any) = Config.saveConfig(config)
-
 
 /**
  * Extension to persist a config class to the disk (save the current values of that instance to the
  * disk).
  *
  * @param T the class of the config instance that needs to be persisted
- * @throws [ConfigNotInitializedException] if `config` is an instance of a config that was not initiated
- * or registered.
- * @throws [MissingConfigAnnotationException] if `config` class is not annotated with [Configuration]
- * @throws [MissingNoArgsConstructorException] if `config` class does not have a no-args constructor
+ * @throws MissingConfigAnnotationException if config class `T` is not annotated with [Configuration]
+ * @throws ConfigNotInitializedException if config class `T` is an instance of a config that was not
+ * initiated or registered yet
+ * @throws ConfigSerializationException if serializer could not serialize a config entry
+ * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+ * @throws ConfigException if an error occurs while saving the config to the disk
  */
 inline fun <reified T : Any> saveConfig() = Config.saveConfig(T::class.java)
 
@@ -96,10 +100,12 @@ inline fun <reified T : Any> saveConfig() = Config.saveConfig(T::class.java)
  * to the disk).
  *
  * @param config Array<out Any> the config instances that need to be persisted
+ * @throws MissingConfigAnnotationException if any instance class is not annotated with [Configuration]
  * @throws ConfigNotInitializedException if any of the passed instances is an instance of
  * non-registered config class
- * @throws MissingConfigAnnotationException if any instance class is not annotated with [Configuration]
- * @throws MissingNoArgsConstructorException if any instance class does not have a no-args constructor
+ * @throws ConfigSerializationException if serializer could not serialize a config entry
+ * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+ * @throws ConfigException if an error occurs while saving the config to the disk
  */
 fun saveConfigs(vararg config: Any) = Config.saveConfigs(config)
 

@@ -15,15 +15,70 @@
  */
 package com.github.secretx33.sccfg.config;
 
+import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
+import com.github.secretx33.sccfg.exception.ConfigOverrideException;
+import com.github.secretx33.sccfg.exception.ConfigSerializationException;
+import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
+import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 
+/**
+ * Represents the factory responsible for creating, registering and holding all configuration instances.
+ */
 public interface ConfigFactory {
 
-    <T> ConfigWrapper<T> getWrapper(Class<T> configClazz);
+    /**
+     * Gets the config wrapper of that class, creating it if necessary.
+     *
+     * @param configClass the config class
+     * @param <T> the type of the config class
+     * @return a config wrapper containing the config instance, and a bunch of extra information
+     * about it.
+     * @throws MissingConfigAnnotationException if {@code configClass} is not annotated with
+     * {@link Configuration}
+     * @throws MissingNoArgsConstructorException if {@code configClass} doesn't have a registered
+     * instance yet, and doesn't have a no-args constructor
+     */
+    <T> ConfigWrapper<T> getWrapper(Class<T> configClass);
 
+    /**
+     * Register an instance of a config class.
+     *
+     * @param instance the config instance
+     * @throws MissingConfigAnnotationException if class of {@code instance} is not annotated with
+     * {@link Configuration}
+     * @throws ConfigOverrideException if class of {@code instance} already got an instance associated
+     * with it
+     */
     void registerInstance(Object instance);
 
+    /**
+     * Persist (save) a config instance to the disk.
+     *
+     * @param instance the config instance
+     * @throws MissingConfigAnnotationException if class of {@code instance}  is not annotated with
+     * {@link Configuration}
+     * @throws ConfigNotInitializedException if class of {@code instance} was not initialized or
+     * registered yet
+     * @throws ConfigSerializationException if serializer could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
+     */
     void saveInstance(Object instance);
 
-    void saveInstance(Class<?> configClazz);
+    /**
+     * Persist (save) the instance associated with the {@code configClass} to the disk.
+     *
+     * @param configClass the config class
+     * @throws MissingConfigAnnotationException if {@code configClass} is not annotated with
+     * {@link Configuration}
+     * @throws ConfigNotInitializedException if {@code configClass} was not initialized or
+     * registered yet
+     * @throws ConfigSerializationException if serializer could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
+     */
+    void saveInstance(Class<?> configClass);
 }

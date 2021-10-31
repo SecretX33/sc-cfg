@@ -18,6 +18,8 @@ package com.github.secretx33.sccfg.util;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -89,16 +91,27 @@ public final class Preconditions {
     }
 
     @Contract("null, _ -> fail")
+    public static <T> Collection<T> notContainsNull(@Nullable final Collection<T> reference, final String variableName) {
+        if (reference == null) {
+            throw new NullPointerException(variableName + " cannot be null");
+        }
+        if (reference.contains(null)) {
+            throw new NullPointerException(variableName + " " + reference.getClass().getSimpleName().toLowerCase(Locale.US) + " cannot have null items");
+        }
+        return reference;
+    }
+
+    @Contract("null, _ -> fail")
     public static <K, V> Map<K, V> notContainsNull(@Nullable final Map<K, V> reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " cannot be null");
         }
         reference.forEach((key, value) -> {
             if (key == null) {
-                throw new NullPointerException(variableName + " passed as argument cannot hold null keys");
+                throw new NullPointerException(variableName + " map passed as argument cannot have null keys");
             }
             if (value == null) {
-                throw new NullPointerException(variableName + " passed as argument cannot hold null values");
+                throw new NullPointerException(variableName + " map passed as argument cannot have null values");
             }
         });
         return reference;

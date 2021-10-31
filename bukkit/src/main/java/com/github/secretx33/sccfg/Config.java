@@ -15,8 +15,15 @@
  */
 package com.github.secretx33.sccfg;
 
+import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.config.BukkitConfigFactory;
 import com.github.secretx33.sccfg.config.ConfigFactory;
+import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
+import com.github.secretx33.sccfg.exception.ConfigOverrideException;
+import com.github.secretx33.sccfg.exception.ConfigSerializationException;
+import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
+import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
 import com.github.secretx33.sccfg.scanner.ScannerFactory;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
@@ -47,32 +54,99 @@ public final class Config {
 
     private Config() {}
 
+    /**
+     * Gets the instance of the {@code} configClass, instantiating it if it's not initiated yet.
+     *
+     * @param configClass the config class
+     * @param <T> the type of the config class
+     * @return the singleton instance of config T
+     * @throws MissingConfigAnnotationException if {@code configClass} is not annotated with
+     * {@link Configuration}
+     * @throws MissingNoArgsConstructorException if {@code configClass} doesn't have an initiated
+     * instance registered yet, and doesn't have a no-args constructor
+     */
     public static <T> T getConfig(final Class<T> configClass) {
         checkNotNull(configClass, "configClass");
         return configFactory.getWrapper(configClass).getInstance();
     }
 
+    /**
+     * Register an instance of a config class.
+     *
+     * @param configInstance the config instance
+     * @param <T> the type of the config class
+     * @return the singleton instance of config T
+     * @throws MissingConfigAnnotationException if class of {@code configInstance} is not annotated
+     * with {@link Configuration}
+     * @throws ConfigOverrideException if class of {@code configInstance} already got an instance
+     * associated with it
+     */
     public static <T> T registerConfig(final T configInstance) {
         checkNotNull(configInstance, "configInstance");
         configFactory.registerInstance(configInstance);
         return configInstance;
     }
 
+    /**
+     * Register multiple instances of config classes.
+     *
+     * @param configInstances the config instances
+     * @throws MissingConfigAnnotationException if class of any instance inside {@code configInstances}
+     * is not annotated with {@link Configuration}
+     * @throws ConfigOverrideException if class of any instance inside {@code configInstances} already
+     * got an instance associated with it
+     */
     public static void registerConfigs(final Object... configInstances) {
         checkNotNull(configInstances, "configInstances");
         Arrays.stream(configInstances).forEach(configFactory::registerInstance);
     }
 
+    /**
+     * Persist (save) a config instance to the disk.
+     *
+     * @param configInstance the config instance
+     * @throws MissingConfigAnnotationException if class of {@code configInstance} is not annotated
+     * with {@link Configuration}
+     * @throws ConfigNotInitializedException if class of {@code configInstance} was not initialized
+     * or registered yet
+     * @throws ConfigSerializationException if serializer could not serialize a config entry (that
+     * happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
+     */
     public static void saveConfig(final Object configInstance) {
         checkNotNull(configInstance, "configInstance");
         configFactory.saveInstance(configInstance);
     }
 
-    public static void saveConfig(final Class<?> configClazz) {
-        checkNotNull(configClazz, "configClazz");
-        configFactory.saveInstance(configClazz);
+    /**
+     * Persist (save) the instance associated with the {@code configClass} to the disk.
+     *
+     * @param configClass the config class
+     * @throws MissingConfigAnnotationException if {@code configClass} is not annotated with
+     * {@link Configuration}
+     * @throws ConfigNotInitializedException if {@code configClass} was not initialized or
+     * registered yet
+     * @throws ConfigSerializationException if serializer could not serialize a config entry
+     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
+     */
+    public static void saveConfig(final Class<?> configClass) {
+        checkNotNull(configClass, "configClass");
+        configFactory.saveInstance(configClass);
     }
 
+    /**
+     * Persist (save) the instance associated with the {@code configClass} to the disk.
+     *
+     * @param configInstances the config instances
+     * @throws MissingConfigAnnotationException if class of any instance inside {@code configInstances}
+     * is not annotated with {@link Configuration}
+     * @throws ConfigNotInitializedException if class of any instance inside {@code configInstances} was
+     * not initialized or registered yet
+     * @throws ConfigSerializationException if serializer could not serialize a config entry (that
+     * happens when sc-cfg is missing a Type Adapter for that specific type)
+     * @throws ConfigException if an error occurs while saving the config to the disk
+     */
     public static void saveConfigs(final Object... configInstances) {
         checkNotNull(configInstances, "configInstance");
         Arrays.stream(configInstances).forEach(configFactory::saveInstance);
