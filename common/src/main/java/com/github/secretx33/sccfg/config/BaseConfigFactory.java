@@ -33,6 +33,7 @@ import com.github.secretx33.sccfg.serialization.namemapping.NameMapperFactory;
 import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
+import com.github.secretx33.sccfg.util.BooleanWrapper;
 import com.github.secretx33.sccfg.util.Sets;
 import com.github.secretx33.sccfg.util.Valid;
 import com.github.secretx33.sccfg.wrapper.ConfigEntry;
@@ -50,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
@@ -238,28 +240,36 @@ public class BaseConfigFactory implements ConfigFactory {
         if (instances.containsKey(clazz)) {
             throw new ConfigOverrideException(clazz);
         }
-        final ConfigWrapper<?> wrapper = checkNotNull(wrapInstance(instance), "wrapInstance(instance)");
+        final ConfigWrapper<?> wrapper = wrapInstance(instance);
         instances.put(clazz, wrapper);
-    }
-
-    @Override
-    public void saveInstance(final Object instance) {
-        checkNotNull(instance, "instance");
-        checkArgument(!(instance instanceof Class<?>), "cannot save instance of clazz");
-        saveInstance(instance.getClass());
     }
 
     @Override
     public void saveInstance(final Class<?> configClass) {
         checkNotNull(configClass, "configClass");
+        validateConfigClassAndUseSerializer(configClass, (wrapper, serializer) -> serializer.saveConfig(wrapper));
+    }
 
+    @Override
+    public boolean saveDefaults(final Class<?> configClass, final boolean overrideIfExists, final boolean reloadAfterwards) {
+        checkNotNull(configClass, "configClass");
+        final BooleanWrapper result = new BooleanWrapper();
+        validateConfigClassAndUseSerializer(configClass, (wrapper, serializer) -> {
+            result.set(serializer.saveDefaults(wrapper, overrideIfExists));
+            if (reloadAfterwards && result.get()) reloadInstance(wrapper);
+        });
+        return result.get();
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> void validateConfigClassAndUseSerializer(final Class<T> configClass, final BiConsumer<ConfigWrapper<T>, Serializer> consumer) {
         Valid.validateConfigClass(configClass);
-        final ConfigWrapper<?> wrapper = instances.get(configClass);
+        final ConfigWrapper<T> wrapper = (ConfigWrapper<T>) instances.get(configClass);
         if (wrapper == null) {
             throw new ConfigNotInitializedException(configClass);
         }
         final Serializer serializer = serializerFactory.getSerializer(wrapper.getFileType());
-        serializer.saveConfig(wrapper);
+        consumer.accept(wrapper, serializer);
     }
 
     protected void reloadInstance(final ConfigWrapper<?> configWrapper) {

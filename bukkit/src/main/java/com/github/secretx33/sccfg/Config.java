@@ -120,7 +120,7 @@ public final class Config {
      */
     public static void saveConfig(final Object configInstance) {
         checkNotNull(configInstance, "configInstance");
-        configFactory.saveInstance(configInstance);
+        configFactory.saveInstance(configInstance.getClass());
     }
 
     /**
@@ -154,15 +154,92 @@ public final class Config {
      */
     public static void saveConfigs(final Object... configInstances) {
         notContainsNull(configInstances, "configInstance");
-        Arrays.stream(configInstances).forEach(configFactory::saveInstance);
+        Arrays.stream(configInstances).map(Object::getClass).forEach(configFactory::saveInstance);
     }
 
+    /**
+     * See method linked below for documentation.
+     *
+     * @see Config#saveDefaults(Class, boolean, boolean)
+     */
+    public static void saveDefaults(final Object configInstance) {
+        checkNotNull(configInstance, "configInstance");
+        saveDefaults(configInstance.getClass());
+    }
+
+    /**
+     * See method linked below for documentation.
+     *
+     * @see Config#saveDefaults(Class, boolean, boolean)
+     */
+    public static void saveDefaults(final Object configInstance, boolean reloadAfterwards) {
+        checkNotNull(configInstance, "configInstance");
+        saveDefaults(configInstance.getClass(), reloadAfterwards);
+    }
+
+    /**
+     * See method linked below for documentation.
+     *
+     * @see Config#saveDefaults(Class, boolean, boolean)
+     */
+    public static void saveDefaults(final Object configInstance, boolean reloadAfterwards, boolean overrideIfExists) {
+        checkNotNull(configInstance, "configInstance");
+        saveDefaults(configInstance.getClass(), reloadAfterwards, overrideIfExists);
+    }
+
+    /**
+     * See method linked below for documentation.
+     *
+     * @see Config#saveDefaults(Class, boolean, boolean)
+     */
+    public static void saveDefaults(final Class<?> configClass) {
+        saveDefaults(configClass, true);
+    }
+
+    /**
+     * See method linked below for documentation.
+     *
+     * @see Config#saveDefaults(Class, boolean, boolean)
+     */
+    public static void saveDefaults(final Class<?> configClass, boolean reloadAfterwards) {
+        saveDefaults(configClass, reloadAfterwards, false);
+    }
+
+    /**
+     * Save the default values of this config class to the disk.
+     *
+     * @param configClass the config class
+     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
+     * that were saved to the disk
+     * @param overrideIfExists if true, the config file will be overwritten if it exists, else it won't
+     * be touched
+     * @return true if the file was saved to the disk, false if the file already existed or some exception has occurred
+     */
+    public static boolean saveDefaults(final Class<?> configClass, boolean reloadAfterwards, boolean overrideIfExists) {
+        checkNotNull(configClass, "configClass");
+        return configFactory.saveDefaults(configClass, reloadAfterwards, overrideIfExists);
+    }
+
+    /**
+     * Register a type adapter for serialization/deserialization, and all operations from now on
+     * will have this type adapter available.
+     *
+     * @param type the type that the {@code typeAdapter} handles
+     * @param typeAdapter the instance of a type adapter
+     */
     public static void registerTypeAdapter(final Type type, final Object typeAdapter) {
         checkNotNull(type, "type");
         checkNotNull(typeAdapter, "typeAdapter");
         gsonFactory.addTypeAdapter(type, typeAdapter);
     }
 
+    /**
+     * Register multiple type adapter for serialization/deserialization, and all operations from
+     * now on will have those type adapters available.
+     *
+     * @param typeAdapters map containing the type that the {@code typeAdapter} handles mapped to
+     * the instance of a type adapter
+     */
     public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");
         gsonFactory.addTypeAdapters(typeAdapters);

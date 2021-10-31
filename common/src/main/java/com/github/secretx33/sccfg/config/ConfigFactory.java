@@ -55,20 +55,6 @@ public interface ConfigFactory {
     void registerInstance(Object instance);
 
     /**
-     * Persist (save) a config instance to the disk.
-     *
-     * @param instance the config instance
-     * @throws MissingConfigAnnotationException if class of {@code instance}  is not annotated with
-     * {@link Configuration}
-     * @throws ConfigNotInitializedException if class of {@code instance} was not initialized or
-     * registered yet
-     * @throws ConfigSerializationException if serializer could not serialize a config entry
-     * (that happens when sc-cfg is missing a Type Adapter for that specific type)
-     * @throws ConfigException if an error occurs while saving the config to the disk
-     */
-    void saveInstance(Object instance);
-
-    /**
      * Persist (save) the instance associated with the {@code configClass} to the disk.
      *
      * @param configClass the config class
@@ -81,4 +67,16 @@ public interface ConfigFactory {
      * @throws ConfigException if an error occurs while saving the config to the disk
      */
     void saveInstance(Class<?> configClass);
+
+    /**
+     * Save the default values of this config class to the disk.
+     *
+     * @param configClass the config class
+     * @param reloadAfterwards if config instance should be reloaded to reflect the new, default values
+     * that were saved to the disk
+     * @param overrideIfExists if true, the config file will be overwritten if it exists, else it won't
+     * be touched
+     * @return true if the file was saved to the disk, false if the file already existed or some exception has occurred
+     */
+    boolean saveDefaults(final Class<?> configClass, final boolean reloadAfterwards, final boolean overrideIfExists);
 }

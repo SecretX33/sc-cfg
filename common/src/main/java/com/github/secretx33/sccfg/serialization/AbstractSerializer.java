@@ -50,7 +50,7 @@ abstract class AbstractSerializer implements Serializer {
     public final <T> ConfigWrapper<T> loadConfig(final ConfigWrapper<T> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
-        saveDefault(configWrapper);
+        saveDefaults(configWrapper, false);
         final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
         final Map<String, Object> fileValues = loadFromFile(configWrapper);
 
@@ -90,11 +90,19 @@ abstract class AbstractSerializer implements Serializer {
     abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
 
     @Override
-    public final boolean saveDefault(final ConfigWrapper<?> configWrapper) {
+    public final boolean saveDefaults(final ConfigWrapper<?> configWrapper, final boolean overrideIfExists) {
         checkNotNull(configWrapper, "configWrapper");
 
         final Object config = configWrapper.getInstance();
         final Path path = configWrapper.getDestination();
+        if (overrideIfExists && Files.isRegularFile(path)) {
+            try {
+                Files.delete(path);
+            } catch (final IOException e) {
+                logger.log(Level.SEVERE, "Could not delete the file located at '" + path + "' to override it with default values.", e);
+                return false;
+            }
+        }
         if (!createFileIfMissing(config, path)) return false;
         saveToFile(configWrapper, configWrapper.getDefaults());
         return true;

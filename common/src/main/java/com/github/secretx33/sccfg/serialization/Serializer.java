@@ -67,7 +67,7 @@ public interface Serializer {
      * @throws ConfigSerializationException if serializer could not parse some field
      * @throws ConfigException if an error occurs while saving the config to the disk
      */
-    boolean saveDefault(ConfigWrapper<?> configWrapper);
+    boolean saveDefaults(ConfigWrapper<?> configWrapper, boolean overrideIfExists);
 
     /**
      * Extract the current values from a config instance, applying the specified {@code nameMap}
