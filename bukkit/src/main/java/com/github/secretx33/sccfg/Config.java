@@ -38,7 +38,12 @@ import java.util.Arrays;
 import java.util.Map;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
+/**
+ * Class that interfaces and groups with all {@code sc-cfg} features, providing an easy way of using
+ * all of them, in other words, all available features of sc-cfg are present here.
+ */
 public final class Config {
 
     private static final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
@@ -97,7 +102,7 @@ public final class Config {
      * got an instance associated with it
      */
     public static void registerConfigs(final Object... configInstances) {
-        checkNotNull(configInstances, "configInstances");
+        notContainsNull(configInstances, "configInstances");
         Arrays.stream(configInstances).forEach(configFactory::registerInstance);
     }
 
@@ -148,7 +153,7 @@ public final class Config {
      * @throws ConfigException if an error occurs while saving the config to the disk
      */
     public static void saveConfigs(final Object... configInstances) {
-        checkNotNull(configInstances, "configInstance");
+        notContainsNull(configInstances, "configInstance");
         Arrays.stream(configInstances).forEach(configFactory::saveInstance);
     }
 
@@ -159,7 +164,7 @@ public final class Config {
     }
 
     public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
-        checkNotNull(typeAdapters, "typeAdapters");
+        notContainsNull(typeAdapters, "typeAdapters");
         gsonFactory.addTypeAdapters(typeAdapters);
     }
 }

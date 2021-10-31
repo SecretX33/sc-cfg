@@ -19,8 +19,10 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public final class Preconditions {
@@ -91,6 +93,19 @@ public final class Preconditions {
     }
 
     @Contract("null, _ -> fail")
+    public static <T> T[] notContainsNull(@Nullable final T[] reference, final String variableName) {
+        if (reference == null) {
+            throw new NullPointerException(variableName + " cannot be null");
+        }
+        for (final T element : reference) {
+            if (element == null) {
+                throw new NullPointerException(variableName + " array cannot have null items");
+            }
+        }
+        return reference;
+    }
+
+    @Contract("null, _ -> fail")
     public static <T> Collection<T> notContainsNull(@Nullable final Collection<T> reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " cannot be null");
@@ -102,18 +117,28 @@ public final class Preconditions {
     }
 
     @Contract("null, _ -> fail")
+    public static <T> Set<T> notContainsNull(@Nullable final Set<T> reference, final String variableName) {
+        return (Set<T>)notContainsNull((Collection<T>)reference, variableName);
+    }
+
+    @Contract("null, _ -> fail")
+    public static <T> List<T> notContainsNull(@Nullable final List<T> reference, final String variableName) {
+        return (List<T>)notContainsNull((Collection<T>)reference, variableName);
+    }
+
+    @Contract("null, _ -> fail")
     public static <K, V> Map<K, V> notContainsNull(@Nullable final Map<K, V> reference, final String variableName) {
         if (reference == null) {
             throw new NullPointerException(variableName + " cannot be null");
         }
-        reference.forEach((key, value) -> {
-            if (key == null) {
+        for (final Map.Entry<K, V> entry : reference.entrySet()) {
+            if (entry.getKey() == null) {
                 throw new NullPointerException(variableName + " map passed as argument cannot have null keys");
             }
-            if (value == null) {
+            if (entry.getValue() == null) {
                 throw new NullPointerException(variableName + " map passed as argument cannot have null values");
             }
-        });
+        }
         return reference;
     }
 }

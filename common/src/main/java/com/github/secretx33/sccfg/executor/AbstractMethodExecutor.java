@@ -22,7 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public abstract class AbstractMethodExecutor {
+abstract class AbstractMethodExecutor {
 
     protected Logger logger;
 
@@ -30,7 +30,7 @@ public abstract class AbstractMethodExecutor {
         final Method method = wrapper.getMethod();
         try {
             method.invoke(instance);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.log(Level.SEVERE, "An exception was thrown while executing method '" + method.getName() + "' of class " + method.getDeclaringClass().getCanonicalName(), e);
         }
     }
@@ -39,7 +39,7 @@ public abstract class AbstractMethodExecutor {
         final Method method = wrapper.getMethod();
         try {
             method.invoke(instance);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.log(Level.SEVERE, "An exception was thrown while executing method '" + method.getName() + "' of class " + method.getDeclaringClass().getCanonicalName(), e);
         } finally {
             latch.countDown();

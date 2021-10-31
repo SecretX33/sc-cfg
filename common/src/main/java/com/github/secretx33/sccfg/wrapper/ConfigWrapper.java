@@ -27,6 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 public final class ConfigWrapper<T> {
 
@@ -61,11 +62,11 @@ public final class ConfigWrapper<T> {
         this.fileType = checkNotNull(configAnnotation.type(), "type");
         this.nameStrategy = checkNotNull(configAnnotation.naming(), "nameStrategy");
         this.defaults = checkNotNull(defaults, "defaults");
-        this.configEntries = checkNotNull(configEntries, "configEntries");
-        this.runBeforeReloadMethods = checkNotNull(runBeforeReload, "runBeforeReload");
+        this.configEntries = notContainsNull(configEntries, "configEntries");
+        this.runBeforeReloadMethods = notContainsNull(runBeforeReload, "runBeforeReload");
         this.runBeforeReloadAsyncMethods = filterAsync(runBeforeReloadMethods);
         this.runBeforeReloadSyncMethods = filterSync(runBeforeReloadMethods);
-        this.runAfterReloadMethods = checkNotNull(runAfterReload, "runAfterReload");
+        this.runAfterReloadMethods = notContainsNull(runAfterReload, "runAfterReload");
         this.runAfterReloadAsyncMethods = filterAsync(runAfterReloadMethods);
         this.runAfterReloadSyncMethods = filterSync(runAfterReloadMethods);
         this.watchedLocation = checkNotNull(watchedLocation, "watchedLocation");

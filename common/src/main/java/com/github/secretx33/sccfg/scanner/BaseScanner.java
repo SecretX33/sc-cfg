@@ -45,6 +45,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 public class BaseScanner implements Scanner {
 
@@ -63,7 +64,7 @@ public class BaseScanner implements Scanner {
 
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath");
-        this.extraClassLoaders = checkNotNull(extraClassLoaders, "extraClassLoaders");
+        this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
         this.reflections = getGenericReflections();
     }
 
