@@ -47,7 +47,7 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
-    public <T> ConfigWrapper<T> loadConfig(final ConfigWrapper<T> configWrapper) {
+    public final <T> ConfigWrapper<T> loadConfig(final ConfigWrapper<T> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
         saveDefault(configWrapper);
@@ -90,7 +90,7 @@ abstract class AbstractSerializer implements Serializer {
     abstract void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues);
 
     @Override
-    public boolean saveDefault(final ConfigWrapper<?> configWrapper) {
+    public final boolean saveDefault(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
         final Object config = configWrapper.getInstance();
@@ -100,7 +100,7 @@ abstract class AbstractSerializer implements Serializer {
         return true;
     }
 
-    protected boolean createFileIfMissing(final Object configInstance, final Path path) {
+    protected final boolean createFileIfMissing(final Object configInstance, final Path path) {
         checkNotNull(configInstance, "configInstance");
         checkNotNull(path, "path");
 
@@ -125,7 +125,7 @@ abstract class AbstractSerializer implements Serializer {
     }
 
     @Override
-    public void saveConfig(final ConfigWrapper<?> configWrapper) {
+    public final void saveConfig(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
 
         final Object config = configWrapper.getInstance();
@@ -140,7 +140,7 @@ abstract class AbstractSerializer implements Serializer {
         saveToFile(configWrapper, getCurrentValues(instance, configEntries));
     }
 
-    protected void setValueOnField(final ConfigEntry configEntry, Object value) throws IllegalArgumentException, JsonSyntaxException {
+    protected final void setValueOnField(final ConfigEntry configEntry, Object value) throws IllegalArgumentException, JsonSyntaxException {
         checkNotNull(configEntry, "configEntry");
         checkNotNull(value, "value");
 

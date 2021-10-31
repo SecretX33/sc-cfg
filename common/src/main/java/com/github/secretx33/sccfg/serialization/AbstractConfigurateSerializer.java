@@ -55,7 +55,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
      *
      * @return An empty configuration node
      */
-    private ConfigurationNode emptyNode() {
+    protected final ConfigurationNode emptyNode() {
         return fileBuilder().build().createNode();
     }
 
@@ -69,7 +69,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
      * @return a map holding the "java names" mapped to "file values"
      */
     @Override
-    protected Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
+    protected final Map<String, Object> loadFromFile(final ConfigWrapper<?> configWrapper) {
         final Path filePath = configWrapper.getDestination();
         final ConfigurationNode file;
 
@@ -93,22 +93,32 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         return Maps.immutableOf(values);
     }
 
+    protected String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
+        return gsonFactory.getInstance().toJson(valuesMap, linkedMapToken);
+    }
+
     @Override
-    protected void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues) {
+    protected final void saveToFile(final ConfigWrapper<?> configWrapper, final Map<String, Object> newValues) {
         final Path path = configWrapper.getDestination();
-        final String json;
+        final String serializedFile;
 
         try {
-            json = gsonFactory.getInstance().toJson(newValues, linkedMapToken);
-        } catch (final Exception e) {
+            serializedFile = convertValuesMapToSerializedFile(newValues);
+        } catch (final ConfigurateException e) {
+            // probably consumer's fault, some invalid character or something on the config class contents
             final ConfigSerializationException ex = new ConfigSerializationException(e);
-            logger.log(Level.SEVERE, "An error has occurred when serializing config class " + configWrapper.getInstance().getClass().getName(), ex);
+            logger.log(Level.SEVERE, "An error has occurred when serializing values of class '" + configWrapper.getInstance().getClass().getName() + "', maybe there is some kind of invalid value on some string inside your config class? Read the nested exception for more details.", e);
+            throw ex;
+        } catch (final Exception e) {
+            // something went wrong internally
+            final ConfigInternalErrorException ex = new ConfigInternalErrorException(e);
+            logger.log(Level.SEVERE, "An error has occurred when serializing newValues map (which had values from config class '" + configWrapper.getInstance().getClass().getName() + "'), and that should not happen because this map should only contains serializable values, if you are seeing this, please report this error in sc-cfg github so we can fix it!", ex);
             throw ex;
         }
 
         final ConfigurationNode fileNode;
         try {
-            fileNode = fileBuilder().buildAndLoadString(json);
+            fileNode = fileBuilder().buildAndLoadString(serializedFile);
         } catch (final ConfigurateException e) {
             final ConfigSerializationException ex = new ConfigSerializationException(e);
             logger.log(Level.SEVERE, "An error has occurred when converting the config class " + configWrapper.getInstance().getClass().getName() + " to " + configWrapper.getFileType() + ".", ex);
@@ -125,7 +135,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, Object> getCurrentValues(final Object configInstance, final Set<ConfigEntry> configEntries) {
+    public final Map<String, Object> getCurrentValues(final Object configInstance, final Set<ConfigEntry> configEntries) {
         checkNotNull(configInstance, "configInstance");
         checkNotNull(configEntries, "configEntries");
 
