@@ -33,7 +33,7 @@ public final class FileWatcherEventConsumer {
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final FileModificationType... acceptTypes) {
         checkNotNull(acceptTypes, "acceptTypes");
         checkArgument(acceptTypes.length > 0, "cannot listen to zero modification types");
-        this.acceptTypes = Sets.immutableOf(acceptTypes);
+        this.acceptTypes = Sets.of(acceptTypes);
         this.consumer = checkNotNull(consumer, "consumer");
     }
 

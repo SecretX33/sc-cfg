@@ -34,14 +34,14 @@ public final class Sets {
     private Sets() {}
 
     @SafeVarargs
-    public static <T, S extends T> Set<T> of(final S... elements) {
+    public static <T, S extends T> Set<T> mutableOf(final S... elements) {
         return Arrays.stream(elements)
                 .filter(Objects::nonNull)
                 .collect(Sets.toMutableSet());
     }
 
     @SafeVarargs
-    public static <T extends Enum<T>> Set<T> of(final T... elements) {
+    public static <T extends Enum<T>> Set<T> mutableOf(final T... elements) {
         if (elements.length == 0) return new HashSet<>();
         return EnumSet.copyOf(Arrays.stream(elements)
                 .filter(Objects::nonNull)
@@ -49,18 +49,18 @@ public final class Sets {
     }
 
     @SafeVarargs
-    public static <T> Set<T> immutableOf(final T... elements) {
+    public static <T> Set<T> of(final T... elements) {
         if (elements.length == 0) return Collections.emptySet();
-        return Collections.unmodifiableSet(of(elements));
+        return Collections.unmodifiableSet(mutableOf(elements));
     }
 
     @SafeVarargs
-    public static <T extends Enum<T>> Set<T> immutableOf(final T... elements) {
+    public static <T extends Enum<T>> Set<T> of(final T... elements) {
         if (elements.length == 0) return Collections.emptySet();
-        return Collections.unmodifiableSet(of(elements));
+        return Collections.unmodifiableSet(mutableOf(elements));
     }
 
-    public static <T extends Enum<T>> Set<T> immutableCopyOf(final Set<T> set) {
+    public static <T extends Enum<T>> Set<T> copyOf(final Set<T> set) {
         if (set.isEmpty()) return Collections.emptySet();
         return Collections.unmodifiableSet(EnumSet.copyOf(set));
     }

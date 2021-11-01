@@ -23,6 +23,6 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 public final class BukkitScanner extends BaseScanner {
 
     public BukkitScanner(final Plugin plugin) {
-        super(checkNotNull(plugin, "plugin").getClass().getPackage().getName(), Sets.immutableOf(plugin.getClass().getClassLoader()));
+        super(checkNotNull(plugin, "plugin").getClass().getPackage().getName(), Sets.of(plugin.getClass().getClassLoader()));
     }
 }

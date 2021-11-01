@@ -60,7 +60,7 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
     @Nullable
     @Override
     public ItemStack deserialize(@Nullable final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
-        if (json == null) return null;
+        if (json == null || json.isJsonNull()) return null;
 
         // serialized by bukkit default item serializer
         if (json.isJsonPrimitive()) {

@@ -57,7 +57,7 @@ public enum FileModificationType {
         return this == CREATE || this == MODIFY;
     }
 
-    public static final Set<FileModificationType> CREATE_AND_MODIFICATION = Sets.immutableOf(CREATE, MODIFY);
+    public static final Set<FileModificationType> CREATE_AND_MODIFICATION = Sets.of(CREATE, MODIFY);
 
     public static FileModificationType adapt(final WatchEvent<Path> event) {
         if(event.kind().equals(StandardWatchEventKinds.ENTRY_CREATE))
