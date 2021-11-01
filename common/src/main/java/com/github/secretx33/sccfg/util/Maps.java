@@ -18,7 +18,6 @@ package com.github.secretx33.sccfg.util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -31,7 +30,15 @@ public final class Maps {
 
     private Maps() {}
 
-    public static <K, V> Map<K, V> immutableOf(@Nullable final Map<K, V> map) {
+    /**
+     * Returns an unmodifiable view of the {@code map}.
+     *
+     * @param map map to be wrapped by an immutable view
+     * @param <K> the key type of the map
+     * @param <V> the value type of the map
+     * @return an unmodifiable view of the {@code map}.
+     */
+    public static <K, V> Map<K, V> of(@Nullable final Map<K, V> map) {
         if (map == null || map.isEmpty()) return Collections.emptyMap();
         if ("java.util.Collections$UnmodifiableMap".equals(map.getClass().getName())) {
             return map;
@@ -39,24 +46,24 @@ public final class Maps {
         return Collections.unmodifiableMap(map);
     }
 
-    public static <K, V> Map<K, V> immutableCopyPutting(final Map<K, V> map, final K key, final V value) {
+    public static <K, V> Map<K, V> copyPutting(final Map<K, V> map, final K key, final V value) {
         checkNotNull(map, "map");
         checkNotNull(key, "key");
         checkNotNull(value, "value");
-        return immutableCopyApplying(map, m -> m.put(key, value));
+        return copyApplying(map, m -> m.put(key, value));
     }
 
-    public static <K, V> Map<K, V> immutableCopyPutting(final Map<K, V> map, final Map<? extends K, ? extends V> otherMap) {
+    public static <K, V> Map<K, V> copyPutting(final Map<K, V> map, final Map<? extends K, ? extends V> otherMap) {
         checkNotNull(map, "map");
         checkNotNull(otherMap, "otherMap");
-        return immutableCopyApplying(map, m -> m.putAll(otherMap));
+        return copyApplying(map, m -> m.putAll(otherMap));
     }
 
-    public static <K, V> Map<K, V> immutableCopyApplying(final Map<K, V> map, final Consumer<Map<K, V>> consumer) {
+    public static <K, V> Map<K, V> copyApplying(final Map<K, V> map, final Consumer<Map<K, V>> consumer) {
         checkNotNull(map, "map");
         checkNotNull(consumer, "consumer");
 
-        final Map<K, V> newMap = new HashMap<>(map);
+        final Map<K, V> newMap = new LinkedHashMap<>(map);
         consumer.accept(newMap);
         return Collections.unmodifiableMap(newMap);
     }

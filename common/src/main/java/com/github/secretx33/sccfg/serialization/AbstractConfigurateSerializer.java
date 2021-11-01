@@ -90,7 +90,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
                 values.put(entry.getName(), value);
             }
         });
-        return Maps.immutableOf(values);
+        return Maps.of(values);
     }
 
     protected String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
@@ -167,7 +167,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
             }
         });
 
-        return (root.raw() instanceof Map<?, ?>) ? Maps.immutableOf((Map<String, Object>)root.raw()) : Collections.emptyMap();
+        return (root.raw() instanceof Map<?, ?>) ? Maps.of((Map<String, Object>)root.raw()) : Collections.emptyMap();
     }
 
     private Object mapToSerializableValue(final Gson gson, final ConfigEntry configEntry) {

@@ -89,7 +89,7 @@ public final class GsonFactory {
         checkNotNull(typeAdapter, "typeAdapter");
         checkArgument(isTypeAdapter(typeAdapter.getClass()), () -> "typeAdapter passed as argument does not implement any of Gson type adapter interfaces, so I could not register " + typeAdapter.getClass().getCanonicalName() + " since it is not a type adapter");
 
-        this.typeAdapters = Maps.immutableCopyPutting(typeAdapters, adapterFor, typeAdapter);
+        this.typeAdapters = Maps.copyPutting(typeAdapters, adapterFor, typeAdapter);
         clearGsonInstances();
     }
 
@@ -104,7 +104,7 @@ public final class GsonFactory {
                     return new Pair<>(type, entry.getValue());
                 })
                 .collect(Maps.toMap());
-        this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, newTypeAdapters);
+        this.typeAdapters = Maps.copyPutting(this.typeAdapters, newTypeAdapters);
         clearGsonInstances();
     }
 
@@ -154,7 +154,7 @@ public final class GsonFactory {
                 throw new ConfigReflectiveOperationException(e);
             }
         }
-        typeAdapters = Maps.immutableOf(newTypeAdapters);
+        typeAdapters = Maps.of(newTypeAdapters);
     }
 
     private boolean isTypeAdapter(final Class<?> clazz) {
