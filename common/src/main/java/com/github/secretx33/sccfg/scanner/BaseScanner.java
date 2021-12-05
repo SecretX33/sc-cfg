@@ -146,6 +146,7 @@ public class BaseScanner implements Scanner {
         final Set<Field> ignoredFields = getIgnoredFields(clazz);
         return getAllMembers(clazz, Class::getDeclaredFields)
                 .filter(field -> !Modifier.isStatic(field.getModifiers())
+                        && !Modifier.isTransient(field.getModifiers())
                         && !ignoredFields.contains(field))
                 .map(this::turnAccessibleNonFinalField)
                 .collect(Sets.toSet());

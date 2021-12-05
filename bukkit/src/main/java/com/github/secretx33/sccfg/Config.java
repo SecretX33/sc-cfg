@@ -42,7 +42,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 /**
- * Class that interfaces and groups with all {@code sc-cfg} features, providing an easy way of using
+ * Class that interfaces with and groups all {@code sc-cfg} features, providing an easy way of using
  * all of them, in other words, all available features of sc-cfg are present here.
  */
 public final class Config {
