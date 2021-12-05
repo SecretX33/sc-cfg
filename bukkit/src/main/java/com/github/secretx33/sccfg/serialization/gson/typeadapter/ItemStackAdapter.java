@@ -26,8 +26,6 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
@@ -38,7 +36,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RegisterTypeAdapter(ItemStack.class)
@@ -71,9 +68,7 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
     }
 
     private JsonElement serializeItemUsingXItemStack(final ItemStack item, final JsonSerializationContext context) {
-        final ConfigurationSection section = new MemoryConfiguration();
-        XItemStack.serialize(item, section);
-        return context.serialize(section.getValues(false), linkedMapType);
+        return context.serialize(XItemStack.serialize(item), GENERIC_MAP_TYPE);
     }
 
     private JsonPrimitive serializeItemUsingBukkit(final ItemStack item, final Exception e) {
@@ -92,10 +87,8 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
     @Nullable
     private ItemStack deserializeItemUsingXItemStack(final JsonElement json, final JsonDeserializationContext context) throws JsonParseException {
         try {
-            final Map<String, Object> map = context.deserialize(json, linkedMapType);
-            final MemoryConfiguration section = new MemoryConfiguration();
-            map.forEach(section::set);
-            return XItemStack.deserialize(section);
+            final Map<String, Object> map = context.deserialize(json, GENERIC_MAP_TYPE);
+            return XItemStack.deserialize(map);
         } catch (final Exception e) {
             throw new JsonParseException(e);
         }
@@ -118,5 +111,5 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
         }
     }
 
-    private static final Type linkedMapType = new TypeToken<LinkedHashMap<String, Object>>() {}.getType();
+    private static final Type GENERIC_MAP_TYPE = new TypeToken<Map<String, Object>>() {}.getType();
 }
