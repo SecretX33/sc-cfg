@@ -30,7 +30,6 @@ import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 
-import java.lang.reflect.Type;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -93,8 +92,8 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         return Maps.of(values);
     }
 
-    protected String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
-        return gsonFactory.getInstance().toJson(valuesMap, linkedMapToken);
+    protected final String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
+        return gsonFactory.getInstance().toJson(valuesMap, GENERIC_MAP_TOKEN);
     }
 
     @Override
@@ -161,23 +160,12 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
             try {
                 node.set(serializableValue);
-            } catch (final SerializationException e) {
+            } catch (final IllegalArgumentException | SerializationException e) {
                 // should not be thrown
                 throw new ConfigInternalErrorException("configurate could not serialize value " + serializableValue + " (class " + serializableValue.getClass() + ")" + ", which should not happen because Gson should already taken care of serializing this class to something serializable", e);
             }
         });
 
         return (root.raw() instanceof Map<?, ?>) ? Maps.of((Map<String, Object>)root.raw()) : Collections.emptyMap();
-    }
-
-    private Object mapToSerializableValue(final Gson gson, final ConfigEntry configEntry) {
-        final Class<?> fieldClass = configEntry.getType();
-        final Type fieldType = configEntry.getGenericType();
-        Type targetType = Object.class;
-
-        if (fieldClass.isPrimitive() || Number.class.isAssignableFrom(fieldClass)) {
-            targetType = fieldClass;
-        }
-        return gson.fromJson(gson.toJson(configEntry.get(), fieldType), targetType);
     }
 }

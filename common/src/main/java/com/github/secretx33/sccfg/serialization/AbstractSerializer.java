@@ -28,7 +28,8 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -165,6 +166,27 @@ abstract class AbstractSerializer implements Serializer {
         configEntry.set(value);
     }
 
+    protected final Object mapToSerializableValue(final Gson gson, final ConfigEntry configEntry) {
+        final Class<?> fieldClass = configEntry.getType();
+        final Type fieldType = configEntry.getGenericType();
+        Type targetType = Object.class;
+
+        if (fieldClass.isPrimitive() || Number.class.isAssignableFrom(fieldClass)) {
+            targetType = fieldClass;
+        } else if (fieldClass.isAssignableFrom(Map.class)) {
+            targetType = Map.class;
+        } else if (fieldClass.isAssignableFrom(Collection.class) ) {
+            targetType = List.class;
+        }
+        Object serializedValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), targetType);
+        if (serializedValue instanceof Map<?, ?>) {
+            // serializedValue is a representation of a complex object, but the field is not a Map,
+            // we need to convert it back to and from json to remove any double as int fields
+            serializedValue = gson.fromJson(gson.toJson(serializedValue, GENERIC_MAP_TOKEN), GENERIC_MAP_TOKEN);
+        }
+        return serializedValue;
+    }
+
     @SuppressWarnings("UnstableApiUsage")
-    protected static final Type linkedMapToken = new TypeToken<LinkedHashMap<String, Object>>() {}.getType();
+    protected static final Type GENERIC_MAP_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
 }

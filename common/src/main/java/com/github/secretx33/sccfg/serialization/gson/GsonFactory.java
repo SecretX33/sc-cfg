@@ -79,7 +79,7 @@ public final class GsonFactory {
         if (prettyPrint) {
             builder.setPrettyPrinting();
         }
-        builder.registerTypeAdapter(GENERIC_MAP, new MapDeserializerDoubleAsIntFix());
+        builder.registerTypeAdapter(GENERIC_MAP_TOKEN, new MapDeserializerDoubleAsIntFix());
         typeAdapters.forEach(builder::registerTypeAdapter);
         return builder.create();
     }
@@ -168,5 +168,5 @@ public final class GsonFactory {
         return typeAdapters.stream().allMatch(adapter -> isTypeAdapter(adapter.getClass()));
     }
 
-    private static final Type GENERIC_MAP = new TypeToken<Map<String, Object>>() {}.getType();
+    private static final Type GENERIC_MAP_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
 }

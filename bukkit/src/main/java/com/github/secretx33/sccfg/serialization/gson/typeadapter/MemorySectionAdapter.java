@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.serialization.gson.typeadapter;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
+import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
@@ -27,6 +28,7 @@ import org.bukkit.configuration.MemorySection;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
+import java.util.Map;
 
 @RegisterTypeAdapter(MemorySection.class)
 final class MemorySectionAdapter implements JsonSerializer<MemorySection>, JsonDeserializer<MemorySection> {
@@ -35,16 +37,18 @@ final class MemorySectionAdapter implements JsonSerializer<MemorySection>, JsonD
     @Override
     public JsonElement serialize(@Nullable final MemorySection src, final Type typeOfSrc, final JsonSerializationContext context) {
         if (src == null) return null;
-        return context.serialize(src.getValues(false));
+        return context.serialize(src.getValues(false), GENERIC_MAP);
     }
 
     @Nullable
     @Override
     public MemorySection deserialize(@Nullable final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) throws JsonParseException {
-        if (json == null) return null;
+        if (json == null || json.isJsonNull()) return null;
 
         final MemoryConfiguration config = new MemoryConfiguration();
-        json.getAsJsonObject().entrySet().forEach(entry -> config.set(entry.getKey(), context.deserialize(entry.getValue(), Object.class)));
+        json.getAsJsonObject().entrySet().forEach(entry -> config.set(entry.getKey(), context.deserialize(entry.getValue(), entry.getValue().getClass())));
         return config;
     }
+
+    private static final Type GENERIC_MAP = new TypeToken<Map<String, Object>>(){}.getType();
 }
