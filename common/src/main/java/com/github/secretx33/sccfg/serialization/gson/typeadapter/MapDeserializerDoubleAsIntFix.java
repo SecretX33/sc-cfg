@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ public final class MapDeserializerDoubleAsIntFix implements JsonDeserializer<Map
     @SuppressWarnings("unchecked")
     public Map<String, Object> deserialize(@Nullable final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) {
         if (json == null || json.isJsonNull()) return null;
+        if (!json.isJsonObject()) return new LinkedHashMap<>();
         return (Map<String, Object>) read(json);
     }
 
@@ -73,11 +75,7 @@ public final class MapDeserializerDoubleAsIntFix implements JsonDeserializer<Map
                 final Number num = prim.getAsNumber();
                 final double doubleValue = num.doubleValue();
 
-                if (doubleValue == num.byteValue()) {
-                    return num.byteValue();
-                } else if (doubleValue == num.shortValue()) {
-                    return num.shortValue();
-                } else if (doubleValue == num.intValue()) {
+                if (doubleValue == num.intValue()) {
                     return num.intValue();
                 } else if (doubleValue == num.longValue()) {
                     return num.longValue();
