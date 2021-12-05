@@ -36,7 +36,7 @@ final class LocationAdapter implements JsonSerializer<Location>, JsonDeserialize
     @Nullable
     @Override
     public JsonElement serialize(@Nullable final Location src, final Type typeOfSrc, final JsonSerializationContext context) {
-        if(src == null) return null;
+        if (src == null) return null;
         final JsonObject object = new JsonObject();
         object.addProperty("worldName", Optional.ofNullable(src.getWorld()).map(World::getName).orElse(null));
         object.addProperty("x", src.getX());
@@ -48,7 +48,7 @@ final class LocationAdapter implements JsonSerializer<Location>, JsonDeserialize
     @Nullable
     @Override
     public Location deserialize(@Nullable final JsonElement json, final Type typeOfT, final JsonDeserializationContext context) {
-        if(json == null) return null;
+        if (json == null || json.isJsonNull()) return null;
         final JsonObject object = json.getAsJsonObject();
         final String worldName = object.get("worldName").getAsString();
         final double x = object.get("x").getAsDouble();

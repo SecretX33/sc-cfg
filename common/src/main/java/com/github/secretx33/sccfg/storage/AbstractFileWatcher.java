@@ -25,6 +25,7 @@
 package com.github.secretx33.sccfg.storage;
 
 import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 
 import java.io.IOException;
 import java.nio.file.ClosedWatchServiceException;
@@ -144,7 +145,7 @@ public abstract class AbstractFileWatcher implements AutoCloseable  {
      */
     private void runEventProcessingLoop() {
         if (!processingThread.compareAndSet(null, Thread.currentThread())) {
-            throw new IllegalStateException("A thread is already processing events for this watcher.");
+            throw new ConfigInternalErrorException("A thread is already processing events for this watcher.");
         }
 
         while (true) {

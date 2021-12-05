@@ -15,6 +15,8 @@
  */
 package com.github.secretx33.sccfg.scanner;
 
+import java.util.Collections;
+
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class BaseScannerFactory implements ScannerFactory {
@@ -23,7 +25,7 @@ public final class BaseScannerFactory implements ScannerFactory {
 
     public BaseScannerFactory(final String basePackage) {
         checkNotNull(basePackage, "basePackage");
-        this.scanner = new BaseScanner(basePackage);
+        this.scanner = new BaseScanner(basePackage, Collections.emptySet());
     }
 
     @Override

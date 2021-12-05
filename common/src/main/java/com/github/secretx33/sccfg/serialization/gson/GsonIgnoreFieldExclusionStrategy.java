@@ -24,9 +24,9 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 public final class GsonIgnoreFieldExclusionStrategy implements ExclusionStrategy {
 
     @Override
-    public boolean shouldSkipField(final FieldAttributes fa) {
-        checkNotNull(fa, "fa");
-        return fa.getAnnotation(IgnoreField.class) != null;
+    public boolean shouldSkipField(final FieldAttributes fieldAttributes) {
+        checkNotNull(fieldAttributes, "fieldAttributes");
+        return fieldAttributes.getAnnotation(IgnoreField.class) != null;
     }
 
     @Override

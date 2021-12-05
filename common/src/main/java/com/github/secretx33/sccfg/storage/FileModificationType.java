@@ -15,6 +15,7 @@
  */
 package com.github.secretx33.sccfg.storage;
 
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.util.Sets;
 
 import java.nio.file.Path;
@@ -56,7 +57,7 @@ public enum FileModificationType {
         return this == CREATE || this == MODIFY;
     }
 
-    public static final Set<FileModificationType> CREATE_AND_MODIFICATION = Sets.immutableOf(CREATE, MODIFY);
+    public static final Set<FileModificationType> CREATE_AND_MODIFICATION = Sets.of(CREATE, MODIFY);
 
     public static FileModificationType adapt(final WatchEvent<Path> event) {
         if(event.kind().equals(StandardWatchEventKinds.ENTRY_CREATE))
@@ -67,6 +68,6 @@ public enum FileModificationType {
             return FileModificationType.DELETE;
         if(event.kind().equals(StandardWatchEventKinds.OVERFLOW))
             return FileModificationType.OVERFLOW;
-        throw new IllegalStateException("Could not convert unknown event " + event.kind().toString() + " to a FileModificationType");
+        throw new ConfigInternalErrorException("Could not convert unknown event " + event.kind().toString() + " to a FileModificationType");
     }
 }

@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.config;
+package com.github.secretx33.sccfg.wrapper;
 
 import com.github.secretx33.sccfg.api.FileType;
-import com.github.secretx33.sccfg.api.NameStrategy;
+import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import com.github.secretx33.sccfg.serialization.namemapping.NameMap;
 import com.github.secretx33.sccfg.storage.FileWatcher;
+import com.github.secretx33.sccfg.util.Sets;
 
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 public final class ConfigWrapper<T> {
 
@@ -36,10 +35,9 @@ public final class ConfigWrapper<T> {
     private final Configuration configAnnotation;
     private final Path destination;
     private final FileType fileType;
-    private final NameStrategy nameStrategy;
+    private final Naming nameStrategy;
     private final Map<String, Object> defaults;
-    private final NameMap nameMap;
-    private final Set<Field> configFields;
+    private final Set<ConfigEntry> configEntries;
     private final Set<MethodWrapper> runBeforeReloadMethods;
     private final Set<MethodWrapper> runBeforeReloadAsyncMethods;
     private final Set<MethodWrapper> runBeforeReloadSyncMethods;
@@ -53,8 +51,7 @@ public final class ConfigWrapper<T> {
             final Configuration configAnnotation,
             final Path destination,
             final Map<String, Object> defaults,
-            final NameMap nameMap,
-            final Set<Field> configFields,
+            final Set<ConfigEntry> configEntries,
             final Set<MethodWrapper> runBeforeReload,
             final Set<MethodWrapper> runAfterReload,
             final FileWatcher.WatchedLocation watchedLocation
@@ -63,14 +60,13 @@ public final class ConfigWrapper<T> {
         this.configAnnotation = checkNotNull(configAnnotation, "configAnnotation");
         this.destination = checkNotNull(destination, "destination");
         this.fileType = checkNotNull(configAnnotation.type(), "type");
-        this.nameStrategy = checkNotNull(configAnnotation.nameStrategy(), "nameStrategy");
+        this.nameStrategy = checkNotNull(configAnnotation.naming(), "nameStrategy");
         this.defaults = checkNotNull(defaults, "defaults");
-        this.nameMap = checkNotNull(nameMap, "nameMap");
-        this.configFields = checkNotNull(configFields, "configFields");
-        this.runBeforeReloadMethods = checkNotNull(runBeforeReload, "runBeforeReload");
+        this.configEntries = notContainsNull(configEntries, "configEntries");
+        this.runBeforeReloadMethods = notContainsNull(runBeforeReload, "runBeforeReload");
         this.runBeforeReloadAsyncMethods = filterAsync(runBeforeReloadMethods);
         this.runBeforeReloadSyncMethods = filterSync(runBeforeReloadMethods);
-        this.runAfterReloadMethods = checkNotNull(runAfterReload, "runAfterReload");
+        this.runAfterReloadMethods = notContainsNull(runAfterReload, "runAfterReload");
         this.runAfterReloadAsyncMethods = filterAsync(runAfterReloadMethods);
         this.runAfterReloadSyncMethods = filterSync(runAfterReloadMethods);
         this.watchedLocation = checkNotNull(watchedLocation, "watchedLocation");
@@ -92,7 +88,7 @@ public final class ConfigWrapper<T> {
         return fileType;
     }
 
-    public NameStrategy getNameStrategy() {
+    public Naming getNameStrategy() {
         return nameStrategy;
     }
 
@@ -100,12 +96,8 @@ public final class ConfigWrapper<T> {
         return defaults;
     }
 
-    public NameMap getNameMap() {
-        return nameMap;
-    }
-
-    public Set<Field> getConfigFields() {
-        return configFields;
+    public Set<ConfigEntry> getConfigEntries() {
+        return configEntries;
     }
 
     public Set<MethodWrapper> getRunBeforeReloadMethods() {
@@ -135,18 +127,16 @@ public final class ConfigWrapper<T> {
     /**
      * Used to prevent trigger of reload methods when saving the config to the disk.
      */
-    public void registerModification() {
+    public void registerFileModification() {
         watchedLocation.recordChange(destination);
     }
 
     private Set<MethodWrapper> filterAsync(final Set<MethodWrapper> method) {
-        return method.stream().filter(MethodWrapper::isAsync)
-            .collect(Collectors.toSet());
+        return method.stream().filter(MethodWrapper::isAsync).collect(Sets.toSet());
     }
 
     private Set<MethodWrapper> filterSync(final Set<MethodWrapper> method) {
-        return method.stream().filter(wrapper -> !wrapper.isAsync())
-            .collect(Collectors.toSet());
+        return method.stream().filter(wrapper -> !wrapper.isAsync()).collect(Sets.toSet());
     }
 
     @Override
@@ -160,8 +150,7 @@ public final class ConfigWrapper<T> {
                 && fileType == that.fileType
                 && nameStrategy == that.nameStrategy
                 && defaults.equals(that.defaults)
-                && nameMap.equals(that.nameMap)
-                && configFields.equals(that.configFields)
+                && configEntries.equals(that.configEntries)
                 && runBeforeReloadMethods.equals(that.runBeforeReloadMethods)
                 && runBeforeReloadAsyncMethods.equals(that.runBeforeReloadAsyncMethods)
                 && runBeforeReloadSyncMethods.equals(that.runBeforeReloadSyncMethods)
@@ -173,7 +162,7 @@ public final class ConfigWrapper<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, nameMap, configFields, runBeforeReloadMethods, runBeforeReloadAsyncMethods, runBeforeReloadSyncMethods, runAfterReloadMethods, runAfterReloadAsyncMethods, runAfterReloadSyncMethods, watchedLocation);
+        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, configEntries, runBeforeReloadMethods, runBeforeReloadAsyncMethods, runBeforeReloadSyncMethods, runAfterReloadMethods, runAfterReloadAsyncMethods, runAfterReloadSyncMethods, watchedLocation);
     }
 
     @Override
@@ -185,8 +174,7 @@ public final class ConfigWrapper<T> {
                 ", fileType=" + fileType +
                 ", nameStrategy=" + nameStrategy +
                 ", defaults=" + defaults +
-                ", nameMap=" + nameMap +
-                ", configFields=" + configFields +
+                ", configEntries=" + configEntries +
                 ", runBeforeReloadMethods=" + runBeforeReloadMethods +
                 ", runBeforeReloadAsyncMethods=" + runBeforeReloadAsyncMethods +
                 ", runBeforeReloadSyncMethods=" + runBeforeReloadSyncMethods +

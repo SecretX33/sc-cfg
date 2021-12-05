@@ -36,7 +36,7 @@ class SerializerFactoryTest {
     @EnumSource(FileType::class)
     fun `given any file type then always return a valid serializer`(type: FileType) {
         val serializer = assertDoesNotThrow({ "missing serializer for type $type! "}) {
-            factory.getFor(type)
+            factory.getSerializer(type)
         }
         assertNotNull(serializer) { "serializer should never come null" }
     }

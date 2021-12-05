@@ -13,9 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@DefaultQualifier(value = NotNull.class, locations = {TypeUseLocation.PARAMETER, TypeUseLocation.RECEIVER, TypeUseLocation.RETURN, TypeUseLocation.CONSTRUCTOR_RESULT})
-package com.github.secretx33.sccfg;
+package com.github.secretx33.sccfg.util;
 
-import org.checkerframework.framework.qual.DefaultQualifier;
-import org.checkerframework.framework.qual.TypeUseLocation;
-import org.jetbrains.annotations.NotNull;
+public final class BooleanWrapper {
+
+    boolean value = false;
+
+    public BooleanWrapper() {
+    }
+
+    public BooleanWrapper(final boolean value) {
+        this.value = value;
+    }
+
+    public boolean get() {
+        return value;
+    }
+
+    public void set(final boolean newValue) {
+        value = newValue;
+    }
+}

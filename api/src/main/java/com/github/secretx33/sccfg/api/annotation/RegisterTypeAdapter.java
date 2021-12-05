@@ -31,8 +31,7 @@ import java.lang.annotation.Target;
 public @interface RegisterTypeAdapter {
 
     /**
-     * The class that this TypeAdapter serialized and/or deserializes. <b>Requires overriding</b>,
-     * if not overridden it'll throw {@code MissingTypeOverrideOnAdapterException}.
+     * The class that this TypeAdapter serialized and/or deserializes.
      */
     Class<?> value();
 }

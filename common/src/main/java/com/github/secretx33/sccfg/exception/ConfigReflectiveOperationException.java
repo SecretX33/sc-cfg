@@ -15,11 +15,12 @@
  */
 package com.github.secretx33.sccfg.exception;
 
-public final class ConfigReflectiveOperationException extends ConfigException {
-
-    public ConfigReflectiveOperationException(final String message) {
-        super(message);
-    }
+/**
+ * Is the same as {@link ConfigInternalErrorException}, but implies that the internal error happened
+ * because of a reflection exception. It's important to be able to easily differentiate between an
+ * issue related to reflection, and issues caused by other things.
+ */
+public final class ConfigReflectiveOperationException extends ConfigInternalErrorException {
 
     public ConfigReflectiveOperationException(final String message, final Throwable cause) {
         super(message, cause);

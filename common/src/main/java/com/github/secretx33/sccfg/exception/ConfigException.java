@@ -15,9 +15,11 @@
  */
 package com.github.secretx33.sccfg.exception;
 
+/**
+ * Wraps almost all exceptions that may arise from sc-cfg. When used directly, the message and/or cause
+ * will make clear what went wrong.
+ */
 public class ConfigException extends RuntimeException {
-
-    public ConfigException() {}
 
     public ConfigException(final String message) {
         super(message);

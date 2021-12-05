@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.config;
+package com.github.secretx33.sccfg.wrapper;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -41,10 +41,10 @@ public final class MethodWrapper {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        MethodWrapper that = (MethodWrapper) o;
+        final MethodWrapper that = (MethodWrapper) o;
         return async == that.async && method.equals(that.method);
     }
 

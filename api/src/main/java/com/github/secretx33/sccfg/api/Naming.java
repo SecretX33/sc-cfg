@@ -18,7 +18,7 @@ package com.github.secretx33.sccfg.api;
 /**
  * Transformations that should be applied to the config field names when serializing them.
  */
-public enum NameStrategy {
+public enum Naming {
 
     /**
      * This option will not perform any transformations when serializing the field to the file,

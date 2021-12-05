@@ -15,11 +15,21 @@
  */
 package com.github.secretx33.sccfg.exception;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+/**
+ * Thrown when any kind of internal error happens inside the library. Represents some failure on our side,
+ * and never on the consumer side.
+ */
+public class ConfigInternalErrorException extends ConfigException {
 
-public final class MissingTypeOverrideOnAdapterException extends ConfigException {
+    public ConfigInternalErrorException(final String message) {
+        super(message);
+    }
 
-    public MissingTypeOverrideOnAdapterException(final Class<?> clazz) {
-        super("Could not create instance of typeAdapter class '" + checkNotNull(clazz, "clazz").getName() + "' because you forgot to specify for what class is that adapter for. Please specify the class for which the adapter is expecting, or remove the annotation from it.");
+    public ConfigInternalErrorException(final String message, final Throwable cause) {
+        super(message, cause);
+    }
+
+    public ConfigInternalErrorException(final Throwable cause) {
+        super(cause);
     }
 }

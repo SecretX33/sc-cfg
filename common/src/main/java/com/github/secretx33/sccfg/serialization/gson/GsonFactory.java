@@ -16,10 +16,12 @@
 package com.github.secretx33.sccfg.serialization.gson;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
 import com.github.secretx33.sccfg.util.Maps;
+import com.github.secretx33.sccfg.util.Pair;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -31,7 +33,6 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,7 +51,6 @@ public final class GsonFactory {
     private final Scanner scanner;
     private Map<Type, Object> typeAdapters = Collections.emptyMap();
     private Gson gson;
-    private Gson prettyPrintGson;
 
     public GsonFactory(final Logger logger, final Scanner scanner) {
         this.logger = checkNotNull(logger, "logger");
@@ -67,18 +67,8 @@ public final class GsonFactory {
         return instance;
     }
 
-    public Gson getPrettyPrintInstance() {
-        Gson instance = prettyPrintGson;
-        if (instance == null) {
-            instance = newInstanceWithTypeAdapters(true);
-            prettyPrintGson = instance;
-        }
-        return instance;
-    }
-
     private void clearGsonInstances() {
         gson = null;
-        prettyPrintGson = null;
     }
 
     public Gson newInstanceWithTypeAdapters(final boolean prettyPrint) {
@@ -89,7 +79,7 @@ public final class GsonFactory {
         if (prettyPrint) {
             builder.setPrettyPrinting();
         }
-        builder.registerTypeAdapter(GENERIC_MAP, new MapDeserializerDoubleAsIntFix());
+        builder.registerTypeAdapter(GENERIC_MAP_TOKEN, new MapDeserializerDoubleAsIntFix());
         typeAdapters.forEach(builder::registerTypeAdapter);
         return builder.create();
     }
@@ -99,7 +89,7 @@ public final class GsonFactory {
         checkNotNull(typeAdapter, "typeAdapter");
         checkArgument(isTypeAdapter(typeAdapter.getClass()), () -> "typeAdapter passed as argument does not implement any of Gson type adapter interfaces, so I could not register " + typeAdapter.getClass().getCanonicalName() + " since it is not a type adapter");
 
-        this.typeAdapters = Maps.immutableCopyPutting(typeAdapters, adapterFor, typeAdapter);
+        this.typeAdapters = Maps.copyPutting(typeAdapters, adapterFor, typeAdapter);
         clearGsonInstances();
     }
 
@@ -111,10 +101,10 @@ public final class GsonFactory {
         final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
                 .map(entry -> {
                     final Type type = TypeToken.get(entry.getKey()).getType();
-                    return new AbstractMap.SimpleEntry<>(type, entry.getValue());
+                    return new Pair<>(type, entry.getValue());
                 })
-                .collect(Maps.toImmutableMap());
-        this.typeAdapters = Maps.immutableCopyPutting(this.typeAdapters, newTypeAdapters);
+                .collect(Maps.toMap());
+        this.typeAdapters = Maps.copyPutting(this.typeAdapters, newTypeAdapters);
         clearGsonInstances();
     }
 
@@ -132,7 +122,7 @@ public final class GsonFactory {
                 final Object instance = constructor.newInstance();
                 newTypeAdapters.put(annotationFor, checkNotNull(instance, "instance"));
             } catch (final ReflectiveOperationException e) {
-                throw new IllegalStateException("This exception should not be thrown, and will only if sc-cfg has messed up its base type adapters.", e);
+                throw new ConfigInternalErrorException("This exception should not be thrown, and will only if sc-cfg has messed up its base type adapters.", e);
             }
         });
 
@@ -154,7 +144,7 @@ public final class GsonFactory {
             }
             final RegisterTypeAdapter annotation = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class);
             if (annotation == null) {
-                throw new IllegalStateException("annotation should not come null at this point");
+                throw new ConfigInternalErrorException("annotation should not come null at this point");
             }
             final Class<?> typeAdapterFor = annotation.value();
 
@@ -164,7 +154,7 @@ public final class GsonFactory {
                 throw new ConfigReflectiveOperationException(e);
             }
         }
-        typeAdapters = Maps.immutableOf(newTypeAdapters);
+        typeAdapters = Maps.of(newTypeAdapters);
     }
 
     private boolean isTypeAdapter(final Class<?> clazz) {
@@ -178,5 +168,5 @@ public final class GsonFactory {
         return typeAdapters.stream().allMatch(adapter -> isTypeAdapter(adapter.getClass()));
     }
 
-    private static final Type GENERIC_MAP = new TypeToken<Map<String, Object>>() {}.getType();
+    private static final Type GENERIC_MAP_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
 }

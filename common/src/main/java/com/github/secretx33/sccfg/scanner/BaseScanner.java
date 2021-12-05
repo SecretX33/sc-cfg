@@ -19,11 +19,12 @@ import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
-import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
+import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
@@ -31,36 +32,61 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 public class BaseScanner implements Scanner {
 
     private static final String LIBRARY_CLASSPATH = "com.github.secretx33.sccfg";
-    private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.immutableOf(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
+    private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.of(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
+    @Nullable
+    private static final Field MODIFIERS_FIELD;
 
-    private final Reflections reflections;
+    static {
+        Field modifiersField = null;
+        try {
+            modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+        } catch (final NoSuchFieldException e) {
+            // Java 9+ throws NoSuchFieldException for that operation, is safe to ignore it
+        } finally {
+            MODIFIERS_FIELD = modifiersField;
+        }
+    }
+
     private final Set<ClassLoader> extraClassLoaders;
     private final String basePackage;
-
-    public BaseScanner(final String basePackage) {
-        this.extraClassLoaders = Collections.emptySet();
-        this.basePackage = checkNotNull(basePackage, "basePath");
-        this.reflections = getGenericReflections();
-    }
+    /**
+     * Type adapters provided by this library.
+     */
+    private final Set<Class<?>> baseTypeAdapters;
+    /**
+     * Type adapters provided by the user.
+     */
+    private final Set<Class<?>> customTypeAdapters;
 
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath");
-        this.extraClassLoaders = checkNotNull(extraClassLoaders, "extraClassLoaders");
-        this.reflections = getGenericReflections();
+        this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
+        final Reflections reflections = getGenericReflections();
+        baseTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
+                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
+                .collect(Sets.toSet());
+        customTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
+                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
+                .collect(Sets.toSet());
     }
 
     @NotNull
@@ -73,31 +99,29 @@ public class BaseScanner implements Scanner {
 
     @Override
     public Set<Class<?>> getBaseRegisterTypeAdapters() {
-        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Collectors.toSet());
+        return baseTypeAdapters;
     }
 
     @Override
     public Set<Class<?>> getCustomRegisterTypeAdapters() {
-        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Collectors.toSet());
+        return customTypeAdapters;
     }
 
     @Override
     public Set<MethodWrapper> getBeforeReloadMethods(final Class<?> clazz) {
-        return getZeroArgsInstanceMethods(() -> getMethodsAnnotatedWith(clazz, BeforeReload.class),
-            method -> {
-                final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
-                final boolean async = reloadAnnotation.async();
-                return new MethodWrapper(method, async);
-            });
+        checkNotNull(clazz, "clazz");
+        return getZeroArgsInstanceMethods(getMethodsAnnotatedWith(clazz, BeforeReload.class),
+                method -> {
+                    final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
+                    final boolean async = reloadAnnotation.async();
+                    return new MethodWrapper(method, async);
+                });
     }
 
     @Override
     public Set<MethodWrapper> getAfterReloadMethods(final Class<?> clazz) {
-        return getZeroArgsInstanceMethods(() -> getMethodsAnnotatedWith(clazz, AfterReload.class),
+        checkNotNull(clazz, "clazz");
+        return getZeroArgsInstanceMethods(getMethodsAnnotatedWith(clazz, AfterReload.class),
                 method -> {
                     final AfterReload reloadAnnotation = method.getDeclaredAnnotation(AfterReload.class);
                     final boolean async = reloadAnnotation.async();
@@ -106,58 +130,84 @@ public class BaseScanner implements Scanner {
     }
 
     protected Set<MethodWrapper> getZeroArgsInstanceMethods(
-        final Supplier<Set<Method>> methods,
+        final Stream<Method> methods,
         final Function<Method, MethodWrapper> mapper
     ) {
-        return methods.get().stream()
-                .filter(method -> method.getParameterCount() == 0
+        return methods.filter(method -> method.getParameterCount() == 0
                         && !Modifier.isStatic(method.getModifiers()))
                 .peek(method -> method.setAccessible(true))
                 .map(mapper)
-                .collect(Collectors.toSet());
+                .collect(Sets.toSet());
     }
 
     @Override
     public Set<Field> getConfigurationFields(final Class<?> clazz) {
+        checkNotNull(clazz, "clazz");
         final Set<Field> ignoredFields = getIgnoredFields(clazz);
-        return Arrays.stream(clazz.getDeclaredFields()).sequential()
+        return getAllMembers(clazz, Class::getDeclaredFields)
                 .filter(field -> !Modifier.isStatic(field.getModifiers())
+                        && !Modifier.isTransient(field.getModifiers())
                         && !ignoredFields.contains(field))
-                .map(this::turnAccessibleNonField)
-                .collect(Sets.toImmutableLinkedSet());
+                .map(this::turnAccessibleNonFinalField)
+                .collect(Sets.toSet());
     }
 
-    private Field turnAccessibleNonField(final Field field) {
+    private Field turnAccessibleNonFinalField(final Field field) {
         field.setAccessible(true);
-        try {
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        } catch (final NoSuchFieldException e) {
-            // Java 9+ throws NoSuchFieldException for that operation, is safe to ignore it
-        } catch (final ReflectiveOperationException e) {
-            throw new ConfigReflectiveOperationException(e);
+        if (MODIFIERS_FIELD != null) {
+            try {
+                MODIFIERS_FIELD.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            } catch (final ReflectiveOperationException e) {
+                throw new ConfigReflectiveOperationException(e);
+            }
         }
         return field;
     }
 
     @Override
     public Set<Field> getIgnoredFields(final Class<?> clazz) {
-        return getFieldsAnnotatedWith(clazz, IgnoreField.class).stream()
+        checkNotNull(clazz, "clazz");
+        return getFieldsAnnotatedWith(clazz, IgnoreField.class)
                 .filter(field -> !Modifier.isStatic(field.getModifiers()))
                 .peek(field -> field.setAccessible(true))
-                .collect(Collectors.toSet());
+                .collect(Sets.toSet());
     }
 
-    private Set<Method> getMethodsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
-        return Arrays.stream(clazz.getDeclaredMethods())
-                .filter(method -> method.getDeclaredAnnotation(annotationClass) != null)
-                .collect(Collectors.toSet());
+    private Stream<Method> getMethodsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
+        return getAllMembers(clazz, Class::getDeclaredMethods)
+                .filter(method -> method.getDeclaredAnnotation(annotationClass) != null);
     }
 
-    private Set<Field> getFieldsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
-        return Arrays.stream(clazz.getDeclaredFields())
-                .filter(field -> field.getDeclaredAnnotation(annotationClass) != null)
-                .collect(Collectors.toSet());
+    private Stream<Field> getFieldsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
+        return getAllMembers(clazz, Class::getDeclaredFields)
+                .filter(field -> field.getDeclaredAnnotation(annotationClass) != null);
+    }
+
+    private <T extends Member> Stream<T> getAllMembers(final Class<?> clazz, final Function<Class<?>, T[]> selector) {
+        // class does not inherit from another class, so just go through its fields
+        if (clazz.getSuperclass() == null || Object.class.equals(clazz.getSuperclass())) {
+            return Arrays.stream(selector.apply(clazz)).sequential();
+        }
+
+        // collect all classes incl. parents
+        Class<?> currentClass = clazz;
+        final List<Class<?>> classes = new ArrayList<>();
+        while (currentClass != null && !Object.class.equals(currentClass)) {
+            classes.add(currentClass);
+            currentClass = currentClass.getSuperclass();
+        }
+
+        // and add all members from all classes (incl. parents) if they were not added yet
+        final Set<T> members = new LinkedHashSet<>();
+        // the check is done by keeping track of the added members' names
+        final Set<String> memberNames = new HashSet<>();
+
+        classes.stream().sequential().flatMap(clz -> Arrays.stream(selector.apply(clz)))
+            .forEachOrdered(member -> {
+                if (memberNames.add(member.getName())) {
+                    members.add(member);
+                }
+            });
+        return members.stream().sequential();
     }
 }

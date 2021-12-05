@@ -19,13 +19,23 @@ package com.github.secretx33.sccfg.api;
  * The type the config file will be.
  */
 public enum FileType {
-    HOCON(".conf"),
-    JSON(".json"),
-    YAML(".yml");
+    HOCON(".conf", "HoconSerializer"),
+    JSON(".json", "JsonSerializer"),
+    YAML(".yml", "YamlSerializer");
 
-    public final String extension;
+    private final String extension;
+    private final String className;
 
-    FileType(String extension) {
+    FileType(final String extension, final String className) {
         this.extension = extension;
+        this.className = className;
+    }
+
+    public String getExtension() {
+        return extension;
+    }
+
+    public String getClassName() {
+        return className;
     }
 }

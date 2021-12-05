@@ -16,11 +16,14 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.api.FileType;
+import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
+import com.github.secretx33.sccfg.exception.MissingSerializerDependency;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
 
+import java.lang.reflect.Constructor;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -30,32 +33,31 @@ public final class SerializerFactory {
     private final Map<FileType, Serializer> serializers = new EnumMap<>(FileType.class);
     private final Logger logger;
     private final GsonFactory gsonFactory;
-    private final NameMapper nameMapper = new NameMapper();
 
     public SerializerFactory(final Logger logger, final GsonFactory gsonFactory) {
         this.logger = checkNotNull(logger, "logger");
         this.gsonFactory = checkNotNull(gsonFactory, "gsonFactory");
     }
 
-    public Serializer getFor(final FileType fileType) {
+    public Serializer getSerializer(final FileType fileType) {
         checkNotNull(fileType, "fileType");
-        return getSerializer(fileType);
+        return serializers.computeIfAbsent(fileType, this::serializerFor);
     }
 
-    private Serializer getSerializer(final FileType fileType) {
-        switch(fileType) {
-            case HOCON:
-                return serializers.computeIfAbsent(fileType, type -> new HoconSerializer(logger, gsonFactory));
-            case JSON:
-                return serializers.computeIfAbsent(fileType, type -> new JsonSerializer(logger, gsonFactory));
-            case YAML:
-                return serializers.computeIfAbsent(fileType, type -> new YamlSerializer(logger, gsonFactory));
-            default:
-                throw new IllegalStateException("Oops, I don't have a registered serializer for " + fileType + " type, what a shame!");
+    private Serializer serializerFor(final FileType fileType) {
+        checkNotNull(fileType, "fileType");
+
+        final String className = getClass().getPackage().getName() + "." + fileType.getClassName();
+        try {
+            final Constructor<?> constructor = Class.forName(className).getDeclaredConstructor(Logger.class, GsonFactory.class);
+            constructor.setAccessible(true);
+            return (Serializer) constructor.newInstance(logger, gsonFactory);
+        } catch (final ClassNotFoundException e) {
+            final MissingSerializerDependency ex = new MissingSerializerDependency(fileType, e);
+            logger.log(Level.SEVERE, "Could not create a serializer for type " + fileType + " (" + fileType.getExtension() + ")", ex);
+            throw ex;
+        } catch (final ReflectiveOperationException e) {
+            throw new ConfigReflectiveOperationException("If you are reading this, it means that sc-cfg was not able to instantiate serializer class of file type " + fileType + ", and that there's a problem with sc-cfg, please report this!", e);
         }
-    }
-
-    public NameMapper getNameMapper() {
-        return nameMapper;
     }
 }

@@ -16,23 +16,22 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
+import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import java.util.logging.Logger;
 
-public final class HoconSerializer extends AbstractConfigurateSerializer<HoconConfigurationLoader.Builder, HoconConfigurationLoader> {
+@SuppressWarnings("unused")
+public final class JsonSerializer extends AbstractConfigurateSerializer<GsonConfigurationLoader.Builder, GsonConfigurationLoader> {
 
-    public HoconSerializer(final Logger logger, final GsonFactory gsonFactory) {
+    public JsonSerializer(final Logger logger, final GsonFactory gsonFactory) {
         super(logger, gsonFactory);
     }
 
     @Override
-    AbstractConfigurationLoader.Builder<HoconConfigurationLoader.Builder, HoconConfigurationLoader> fileBuilder() {
-        return HoconConfigurationLoader.builder().prettyPrinting(true)
-                .emitComments(true)
-                .emitJsonCompatible(false)
+    protected AbstractConfigurationLoader.Builder<GsonConfigurationLoader.Builder, GsonConfigurationLoader> fileBuilder() {
+        return GsonConfigurationLoader.builder()
                 .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
     }
 }

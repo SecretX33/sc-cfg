@@ -19,6 +19,7 @@ import com.github.secretx33.sccfg.executor.AsyncMethodExecutor;
 import com.github.secretx33.sccfg.executor.SyncMethodExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
+import com.github.secretx33.sccfg.serialization.namemapping.NameMapperFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import org.bukkit.plugin.Plugin;
 
@@ -33,6 +34,9 @@ public final class BukkitConfigFactory extends BaseConfigFactory {
         final FileWatcher fileWatcher,
         final SerializerFactory serializerFactory
     ) {
-        super(basePath, scanner, fileWatcher, serializerFactory, new AsyncMethodExecutor(plugin.getLogger()), new SyncMethodExecutor(plugin, plugin.getLogger()));
+        super(basePath, scanner, fileWatcher, serializerFactory,
+                new AsyncMethodExecutor(plugin.getLogger()),
+                new SyncMethodExecutor(plugin, plugin.getLogger()),
+                new NameMapperFactory());
     }
 }
