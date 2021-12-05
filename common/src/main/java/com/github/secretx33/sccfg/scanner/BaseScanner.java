@@ -19,11 +19,12 @@ import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
-import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
+import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
@@ -36,7 +37,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -50,22 +50,43 @@ import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 public class BaseScanner implements Scanner {
 
     private static final String LIBRARY_CLASSPATH = "com.github.secretx33.sccfg";
-    private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.immutableOf(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
+    private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.of(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
+    @Nullable
+    private static final Field MODIFIERS_FIELD;
 
-    private final Reflections reflections;
+    static {
+        Field modifiersField = null;
+        try {
+            modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+        } catch (final NoSuchFieldException e) {
+            // Java 9+ throws NoSuchFieldException for that operation, is safe to ignore it
+        } finally {
+            MODIFIERS_FIELD = modifiersField;
+        }
+    }
+
     private final Set<ClassLoader> extraClassLoaders;
     private final String basePackage;
-
-    public BaseScanner(final String basePackage) {
-        this.extraClassLoaders = Collections.emptySet();
-        this.basePackage = checkNotNull(basePackage, "basePath");
-        this.reflections = getGenericReflections();
-    }
+    /**
+     * Type adapters provided by this library.
+     */
+    private final Set<Class<?>> baseTypeAdapters;
+    /**
+     * Type adapters provided by the user.
+     */
+    private final Set<Class<?>> customTypeAdapters;
 
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath");
         this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
-        this.reflections = getGenericReflections();
+        final Reflections reflections = getGenericReflections();
+        baseTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
+                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
+                .collect(Sets.toSet());
+        customTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
+                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
+                .collect(Sets.toSet());
     }
 
     @NotNull
@@ -78,27 +99,23 @@ public class BaseScanner implements Scanner {
 
     @Override
     public Set<Class<?>> getBaseRegisterTypeAdapters() {
-        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Sets.toSet());
+        return baseTypeAdapters;
     }
 
     @Override
     public Set<Class<?>> getCustomRegisterTypeAdapters() {
-        return reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Sets.toSet());
+        return customTypeAdapters;
     }
 
     @Override
     public Set<MethodWrapper> getBeforeReloadMethods(final Class<?> clazz) {
         checkNotNull(clazz, "clazz");
         return getZeroArgsInstanceMethods(getMethodsAnnotatedWith(clazz, BeforeReload.class),
-            method -> {
-                final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
-                final boolean async = reloadAnnotation.async();
-                return new MethodWrapper(method, async);
-            });
+                method -> {
+                    final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
+                    final boolean async = reloadAnnotation.async();
+                    return new MethodWrapper(method, async);
+                });
     }
 
     @Override
@@ -136,14 +153,12 @@ public class BaseScanner implements Scanner {
 
     private Field turnAccessibleNonFinalField(final Field field) {
         field.setAccessible(true);
-        try {
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-        } catch (final NoSuchFieldException e) {
-            // Java 9+ throws NoSuchFieldException for that operation, is safe to ignore it
-        } catch (final ReflectiveOperationException e) {
-            throw new ConfigReflectiveOperationException(e);
+        if (MODIFIERS_FIELD != null) {
+            try {
+                MODIFIERS_FIELD.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+            } catch (final ReflectiveOperationException e) {
+                throw new ConfigReflectiveOperationException(e);
+            }
         }
         return field;
     }
@@ -176,7 +191,7 @@ public class BaseScanner implements Scanner {
         // collect all classes incl. parents
         Class<?> currentClass = clazz;
         final List<Class<?>> classes = new ArrayList<>();
-        while (currentClass != null && !currentClass.equals(Object.class)) {
+        while (currentClass != null && !Object.class.equals(currentClass)) {
             classes.add(currentClass);
             currentClass = currentClass.getSuperclass();
         }

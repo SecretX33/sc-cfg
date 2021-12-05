@@ -34,7 +34,7 @@ public final class Sets {
     private Sets() {}
 
     @SafeVarargs
-    public static <T, S extends T> Set<T> mutableOf(final S... elements) {
+    public static <T> Set<T> mutableOf(final T... elements) {
         return Arrays.stream(elements)
                 .filter(Objects::nonNull)
                 .collect(Sets.toMutableSet());
@@ -67,7 +67,7 @@ public final class Sets {
 
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(final Class<T> clazz, @Nullable final Set<? extends T> set) {
-        if(set == null || set.isEmpty())
+        if (set == null || set.isEmpty())
             return (T[]) Array.newInstance(clazz, 0);
 
         final T[] array = (T[]) Array.newInstance(clazz, set.size());
@@ -77,7 +77,7 @@ public final class Sets {
     @SafeVarargs
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(final Class<T> clazz, final Set<T>... sets) {
-        if(sets.length == 0)
+        if (sets.length == 0)
             return (T[]) Array.newInstance(clazz, 0);
 
         return Arrays.stream(sets)
