@@ -61,7 +61,8 @@ public final class Config {
     private Config() {}
 
     /**
-     * Gets the instance of the {@code} configClass, instantiating it if it's not initiated yet.
+     * Gets the instance of the {@code} configClass, instantiating it if it's not initiated yet. This method is thread
+     * safe.
      *
      * @param configClass the config class
      * @param <T> the type of the config class
@@ -77,7 +78,9 @@ public final class Config {
     }
 
     /**
-     * Register an instance of a config class.
+     * Register an instance of a config class. This method is thread safe, as it guarantees that no overrides can
+     * happen when passing as argument instances of configs already registered - but the {@code ConfigOverrideException}
+     * thrown is only best-effort, so no guarantees can be made about it.
      *
      * @param configInstance the config instance
      * @param <T> the type of the config class
@@ -94,7 +97,9 @@ public final class Config {
     }
 
     /**
-     * Register multiple instances of config classes.
+     * Register multiple instances of config classes. This method is thread safe, as it guarantees that no overrides can
+     * happen when passing as argument instances of configs already registered - but the {@code ConfigOverrideException}
+     * thrown is only best-effort, so no guarantees can be made about it.
      *
      * @param configInstances the config instances
      * @throws MissingConfigAnnotationException if class of any instance inside {@code configInstances}

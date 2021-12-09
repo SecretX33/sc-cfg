@@ -239,8 +239,7 @@ public class BaseConfigFactory implements ConfigFactory {
         if (instances.containsKey(clazz)) {
             throw new ConfigOverrideException(clazz);
         }
-        final ConfigWrapper<?> wrapper = wrapInstance(instance);
-        instances.put(clazz, wrapper);
+        instances.computeIfAbsent(clazz, c -> wrapInstance(instance));
     }
 
     @Override
