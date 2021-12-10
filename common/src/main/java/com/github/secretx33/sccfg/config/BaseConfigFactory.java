@@ -176,7 +176,8 @@ public class BaseConfigFactory implements ConfigFactory {
     }
 
     private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {
-        final String value = configuration.value().trim();
+        String value = configuration.value().trim();
+        if (value.isEmpty()) value = configuration.name().trim();
         final String lowerCasedValue = value.toLowerCase(Locale.US);
         final String extension = configuration.type().getExtension();
         if (value.isEmpty()) {
@@ -239,8 +240,7 @@ public class BaseConfigFactory implements ConfigFactory {
         if (instances.containsKey(clazz)) {
             throw new ConfigOverrideException(clazz);
         }
-        final ConfigWrapper<?> wrapper = wrapInstance(instance);
-        instances.put(clazz, wrapper);
+        instances.computeIfAbsent(clazz, c -> wrapInstance(instance));
     }
 
     @Override

@@ -38,9 +38,14 @@ public @interface Configuration {
      * on the relative path for that application (for Bukkit, it'll be inside plugin's data folder, and
      * for standalone applications it'll be relative to folder where the software is running on).
      * You can also explicitly provide extensions on the name, if you want, so, for example, {@code myfile.yml}
-     * is a valid name for a configuration of type {@link com.github.secretx33.sccfg.api.FileType#YAML}
+     * is a valid name for a configuration of type {@link com.github.secretx33.sccfg.api.FileType#YAML}.
      */
     String value() default "";
+
+    /**
+     * Alias for {@link Configuration#value()}.
+     */
+    String name() default "";
 
     /**
      * Specifies what file type that config should be.
