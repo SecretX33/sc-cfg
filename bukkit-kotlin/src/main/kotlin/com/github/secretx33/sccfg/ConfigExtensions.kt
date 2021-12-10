@@ -28,7 +28,7 @@ import kotlin.reflect.KClass
 
 
 /**
- * Extension for getting the singleton instance of config [T].
+ * Extension for getting the singleton instance of config [T]. This method is thread safe.
  *
  * **Hint:** if you want to instantiate the configuration class yourself, you can do that, just register
  * it whenever is convenient for you using [registerConfig] method.
@@ -40,7 +40,8 @@ import kotlin.reflect.KClass
 inline fun <reified T : Any> getConfig(): T = Config.getConfig(T::class.java)
 
 /**
- * Lazy extension for getting the singleton instance of config [T].
+ * Lazy extension for getting the singleton instance of config [T]. This method is thread safe and provides
+ * an instance of a thread safe `lazy`.
  *
  * **Hint:** if you want to instantiate the configuration class yourself, you can do that, just register
  * it whenever is convenient for you using [registerConfigs] method.
@@ -52,7 +53,9 @@ inline fun <reified T : Any> getConfig(): T = Config.getConfig(T::class.java)
 inline fun <reified T : Any> lazyConfig(): Lazy<T> = lazy { getConfig() }
 
 /**
- * Extension for registering your instance of a configuration class.
+ * Extension for registering your instance of a configuration class. This method is thread safe, as it
+ * guarantees that no overrides can happen when passing as argument instances of configs already registered,
+ * but the `ConfigOverrideException` thrown is only best-effort, so no guarantees can be made about it.
  *
  * @param config T the config instance
  * @return T the config instance
