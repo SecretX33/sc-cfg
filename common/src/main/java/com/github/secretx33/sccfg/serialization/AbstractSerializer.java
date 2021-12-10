@@ -148,20 +148,17 @@ abstract class AbstractSerializer implements Serializer {
         saveToFile(configWrapper, getCurrentValues(instance, configEntries));
     }
 
-    protected final void setValueOnField(final ConfigEntry configEntry, Object value) throws IllegalArgumentException, JsonSyntaxException {
+    protected final void setValueOnField(final ConfigEntry configEntry, final Object rawValue) throws IllegalArgumentException, JsonSyntaxException {
         checkNotNull(configEntry, "configEntry");
-        checkNotNull(value, "value");
+        checkNotNull(rawValue, "rawValue");
 
-        final Class<?> requiredType = configEntry.getType();
-        final Class<?> providedType = value.getClass();
-
-        if (!requiredType.equals(providedType) && !requiredType.isAssignableFrom(providedType)) {
-            final Gson gson = gsonFactory.getInstance();
-            value = gson.fromJson(gson.toJson(value), configEntry.getGenericType());
-            if (value == null) {
-                logger.warning("Oops, seems like Gson conversion of file value to java value returned null for field " + configEntry.getName() + " (from class " + configEntry.getOwnerClass().getName() + "), skipping value set on this config entry.");
-                return;
-            }
+        final Gson gson = gsonFactory.getInstance();
+        // serialize and deserialize the value to make sure it is the right type of the field, a.k.a. account for
+        // generics, and also make sure to use any registered type adapter for that type
+        final Object value = gson.fromJson(gson.toJson(rawValue), configEntry.getGenericType());
+        if (value == null) {
+            logger.warning("[sc-cfg] Oops, seems like Gson conversion of file value to java value returned null for field " + configEntry.getName() + " (from class " + configEntry.getOwnerClass().getName() + "), skipping value set on this config entry.");
+            return;
         }
         configEntry.set(value);
     }
@@ -180,8 +177,8 @@ abstract class AbstractSerializer implements Serializer {
         }
         Object serializedValue = gson.fromJson(gson.toJson(configEntry.get(), fieldType), targetType);
         if (serializedValue instanceof Map<?, ?>) {
-            // serializedValue is a representation of a complex object, but the field is not a Map,
-            // we need to convert it back to and from json to remove any double as int fields
+            // serializedValue is a representation of a Map, so we need to convert it back to and from json
+            // to remove any double as int fields
             serializedValue = gson.fromJson(gson.toJson(serializedValue, GENERIC_MAP_TOKEN), GENERIC_MAP_TOKEN);
         }
         return serializedValue;
