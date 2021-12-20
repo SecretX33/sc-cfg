@@ -24,10 +24,12 @@ import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.executor.AsyncExecutor;
+import com.github.secretx33.sccfg.executor.AsyncMethodExecutor;
 import com.github.secretx33.sccfg.executor.SyncExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
+import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapperFactory;
 import com.github.secretx33.sccfg.storage.FileModificationType;
@@ -53,6 +55,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
@@ -71,21 +74,20 @@ public class BaseConfigFactory implements ConfigFactory {
     private final NameMapperFactory nameMapperFactory;
 
     public BaseConfigFactory(
+            final Logger logger,
+            final GsonFactory gsonFactory,
             final Path basePath,
             final Scanner scanner,
             final FileWatcher fileWatcher,
-            final SerializerFactory serializerFactory,
-            final AsyncExecutor asyncExecutor,
-            final SyncExecutor syncExecutor,
-            final NameMapperFactory nameMapperFactory
+            final SyncExecutor syncExecutor
     ) {
         this.basePath = checkNotNull(basePath, "basePath");
         this.scanner = checkNotNull(scanner, "scanner");
         this.fileWatcher = checkNotNull(fileWatcher, "fileWatcher");
-        this.serializerFactory = checkNotNull(serializerFactory, "serializerFactory");
-        this.asyncExecutor = checkNotNull(asyncExecutor, "asyncExecutor");
+        this.serializerFactory = new SerializerFactory(logger, checkNotNull(gsonFactory, "gsonFactory"));
+        this.asyncExecutor = new AsyncMethodExecutor(checkNotNull(logger, "logger"));
         this.syncExecutor = checkNotNull(syncExecutor, "syncExecutor");
-        this.nameMapperFactory = checkNotNull(nameMapperFactory, "nameMapperFactory");
+        this.nameMapperFactory = new NameMapperFactory();
     }
 
     @Override

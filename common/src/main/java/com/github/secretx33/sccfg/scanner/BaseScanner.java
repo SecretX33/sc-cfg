@@ -77,6 +77,10 @@ public class BaseScanner implements Scanner {
      */
     private final Set<Class<?>> customTypeAdapters;
 
+    public BaseScanner(final Object mainInstance) {
+        this(checkNotNull(mainInstance, "mainInstance").getClass().getPackage().getName(), Sets.of(mainInstance.getClass().getClassLoader()));
+    }
+
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath");
         this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");

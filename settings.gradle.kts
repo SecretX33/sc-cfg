@@ -1,5 +1,4 @@
 rootProject.name = "sc-cfg"
 
-setOf("api", "bukkit", "bukkit-kotlin", "common", "hocon", "json", "yaml").forEach {
-    include(it)
-}
+listOf("api", "bukkit", "common", "hocon", "json", "kotlin", "yaml")
+    .forEach(::include)

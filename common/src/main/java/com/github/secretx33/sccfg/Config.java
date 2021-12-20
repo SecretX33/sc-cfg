@@ -16,8 +16,6 @@
 package com.github.secretx33.sccfg;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import com.github.secretx33.sccfg.config.BukkitConfigFactory;
-import com.github.secretx33.sccfg.config.ConfigFactory;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
@@ -25,14 +23,8 @@ import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
-import com.github.secretx33.sccfg.scanner.BukkitScannerFactory;
-import com.github.secretx33.sccfg.scanner.ScannerFactory;
-import com.github.secretx33.sccfg.serialization.SerializerFactory;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import com.github.secretx33.sccfg.storage.FileWatcher;
-import com.github.secretx33.sccfg.storage.FileWatcherProvider;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
+import com.github.secretx33.sccfg.platform.Platform;
+import com.github.secretx33.sccfg.platform.PlatformProvider;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -47,16 +39,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
  */
 public final class Config {
 
-    private static final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
-    private static final ScannerFactory scannerFactory = new BukkitScannerFactory(plugin);
-    private static final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
-    private static final GsonFactory gsonFactory = new GsonFactory(plugin.getLogger(), scannerFactory.getScanner());
-    private static final ConfigFactory configFactory = new BukkitConfigFactory(
-            plugin,
-            plugin.getDataFolder().toPath(),
-            scannerFactory.getScanner(),
-            fileWatcher,
-            new SerializerFactory(plugin.getLogger(), gsonFactory));
+    private static final Platform platform = PlatformProvider.getPlatform();
 
     private Config() {}
 
@@ -74,7 +57,7 @@ public final class Config {
      */
     public static <T> T getConfig(final Class<T> configClass) {
         checkNotNull(configClass, "configClass");
-        return configFactory.getWrapper(configClass).getInstance();
+        return platform.getConfigFactory().getWrapper(configClass).getInstance();
     }
 
     /**
@@ -92,7 +75,7 @@ public final class Config {
      */
     public static <T> T registerConfig(final T configInstance) {
         checkNotNull(configInstance, "configInstance");
-        configFactory.registerInstance(configInstance);
+        platform.getConfigFactory().registerInstance(configInstance);
         return configInstance;
     }
 
@@ -109,7 +92,7 @@ public final class Config {
      */
     public static void registerConfigs(final Object... configInstances) {
         notContainsNull(configInstances, "configInstances");
-        Arrays.stream(configInstances).forEach(configFactory::registerInstance);
+        Arrays.stream(configInstances).forEach(platform.getConfigFactory()::registerInstance);
     }
 
     /**
@@ -126,7 +109,7 @@ public final class Config {
      */
     public static void saveConfig(final Object configInstance) {
         checkNotNull(configInstance, "configInstance");
-        configFactory.saveInstance(configInstance.getClass());
+        platform.getConfigFactory().saveInstance(configInstance.getClass());
     }
 
     /**
@@ -143,7 +126,7 @@ public final class Config {
      */
     public static void saveConfig(final Class<?> configClass) {
         checkNotNull(configClass, "configClass");
-        configFactory.saveInstance(configClass);
+        platform.getConfigFactory().saveInstance(configClass);
     }
 
     /**
@@ -160,7 +143,7 @@ public final class Config {
      */
     public static void saveConfigs(final Object... configInstances) {
         notContainsNull(configInstances, "configInstance");
-        Arrays.stream(configInstances).map(Object::getClass).forEach(configFactory::saveInstance);
+        Arrays.stream(configInstances).map(Object::getClass).forEach(platform.getConfigFactory()::saveInstance);
     }
 
     /**
@@ -240,7 +223,7 @@ public final class Config {
      */
     public static boolean saveDefaults(final Class<?> configClass, boolean overrideIfExists, boolean reloadAfterwards) {
         checkNotNull(configClass, "configClass");
-        return configFactory.saveDefaults(configClass, overrideIfExists, reloadAfterwards);
+        return platform.getConfigFactory().saveDefaults(configClass, overrideIfExists, reloadAfterwards);
     }
 
     /**
@@ -255,7 +238,7 @@ public final class Config {
     public static void registerTypeAdapter(final Type type, final Object typeAdapter) {
         checkNotNull(type, "type");
         checkNotNull(typeAdapter, "typeAdapter");
-        gsonFactory.addTypeAdapter(type, typeAdapter);
+        platform.getGsonFactory().addTypeAdapter(type, typeAdapter);
     }
 
     /**
@@ -269,6 +252,6 @@ public final class Config {
      */
     public static void registerTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");
-        gsonFactory.addTypeAdapters(typeAdapters);
+        platform.getGsonFactory().addTypeAdapters(typeAdapters);
     }
 }
