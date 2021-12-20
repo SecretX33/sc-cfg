@@ -27,8 +27,7 @@ import java.util.function.Supplier;
 
 public final class Preconditions {
 
-    private Preconditions() {
-    }
+    private Preconditions() {}
 
     @Contract("false, _ -> fail")
     public static void checkArgument(boolean expression, final String errorMessage) {

@@ -15,12 +15,12 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.ConfigEntry;
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
-import com.github.secretx33.sccfg.wrapper.ConfigEntry;
-import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 
 import java.util.Map;
 import java.util.Set;

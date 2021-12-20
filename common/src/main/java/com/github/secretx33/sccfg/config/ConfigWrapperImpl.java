@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.wrapper;
+package com.github.secretx33.sccfg.config;
 
 import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.api.Naming;
@@ -29,7 +29,7 @@ import java.util.Set;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
-public final class ConfigWrapper<T> {
+public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
 
     private final T instance;
     private final Configuration configAnnotation;
@@ -46,7 +46,7 @@ public final class ConfigWrapper<T> {
     private final Set<MethodWrapper> runAfterReloadSyncMethods;
     private final FileWatcher.WatchedLocation watchedLocation;
 
-    public ConfigWrapper(
+    public ConfigWrapperImpl(
             final T instance,
             final Configuration configAnnotation,
             final Path destination,
@@ -72,61 +72,72 @@ public final class ConfigWrapper<T> {
         this.watchedLocation = checkNotNull(watchedLocation, "watchedLocation");
     }
 
+    @Override
     public T getInstance() {
         return instance;
     }
 
+    @Override
     public Configuration getConfigAnnotation() {
         return configAnnotation;
     }
 
+    @Override
     public Path getDestination() {
         return destination;
     }
 
+    @Override
     public FileType getFileType() {
         return fileType;
     }
 
+    @Override
     public Naming getNameStrategy() {
         return nameStrategy;
     }
 
+    @Override
     public Map<String, Object> getDefaults() {
         return defaults;
     }
 
+    @Override
     public Set<ConfigEntry> getConfigEntries() {
         return configEntries;
     }
 
+    @Override
     public Set<MethodWrapper> getRunBeforeReloadMethods() {
         return runBeforeReloadMethods;
     }
 
+    @Override
     public Set<MethodWrapper> getRunBeforeReloadAsyncMethods() {
         return runBeforeReloadAsyncMethods;
     }
 
+    @Override
     public Set<MethodWrapper> getRunBeforeReloadSyncMethods() {
         return runBeforeReloadSyncMethods;
     }
 
+    @Override
     public Set<MethodWrapper> getRunAfterReloadMethods() {
         return runAfterReloadMethods;
     }
 
+    @Override
     public Set<MethodWrapper> getRunAfterReloadAsyncMethods() {
         return runAfterReloadAsyncMethods;
     }
 
+    @Override
     public Set<MethodWrapper> getRunAfterReloadSyncMethods() {
         return runAfterReloadSyncMethods;
     }
 
-    /**
-     * Used to prevent trigger of reload methods when saving the config to the disk.
-     */
+    @Override
     public void registerFileModification() {
         watchedLocation.recordChange(destination);
     }
@@ -143,7 +154,7 @@ public final class ConfigWrapper<T> {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        ConfigWrapper<?> that = (ConfigWrapper<?>) o;
+        ConfigWrapperImpl<?> that = (ConfigWrapperImpl<?>) o;
         return instance.equals(that.instance)
                 && configAnnotation.equals(that.configAnnotation)
                 && destination.equals(that.destination)

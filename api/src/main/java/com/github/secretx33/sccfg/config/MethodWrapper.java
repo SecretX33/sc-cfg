@@ -13,16 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.executor;
+package com.github.secretx33.sccfg.config;
 
-import com.github.secretx33.sccfg.config.MethodWrapper;
+import java.lang.reflect.Method;
 
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
+public interface MethodWrapper {
+    Method getMethod();
 
-public interface SyncExecutor {
-
-    void runMethodsSync(Object instance, Set<MethodWrapper> tasks);
-
-    void runMethodsSyncWithLatch(Object instance, Set<MethodWrapper> tasks, CountDownLatch latch);
+    boolean isAsync();
 }

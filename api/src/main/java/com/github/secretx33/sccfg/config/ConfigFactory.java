@@ -22,7 +22,6 @@ import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
-import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 
 /**
  * Represents the factory responsible for creating, registering and holding all configuration instances.

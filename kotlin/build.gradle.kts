@@ -5,5 +5,4 @@ repositories {
 dependencies {
     compileOnly(project(":common"))
     compileOnly(kotlin("stdlib"))
-    implementation("org.spongepowered:configurate-yaml:4.1.2")
 }

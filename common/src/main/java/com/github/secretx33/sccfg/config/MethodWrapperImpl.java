@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.wrapper;
+package com.github.secretx33.sccfg.config;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -21,21 +21,23 @@ import java.util.Objects;
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public final class MethodWrapper {
+public final class MethodWrapperImpl implements MethodWrapper {
 
     private final Method method;
     private final boolean async;
 
-    public MethodWrapper(final Method method, final boolean async) {
+    public MethodWrapperImpl(final Method method, final boolean async) {
         checkArgument(method.isAccessible(), () -> "method needs to be accessible before it can be wrapped, but '" + method.getName() + "' from class '" + method.getDeclaringClass().getCanonicalName() + "' was not set accessible");
         this.method = checkNotNull(method, "method");
         this.async = async;
     }
 
+    @Override
     public Method getMethod() {
         return method;
     }
 
+    @Override
     public boolean isAsync() {
         return async;
     }
@@ -44,7 +46,7 @@ public final class MethodWrapper {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final MethodWrapper that = (MethodWrapper) o;
+        final MethodWrapperImpl that = (MethodWrapperImpl) o;
         return async == that.async && method.equals(that.method);
     }
 

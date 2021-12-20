@@ -15,6 +15,7 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.ConfigEntryImpl;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
@@ -22,8 +23,8 @@ import com.github.secretx33.sccfg.exception.ConfigOverlappingPathException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
-import com.github.secretx33.sccfg.wrapper.ConfigEntry;
-import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
+import com.github.secretx33.sccfg.config.ConfigEntry;
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.google.gson.Gson;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -60,7 +61,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
     /**
      * Loads a file, transforming the read value from "file names" to "file values" into a map of
-     * "java names" to "file values". The keys are transformed fields' {@link ConfigEntry#getName()},
+     * "java names" to "file values". The keys are transformed fields' {@link ConfigEntryImpl#getName()},
      * and values are kept intact (since they'll be converted only if needed when setting them into
      * the config field).
      *

@@ -13,16 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.executor;
+package com.github.secretx33.sccfg.serialization.gson;
 
-import com.github.secretx33.sccfg.config.MethodWrapper;
+import com.google.gson.Gson;
 
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
+import java.lang.reflect.Type;
+import java.util.Map;
 
-public interface SyncExecutor {
+public interface GsonFactory {
+    Gson getInstance();
 
-    void runMethodsSync(Object instance, Set<MethodWrapper> tasks);
+    void addTypeAdapter(Type adapterFor, Object typeAdapter);
 
-    void runMethodsSyncWithLatch(Object instance, Set<MethodWrapper> tasks, CountDownLatch latch);
+    void addTypeAdapters(Map<? extends Type, Object> typeAdapters);
 }

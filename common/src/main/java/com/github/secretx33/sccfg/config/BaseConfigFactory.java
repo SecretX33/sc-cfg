@@ -38,9 +38,6 @@ import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 import com.github.secretx33.sccfg.util.BooleanWrapper;
 import com.github.secretx33.sccfg.util.Sets;
 import com.github.secretx33.sccfg.util.Valid;
-import com.github.secretx33.sccfg.wrapper.ConfigEntry;
-import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
-import com.github.secretx33.sccfg.wrapper.MethodWrapper;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -127,7 +124,7 @@ public class BaseConfigFactory implements ConfigFactory {
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
-            final ConfigWrapper<T> wrapper = new ConfigWrapper<>(instance, annotation, destination, defaults, configEntries, runBeforeReload, runAfterReload, watchedLocation);
+            final ConfigWrapper<T> wrapper = new ConfigWrapperImpl<>(instance, annotation, destination, defaults, configEntries, runBeforeReload, runAfterReload, watchedLocation);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             return serializer.loadConfig(wrapper);
         } catch (final ConfigException e) {
@@ -173,7 +170,7 @@ public class BaseConfigFactory implements ConfigFactory {
                 checkNotBlank(nameOnFile, () -> "@Name annotation does not support null, empty or blank values, but you passed one of these three as value of @Name annotation on your field '" + field.getName() + "' (which belongs to class '" + field.getDeclaringClass().getSimpleName() + "')");
             }
 
-            return new ConfigEntry(instance, field, nameOnFile, path);
+            return new ConfigEntryImpl(instance, field, nameOnFile, path);
         }).collect(Sets.toSet());
     }
 

@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.executor;
 
-import com.github.secretx33.sccfg.wrapper.MethodWrapper;
+import com.github.secretx33.sccfg.config.MethodWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 

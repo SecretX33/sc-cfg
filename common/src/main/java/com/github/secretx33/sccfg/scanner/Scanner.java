@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.scanner;
 
-import com.github.secretx33.sccfg.wrapper.MethodWrapper;
+import com.github.secretx33.sccfg.config.MethodWrapper;
 
 import java.lang.reflect.Field;
 import java.util.Set;

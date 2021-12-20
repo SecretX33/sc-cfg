@@ -15,17 +15,13 @@
  */
 package com.github.secretx33.sccfg.exception;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
-
 /**
- * Thrown when the consumer tries to use a configuration which was not initialized or registered yet.
- * <br><br>To fix this issue, you have to either get the instance of your config (which makes sc-cfg
- * initialize it), or register an existing instance of your config class, so sc-cfg will be aware of
- * it.
+ * Thrown when the using the wrong module for the current platform, e.g. using {@code bukkit} module for {@code bungee}
+ * platform, or using one of the former for a {@code standalone} platform.
  */
-public final class ConfigNotInitializedException extends ConfigException {
+public final class WrongPlatformModuleException extends ConfigException {
 
-    public ConfigNotInitializedException(final Class<?> clazz) {
-        super("Instance of class " + checkNotNull(clazz, "clazz").getName() + " passed as argument is not an instance of an initialized config.");
+    public WrongPlatformModuleException(final String message, final Throwable cause) {
+        super(message, cause);
     }
 }

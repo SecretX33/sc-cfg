@@ -17,8 +17,6 @@ package com.github.secretx33.sccfg.exception;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
-
 /**
  * Thrown when the consumer passes as argument any class that is not annotated with {@link Configuration @Configuration},
  * which means that they either did forget to add the annotation on their config class, or that they're
@@ -27,6 +25,6 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 public final class MissingConfigAnnotationException extends ConfigException {
 
     public MissingConfigAnnotationException(final Class<?> clazz) {
-        super("Could not create instance of class " + checkNotNull(clazz, "clazz").getName() + " because it is missing @Configuration annotation, please annotate your configuration class with @Configuration");
+        super("Could not create instance of class " + clazz.getName() + " because it is missing @Configuration annotation, please annotate your configuration class with @Configuration");
     }
 }

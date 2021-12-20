@@ -45,19 +45,20 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
-public final class GsonFactory {
+public final class GsonFactoryImpl implements GsonFactory {
 
     private final Logger logger;
     private final Scanner scanner;
     private Map<Type, Object> typeAdapters = Collections.emptyMap();
     private Gson gson;
 
-    public GsonFactory(final Logger logger, final Scanner scanner) {
+    public GsonFactoryImpl(final Logger logger, final Scanner scanner) {
         this.logger = checkNotNull(logger, "logger");
         this.scanner = checkNotNull(scanner, "scanner");
         parseTypeAdaptersOnClasspath();
     }
 
+    @Override
     public Gson getInstance() {
         Gson instance = gson;
         if (instance == null) {
@@ -71,7 +72,7 @@ public final class GsonFactory {
         gson = null;
     }
 
-    public Gson newInstanceWithTypeAdapters(final boolean prettyPrint) {
+    private Gson newInstanceWithTypeAdapters(final boolean prettyPrint) {
         checkNotNull(typeAdapters, "typeAdapters");
         final GsonBuilder builder = new GsonBuilder().disableHtmlEscaping()
                 .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
@@ -84,6 +85,7 @@ public final class GsonFactory {
         return builder.create();
     }
 
+    @Override
     public void addTypeAdapter(final Type adapterFor, final Object typeAdapter) {
         checkNotNull(adapterFor, "adapterFor");
         checkNotNull(typeAdapter, "typeAdapter");
@@ -93,6 +95,7 @@ public final class GsonFactory {
         clearGsonInstances();
     }
 
+    @Override
     public void addTypeAdapters(final Map<? extends Type, Object> typeAdapters) {
         notContainsNull(typeAdapters, "typeAdapters");
         if (typeAdapters.isEmpty()) return;
