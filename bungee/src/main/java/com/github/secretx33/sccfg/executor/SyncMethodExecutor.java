@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public class SyncMethodExecutor extends AbstractMethodExecutor implements SyncExecutor {
+public final class SyncMethodExecutor extends AbstractMethodExecutor implements SyncExecutor {
 
     private final Plugin plugin;
 

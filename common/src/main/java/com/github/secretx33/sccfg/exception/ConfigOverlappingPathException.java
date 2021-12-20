@@ -15,17 +15,17 @@
  */
 package com.github.secretx33.sccfg.exception;
 
-public final class ConfigOverlappingPath extends ConfigSerializationException {
+public final class ConfigOverlappingPathException extends ConfigSerializationException {
 
-    public ConfigOverlappingPath(final String message) {
+    public ConfigOverlappingPathException(final String message) {
         super(message);
     }
 
-    public ConfigOverlappingPath(final Throwable cause) {
+    public ConfigOverlappingPathException(final Throwable cause) {
         super(cause);
     }
 
-    public ConfigOverlappingPath(final String message, final Throwable cause) {
+    public ConfigOverlappingPathException(final String message, final Throwable cause) {
         super(message, cause);
     }
 }

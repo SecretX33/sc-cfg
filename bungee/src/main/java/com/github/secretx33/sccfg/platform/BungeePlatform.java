@@ -50,21 +50,17 @@ public final class BungeePlatform implements Platform {
     }
 
     private Plugin getProvidingPlugin() {
-        final Class<?> pluginClassLoader = BungeePlatform.class.getClassLoader().getClass();
-        if (!pluginClassLoader.getCanonicalName().equals("net.md_5.bungee.api.plugin.PluginClassloader")) {
-            throw new ConfigException("Unable to get providing plugin");
+        final Object pluginClassLoader = BungeePlatform.class.getClassLoader();
+        final Class<?> pluginClassLoaderClass = pluginClassLoader.getClass();
+        if (!pluginClassLoaderClass.getCanonicalName().equals("net.md_5.bungee.api.plugin.PluginClassloader")) {
+            throw new ConfigException("Unable to get providing plugin because the classloader is not a PluginClassloader");
         }
-        final Field pluginField;
         try {
-            pluginField = pluginClassLoader.getDeclaredField("plugin");
-        } catch (final NoSuchFieldException e) {
-            throw new ConfigReflectiveOperationException("Unable to find 'plugin' field inside class '" + pluginClassLoader.getCanonicalName() + "'", e);
-        }
-        pluginField.setAccessible(true);
-        try {
+            final Field pluginField = pluginClassLoaderClass.getDeclaredField("plugin");
+            pluginField.setAccessible(true);
             return (Plugin) pluginField.get(pluginClassLoader);
-        } catch (final IllegalAccessException e) {
-            throw new ConfigReflectiveOperationException("Unable to get 'plugin' field from class '" + pluginClassLoader.getCanonicalName() + "'", e);
+        } catch (final ReflectiveOperationException e) {
+            throw new ConfigReflectiveOperationException("Unable to find or get 'plugin' field inside class '" + pluginClassLoaderClass.getCanonicalName() + "'", e);
         }
     }
 

@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.platform;
 
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
+import com.github.secretx33.sccfg.exception.WrongPlatformModuleException;
 
 import java.lang.reflect.Constructor;
 
@@ -41,7 +42,9 @@ public final class PlatformProvider {
             final Constructor<?> constructor = Class.forName(className).getDeclaredConstructor();
             constructor.setAccessible(true);
             return (T) constructor.newInstance();
-        } catch (ClassCastException | ReflectiveOperationException e) {
+        } catch(final ClassNotFoundException e) {
+            throw new WrongPlatformModuleException("You are using the wrong module of SC-CFG for your current platform, please use the module that provides '" + className + "'!", e);
+        } catch(final ClassCastException | ReflectiveOperationException e) {
             throw new ConfigInternalErrorException("Could not get Platform because sc-cfg could not instantiate class '" + className + "', please report this!", e);
         }
     }
