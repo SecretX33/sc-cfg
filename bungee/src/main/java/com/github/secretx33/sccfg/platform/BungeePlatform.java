@@ -15,25 +15,27 @@
  */
 package com.github.secretx33.sccfg.platform;
 
-import com.github.secretx33.sccfg.Config;
 import com.github.secretx33.sccfg.config.BaseConfigFactory;
 import com.github.secretx33.sccfg.config.ConfigFactory;
+import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.executor.SyncMethodExecutor;
 import com.github.secretx33.sccfg.scanner.BaseScanner;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherProvider;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
+import net.md_5.bungee.api.plugin.Plugin;
 
-public final class BukkitPlatform implements Platform {
+import java.lang.reflect.Field;
+
+public final class BungeePlatform implements Platform {
 
     private final GsonFactory gsonFactory;
     private final ConfigFactory configFactory;
 
-    public BukkitPlatform() {
-        final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
+    public BungeePlatform() {
+        final Plugin plugin = getProvidingPlugin();
         final Scanner scanner = new BaseScanner(plugin);
         final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
         this.gsonFactory = new GsonFactory(plugin.getLogger(), scanner);
@@ -45,6 +47,25 @@ public final class BukkitPlatform implements Platform {
                 fileWatcher,
                 new SyncMethodExecutor(plugin, plugin.getLogger())
         );
+    }
+
+    private Plugin getProvidingPlugin() {
+        final Class<?> pluginClassLoader = BungeePlatform.class.getClassLoader().getClass();
+        if (!pluginClassLoader.getCanonicalName().equals("net.md_5.bungee.api.plugin.PluginClassloader")) {
+            throw new ConfigException("Unable to get providing plugin");
+        }
+        final Field pluginField;
+        try {
+            pluginField = pluginClassLoader.getDeclaredField("plugin");
+        } catch (final NoSuchFieldException e) {
+            throw new ConfigReflectiveOperationException("Unable to find 'plugin' field inside class '" + pluginClassLoader.getCanonicalName() + "'", e);
+        }
+        pluginField.setAccessible(true);
+        try {
+            return (Plugin) pluginField.get(pluginClassLoader);
+        } catch (final IllegalAccessException e) {
+            throw new ConfigReflectiveOperationException("Unable to get 'plugin' field from class '" + pluginClassLoader.getCanonicalName() + "'", e);
+        }
     }
 
     @Override

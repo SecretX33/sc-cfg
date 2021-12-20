@@ -11,7 +11,8 @@ You won't have to worry about reloading your configuration anymore, SC-CFG handl
 First, pick what platform modules you're going to use, currently there are:
 
 - `bukkit` for Spigot 1.8+ and Java 8+
-- `bukkit-kotlin` for Kotlin extensions on Bukkit (includes `bukkit`)
+- `bungee` for BungeeCord
+- `kotlin` for Kotlin extensions on any platform
 
 Second, pick the serializers you're going to use according to the file type you want your configs have.
 

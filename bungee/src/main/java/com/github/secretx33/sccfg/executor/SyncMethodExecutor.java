@@ -16,16 +16,17 @@
 package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.wrapper.MethodWrapper;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
+import net.md_5.bungee.api.ProxyServer;
+import net.md_5.bungee.api.plugin.Plugin;
 
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
-public final class SyncMethodExecutor extends AbstractMethodExecutor implements SyncExecutor {
+public class SyncMethodExecutor extends AbstractMethodExecutor implements SyncExecutor {
 
     private final Plugin plugin;
 
@@ -54,6 +55,6 @@ public final class SyncMethodExecutor extends AbstractMethodExecutor implements 
     }
 
     private void runSync(final Runnable task) {
-        Bukkit.getScheduler().runTask(plugin, task);
+        ProxyServer.getInstance().getScheduler().schedule(plugin, task, 0L, 0L, TimeUnit.MILLISECONDS);
     }
 }
