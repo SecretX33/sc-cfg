@@ -3,6 +3,6 @@ repositories {
 }
 
 dependencies {
-    compileOnly(project(":common"))
+    compileOnly(project(":sccfg-common"))
     compileOnly(kotlin("stdlib"))
 }
