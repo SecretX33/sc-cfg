@@ -59,7 +59,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
-public class BaseConfigFactory implements ConfigFactory {
+public final class ConfigFactoryImpl implements ConfigFactory {
 
     private final Map<Class<?>, ConfigWrapper<?>> instances = new ConcurrentHashMap<>();
     private final Path basePath;
@@ -70,7 +70,7 @@ public class BaseConfigFactory implements ConfigFactory {
     private final SyncExecutor syncExecutor;
     private final NameMapperFactory nameMapperFactory;
 
-    public BaseConfigFactory(
+    public ConfigFactoryImpl(
             final Logger logger,
             final GsonFactory gsonFactory,
             final Path basePath,

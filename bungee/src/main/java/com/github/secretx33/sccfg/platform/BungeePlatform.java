@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.platform;
 
-import com.github.secretx33.sccfg.config.BaseConfigFactory;
+import com.github.secretx33.sccfg.config.ConfigFactoryImpl;
 import com.github.secretx33.sccfg.config.ConfigFactory;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
@@ -30,7 +30,8 @@ import net.md_5.bungee.api.plugin.Plugin;
 
 import java.lang.reflect.Field;
 
-public final class BungeePlatform implements Platform {
+@SuppressWarnings("unused")
+final class BungeePlatform implements Platform {
 
     private final GsonFactory gsonFactory;
     private final ConfigFactory configFactory;
@@ -40,7 +41,7 @@ public final class BungeePlatform implements Platform {
         final Scanner scanner = new BaseScanner(plugin);
         final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
         this.gsonFactory = new GsonFactoryImpl(plugin.getLogger(), scanner);
-        this.configFactory = new BaseConfigFactory(
+        this.configFactory = new ConfigFactoryImpl(
                 plugin.getLogger(),
                 gsonFactory,
                 plugin.getDataFolder().toPath(),
@@ -60,7 +61,7 @@ public final class BungeePlatform implements Platform {
             final Field pluginField = pluginClassLoaderClass.getDeclaredField("plugin");
             pluginField.setAccessible(true);
             return (Plugin) pluginField.get(pluginClassLoader);
-        } catch (final ReflectiveOperationException e) {
+        } catch (final ClassCastException | ReflectiveOperationException e) {
             throw new ConfigReflectiveOperationException("Unable to find or get 'plugin' field inside class '" + pluginClassLoaderClass.getCanonicalName() + "'", e);
         }
     }

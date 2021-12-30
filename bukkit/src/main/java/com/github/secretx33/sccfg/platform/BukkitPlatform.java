@@ -16,7 +16,7 @@
 package com.github.secretx33.sccfg.platform;
 
 import com.github.secretx33.sccfg.Config;
-import com.github.secretx33.sccfg.config.BaseConfigFactory;
+import com.github.secretx33.sccfg.config.ConfigFactoryImpl;
 import com.github.secretx33.sccfg.config.ConfigFactory;
 import com.github.secretx33.sccfg.executor.SyncMethodExecutor;
 import com.github.secretx33.sccfg.scanner.BaseScanner;
@@ -28,7 +28,8 @@ import com.github.secretx33.sccfg.storage.FileWatcherProvider;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class BukkitPlatform implements Platform {
+@SuppressWarnings("unused")
+final class BukkitPlatform implements Platform {
 
     private final GsonFactory gsonFactory;
     private final ConfigFactory configFactory;
@@ -38,7 +39,7 @@ public final class BukkitPlatform implements Platform {
         final Scanner scanner = new BaseScanner(plugin);
         final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
         this.gsonFactory = new GsonFactoryImpl(plugin.getLogger(), scanner);
-        this.configFactory = new BaseConfigFactory(
+        this.configFactory = new ConfigFactoryImpl(
                 plugin.getLogger(),
                 gsonFactory,
                 plugin.getDataFolder().toPath(),

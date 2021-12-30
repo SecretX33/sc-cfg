@@ -17,6 +17,7 @@ package com.github.secretx33.sccfg.storage;
 
 import com.github.secretx33.sccfg.util.Sets;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -26,9 +27,9 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class FileWatcherEventConsumer {
 
+    private final UUID uniqueId = UUID.randomUUID();
     private final Set<FileModificationType> acceptTypes;
     private final Consumer<FileWatcherEvent> consumer;
-    private final UUID uniqueId = UUID.randomUUID();
 
     public FileWatcherEventConsumer(final Consumer<FileWatcherEvent> consumer, final FileModificationType... acceptTypes) {
         checkNotNull(acceptTypes, "acceptTypes");
@@ -58,6 +59,19 @@ public final class FileWatcherEventConsumer {
 
     public UUID getUniqueId() {
         return uniqueId;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        final FileWatcherEventConsumer that = (FileWatcherEventConsumer) o;
+        return uniqueId.equals(that.uniqueId) && acceptTypes.equals(that.acceptTypes) && consumer.equals(that.consumer);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(acceptTypes, consumer, uniqueId);
     }
 
     @Override
