@@ -23,9 +23,9 @@ package com.github.secretx33.sccfg.exception;
  * or make sure that you don't call {@code Config.getConfig(SomeClass.class)} until you register the
  * instance of it yourself with {@code Config.registerConfig(SomeClass.class)}.
  */
-public final class ConfigOverrideException extends ConfigException {
+public final class ConfigInstanceOverrideException extends ConfigException {
 
-    public ConfigOverrideException(final Class<?> clazz) {
+    public ConfigInstanceOverrideException(final Class<?> clazz) {
         super("There's already an instance of config " + clazz.getName() + " registered, you cannot override config instances");
     }
 }

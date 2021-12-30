@@ -20,7 +20,7 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.api.annotation.Name;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
-import com.github.secretx33.sccfg.exception.ConfigOverrideException;
+import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.executor.AsyncExecutor;
@@ -237,7 +237,7 @@ public class BaseConfigFactory implements ConfigFactory {
         Valid.validateConfigClass(clazz);
 
         if (instances.containsKey(clazz)) {
-            throw new ConfigOverrideException(clazz);
+            throw new ConfigInstanceOverrideException(clazz);
         }
         instances.computeIfAbsent(clazz, c -> wrapInstance(instance));
     }

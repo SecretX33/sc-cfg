@@ -18,8 +18,8 @@ package com.github.secretx33.sccfg
 import com.github.secretx33.sccfg.api.annotation.Configuration
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException
 import com.github.secretx33.sccfg.exception.ConfigException
+import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException
-import com.github.secretx33.sccfg.exception.ConfigOverrideException
 import com.github.secretx33.sccfg.exception.ConfigSerializationException
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException
@@ -55,12 +55,12 @@ inline fun <reified T : Any> lazyConfig(): Lazy<T> = lazy { getConfig() }
 /**
  * Extension for registering your instance of a configuration class. This method is thread safe, as it
  * guarantees that no overrides can happen when passing as argument instances of configs already registered,
- * but the `ConfigOverrideException` thrown is only best-effort, so no guarantees can be made about it.
+ * but the `ConfigInstanceOverrideException` thrown is only best-effort, so no guarantees can be made about it.
  *
  * @param config T the config instance
  * @return T the config instance
  * @throws [MissingConfigAnnotationException] if `instance` class is not annotated with [Configuration]
- * @throws [ConfigOverrideException] if `instance` class is already registered
+ * @throws [ConfigInstanceOverrideException] if `instance` class is already registered
  */
 inline fun <reified T : Any> registerConfig(config: T): T = Config.registerConfig(config)
 
@@ -69,7 +69,7 @@ inline fun <reified T : Any> registerConfig(config: T): T = Config.registerConfi
  *
  * @param configs Array<out Any> the config instances
  * @throws [MissingConfigAnnotationException] if any instance class is not annotated with [Configuration]
- * @throws [ConfigOverrideException] if there's already a registered instance of the passed instances classes
+ * @throws [ConfigInstanceOverrideException] if there's already a registered instance of the passed instances classes
  */
 fun registerConfigs(vararg configs: Any) = Config.registerConfigs(configs)
 
@@ -158,7 +158,7 @@ fun saveDefaults(
     configClass: KClass<out Any>,
     overrideIfExists: Boolean = false,
     reloadAfterwards: Boolean = true,
-): Boolean = Config.saveDefaults(configClass, overrideIfExists, reloadAfterwards)
+): Boolean = Config.saveDefaults(configClass.java, overrideIfExists, reloadAfterwards)
 
 /**
  * Extension to register a Gson type adapter for a given type.

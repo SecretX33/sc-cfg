@@ -17,8 +17,8 @@ package com.github.secretx33.sccfg.config;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
-import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
@@ -48,7 +48,7 @@ public interface ConfigFactory {
      * @param instance the config instance
      * @throws MissingConfigAnnotationException if class of {@code instance} is not annotated with
      * {@link Configuration}
-     * @throws ConfigOverrideException if class of {@code instance} already got an instance associated
+     * @throws ConfigInstanceOverrideException if class of {@code instance} already got an instance associated
      * with it
      */
     void registerInstance(Object instance);

@@ -18,8 +18,8 @@ package com.github.secretx33.sccfg;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
+import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
-import com.github.secretx33.sccfg.exception.ConfigOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
@@ -62,7 +62,7 @@ public final class Config {
 
     /**
      * Register an instance of a config class. This method is thread safe, as it guarantees that no overrides can
-     * happen when passing as argument instances of configs already registered, but the {@code ConfigOverrideException}
+     * happen when passing as argument instances of configs already registered, but the {@code ConfigInstanceOverrideException}
      * thrown is only best-effort, so no guarantees can be made about it.
      *
      * @param configInstance the config instance
@@ -70,7 +70,7 @@ public final class Config {
      * @return the singleton instance of config T
      * @throws MissingConfigAnnotationException if class of {@code configInstance} is not annotated
      * with {@link Configuration}
-     * @throws ConfigOverrideException if class of {@code configInstance} already got an instance
+     * @throws ConfigInstanceOverrideException if class of {@code configInstance} already got an instance
      * associated with it
      */
     public static <T> T registerConfig(final T configInstance) {
@@ -81,13 +81,13 @@ public final class Config {
 
     /**
      * Register multiple instances of config classes. This method is thread safe, as it guarantees that no overrides
-     * can happen when passing as argument instances of configs already registered, but the {@code ConfigOverrideException}
+     * can happen when passing as argument instances of configs already registered, but the {@code ConfigInstanceOverrideException}
      * thrown is only best-effort, so no guarantees can be made about it.
      *
      * @param configInstances the config instances
      * @throws MissingConfigAnnotationException if class of any instance inside {@code configInstances}
      * is not annotated with {@link Configuration}
-     * @throws ConfigOverrideException if class of any instance inside {@code configInstances} already
+     * @throws ConfigInstanceOverrideException if class of any instance inside {@code configInstances} already
      * got an instance associated with it
      */
     public static void registerConfigs(final Object... configInstances) {
