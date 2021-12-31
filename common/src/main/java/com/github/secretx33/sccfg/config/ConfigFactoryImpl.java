@@ -16,11 +16,13 @@
 package com.github.secretx33.sccfg.config;
 
 import com.github.secretx33.sccfg.api.Naming;
+import com.github.secretx33.sccfg.api.annotation.Comment;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.api.annotation.Name;
+import com.github.secretx33.sccfg.api.annotation.NamedPath;
 import com.github.secretx33.sccfg.exception.ConfigException;
-import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
+import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.executor.AsyncExecutor;
@@ -38,6 +40,7 @@ import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 import com.github.secretx33.sccfg.util.BooleanWrapper;
 import com.github.secretx33.sccfg.util.Sets;
 import com.github.secretx33.sccfg.util.Valid;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -46,6 +49,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
@@ -150,28 +154,44 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         final NameMapper mapper = nameMapperFactory.getMapper(naming);
 
         return fields.stream().sequential().map(field -> {
+            final NamedPath namedPathAnnotation = field.getDeclaredAnnotation(NamedPath.class);
             final com.github.secretx33.sccfg.api.annotation.Path pathAnnotation = field.getDeclaredAnnotation(com.github.secretx33.sccfg.api.annotation.Path.class);
-            final String path;
+            String path = firstPresent(Optional.ofNullable(pathAnnotation).map(com.github.secretx33.sccfg.api.annotation.Path::value), Optional.ofNullable(namedPathAnnotation).map(NamedPath::path));
 
-            if (pathAnnotation == null) {
+            if (path == null) {
                 path = "";
             } else {
-                path = pathAnnotation.value();
                 checkNotBlank(path, () -> "@Path annotation does not support null, empty or blank values, but you passed one of these three as parameter on your field " + field.getName() + " (which belongs to class " + field.getDeclaringClass().getSimpleName() + ")");
             }
 
             final Name nameAnnotation = field.getDeclaredAnnotation(Name.class);
-            final String nameOnFile;
+            String nameOnFile = firstPresent(Optional.ofNullable(nameAnnotation).map(Name::value), Optional.ofNullable(namedPathAnnotation).map(NamedPath::name));
 
-            if (nameAnnotation == null) {
+            if (nameOnFile == null) {
                 nameOnFile = mapper.applyStrategy(field.getName());
             } else {
-                nameOnFile = nameAnnotation.value();
                 checkNotBlank(nameOnFile, () -> "@Name annotation does not support null, empty or blank values, but you passed one of these three as value of @Name annotation on your field '" + field.getName() + "' (which belongs to class '" + field.getDeclaringClass().getSimpleName() + "')");
             }
 
-            return new ConfigEntryImpl(instance, field, nameOnFile, path);
+            final Comment commentAnnotation = field.getDeclaredAnnotation(Comment.class);
+            String[] comment = firstPresent(Optional.ofNullable(commentAnnotation).map(Comment::value), Optional.ofNullable(namedPathAnnotation).map(NamedPath::comment));
+
+            if (comment == null) {
+                comment = new String[0];
+            }
+            return new ConfigEntryImpl(instance, field, nameOnFile, path, comment);
         }).collect(Sets.toSet());
+    }
+
+    @SafeVarargs
+    @Nullable
+    private final <T> T firstPresent(final Optional<T>... strings) {
+        for (final Optional<T> string : strings) {
+            if (string.isPresent()) {
+                return string.get();
+            }
+        }
+        return null;
     }
 
     private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {

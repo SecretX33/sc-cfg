@@ -36,7 +36,8 @@ public @interface Configuration {
      *
      * {@code myfolder/myfile} will create a folder called "myfolder" and a file called "myfile"
      * on the relative path for that application (for Bukkit, it'll be inside plugin's data folder, and
-     * for standalone applications it'll be relative to folder where the software is running on).
+     * for standalone applications it'll be relative to folder where the software is running on).<br><br>
+     *
      * You can also explicitly provide extensions on the name, if you want, so, for example, {@code myfile.yml}
      * is a valid name for a configuration of type {@link com.github.secretx33.sccfg.api.FileType#YAML}.
      */
@@ -53,8 +54,20 @@ public @interface Configuration {
     FileType type() default FileType.YAML;
 
     /**
-     * Specifies what kind of transformation should be applied to the name of the properties inside
-     * the configuration file, default is "none".
+     * Specifies what kind of transformation should be applied to the name of ALL properties inside
+     * the configuration file. By default, the names are kept exactly as provided.
      */
     Naming naming() default Naming.NONE;
+
+    /**
+     * Comments to be placed as header in the config file, each line being represented by an entry of
+     * the array. While they can be anything, they're usually used for explaining what the file is for,
+     * adding your own logo, etc.<br><br>
+     *
+     * Keep in mind that this won't be applied to the config file if the underlying file type does not
+     * support comments.<br><br>
+     *
+     * @return the comment block to be placed as the first thing in the config file, before any property
+     */
+    String[] header() default {};
 }

@@ -15,9 +15,12 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
+import org.spongepowered.configurate.loader.HeaderMode;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import java.util.logging.Logger;
@@ -30,10 +33,12 @@ public final class HoconSerializer extends AbstractConfigurateSerializer<HoconCo
     }
 
     @Override
-    protected AbstractConfigurationLoader.Builder<HoconConfigurationLoader.Builder, HoconConfigurationLoader> fileBuilder() {
+    protected AbstractConfigurationLoader.Builder<HoconConfigurationLoader.Builder, HoconConfigurationLoader> fileBuilder(@Nullable final ConfigWrapper<?> configWrapper) {
         return HoconConfigurationLoader.builder().prettyPrinting(true)
                 .emitComments(true)
                 .emitJsonCompatible(false)
-                .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
+                .headerMode(HeaderMode.PRESET)
+                .defaultOptions(opts -> opts.header(configWrapper != null ? configWrapper.getHeader() : null)
+                        .shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
     }
 }

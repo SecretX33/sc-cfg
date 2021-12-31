@@ -15,9 +15,12 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
+import org.spongepowered.configurate.loader.HeaderMode;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 
 import java.util.logging.Logger;
@@ -30,8 +33,10 @@ public final class JsonSerializer extends AbstractConfigurateSerializer<GsonConf
     }
 
     @Override
-    protected AbstractConfigurationLoader.Builder<GsonConfigurationLoader.Builder, GsonConfigurationLoader> fileBuilder() {
+    protected AbstractConfigurationLoader.Builder<GsonConfigurationLoader.Builder, GsonConfigurationLoader> fileBuilder(@Nullable final ConfigWrapper<?> configWrapper) {
         return GsonConfigurationLoader.builder()
-                .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
+                .headerMode(HeaderMode.PRESET)
+                .defaultOptions(opts -> opts.header(configWrapper != null ? configWrapper.getHeader() : null)
+                        .shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
     }
 }

@@ -15,7 +15,8 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.config.ConfigEntryImpl;
+import com.github.secretx33.sccfg.config.ConfigEntry;
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
@@ -23,14 +24,15 @@ import com.github.secretx33.sccfg.exception.ConfigOverlappingPathException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
-import com.github.secretx33.sccfg.config.ConfigEntry;
-import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.google.gson.Gson;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.configurate.CommentedConfigurationNodeIntermediary;
 import org.spongepowered.configurate.ConfigurateException;
 import org.spongepowered.configurate.ConfigurationNode;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.serialize.SerializationException;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,7 +50,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         super(logger, gsonFactory);
     }
 
-    abstract AbstractConfigurationLoader.Builder<U, L> fileBuilder();
+    abstract AbstractConfigurationLoader.Builder<U, L> fileBuilder(@Nullable ConfigWrapper<?> configWrapper);
 
     /**
      * Created a new, empty node compatible with the {@code <L>} configuration loader.
@@ -56,12 +58,12 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
      * @return An empty configuration node
      */
     protected final ConfigurationNode emptyNode() {
-        return fileBuilder().build().createNode();
+        return fileBuilder(null).build().createNode();
     }
 
     /**
      * Loads a file, transforming the read value from "file names" to "file values" into a map of
-     * "java names" to "file values". The keys are transformed fields' {@link ConfigEntryImpl#getName()},
+     * "java names" to "file values". The keys are transformed fields' {@link ConfigEntry#getName()},
      * and values are kept intact (since they'll be converted only if needed when setting them into
      * the config field).
      *
@@ -74,7 +76,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         final ConfigurationNode file;
 
         try {
-            file = fileBuilder().path(filePath).build().load();
+            file = fileBuilder(configWrapper).path(filePath).build().load();
         } catch (final ConfigurateException e) {
             logger.log(Level.SEVERE, "An error has occurred when deserializing file '" + configWrapper.getDestination().getFileName() + "' from " + configWrapper.getFileType() + ". There is probably some kind of typo on it, so it could not be parsed, please fix any typos on the file.", new ConfigDeserializationException(e));
             return Collections.emptyMap();
@@ -93,7 +95,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         return Maps.of(values);
     }
 
-    protected final String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
+    private String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
         return gsonFactory.getInstance().toJson(valuesMap, GENERIC_MAP_TOKEN);
     }
 
@@ -107,7 +109,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         } catch (final ConfigurateException e) {
             // probably consumer's fault, some invalid character or something on the config class contents
             final ConfigSerializationException ex = new ConfigSerializationException(e);
-            logger.log(Level.SEVERE, "An error has occurred when serializing values of class '" + configWrapper.getInstance().getClass().getName() + "', maybe there is some kind of invalid value on some string inside your config class? Read the nested exception for more details.", e);
+            logger.log(Level.SEVERE, "An error has occurred when serializing values of class '" + configWrapper.getInstance().getClass().getName() + "', maybe there is some kind of invalid value on some string inside your config class? Read the nested exception for more details.", ex);
             throw ex;
         } catch (final Exception e) {
             // something went wrong internally
@@ -118,20 +120,45 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
         final ConfigurationNode fileNode;
         try {
-            fileNode = fileBuilder().buildAndLoadString(serializedFile);
+            fileNode = fileBuilder(configWrapper).buildAndLoadString(serializedFile);
         } catch (final ConfigurateException e) {
             final ConfigSerializationException ex = new ConfigSerializationException(e);
             logger.log(Level.SEVERE, "An error has occurred when converting the config class " + configWrapper.getInstance().getClass().getName() + " to " + configWrapper.getFileType() + ".", ex);
             throw ex;
         }
+        applyComments(configWrapper, fileNode);
 
         configWrapper.registerFileModification();
         try {
-            fileBuilder().path(path).build().save(fileNode);
-        } catch (final ConfigurateException e) {
+            fileBuilder(configWrapper).path(path).build().save(fileNode);
+            afterSave(configWrapper);
+        } catch (final IOException e) {
             logger.log(Level.SEVERE, "An error has occurred when saving your config file '" + configWrapper.getInstance().getClass().getName() + " to the disk.", e);
             throw new ConfigException(e);
         }
+    }
+
+    private void applyComments(final ConfigWrapper<?> configWrapper, final ConfigurationNode fileNode) {
+        if (!(fileNode instanceof CommentedConfigurationNodeIntermediary<?>)) return;
+        final CommentedConfigurationNodeIntermediary<?> commentedFileNode = (CommentedConfigurationNodeIntermediary<?>) fileNode;
+        // insert header in root node
+        commentedFileNode.comment(configWrapper.getHeader());
+        // insert comments on config entries
+        configWrapper.getConfigEntries().stream()
+            .filter(ConfigEntry::hasComment)
+            .forEach(entry -> {
+                final CommentedConfigurationNodeIntermediary<?> node = commentedFileNode.node(Arrays.asList(entry.getFullPathOnFile().split("\\.")));
+                if (!node.virtual()) {
+                    node.comment(entry.getComment());
+                }
+            });
+    }
+
+    /**
+     * Must be run after saving the configuration file. This allows for specific serializer implementations to
+     * perform specific tasks that normalize the expected behavior between various implementations.
+     */
+    protected void afterSave(final ConfigWrapper<?> configWrapper) throws IOException {
     }
 
     @Override
@@ -163,7 +190,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
                 node.set(serializableValue);
             } catch (final IllegalArgumentException | SerializationException e) {
                 // should not be thrown
-                throw new ConfigInternalErrorException("configurate could not serialize value " + serializableValue + " (class " + serializableValue.getClass() + ")" + ", which should not happen because Gson should already taken care of serializing this class to something serializable", e);
+                throw new ConfigInternalErrorException("Configurate could not serialize value " + serializableValue + " (class " + serializableValue.getClass() + ")" + ", which should not happen because Gson should already taken care of serializing this class to something serializable", e);
             }
         });
 

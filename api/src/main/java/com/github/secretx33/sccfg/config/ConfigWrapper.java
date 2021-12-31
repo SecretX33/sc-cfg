@@ -18,15 +18,32 @@ package com.github.secretx33.sccfg.config;
 import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
 
 public interface ConfigWrapper<T> {
+
+    /**
+     * Get the instance of the configuration class.
+     */
     T getInstance();
 
+    /**
+     * Get the {@code Configuration} annotation present on the configuration class.
+     */
     Configuration getConfigAnnotation();
+
+    /**
+     * Gets the header of the config file, all in one line, with each line separated by a newline character.
+     * <br>If {@link Configuration#header()} was not specified, returns {@code null} instead.
+     *
+     * @return the header of the config file, or {@code null} if not specified
+     */
+    @Nullable
+    String getHeader();
 
     Path getDestination();
 

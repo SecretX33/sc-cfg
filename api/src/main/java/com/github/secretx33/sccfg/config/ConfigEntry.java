@@ -15,6 +15,8 @@
  */
 package com.github.secretx33.sccfg.config;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.Type;
 
 public interface ConfigEntry {
@@ -24,6 +26,22 @@ public interface ConfigEntry {
      * @return the name of the field, which is also the name of the entry
      */
     String getName();
+
+    /**
+     * Get the comment associated with this entry, all in one line, with each line separated by a
+     * newline character.
+     *
+     * @return the comment associated with this entry, or {@code null} if no comment was set
+     */
+    @Nullable
+    String getComment();
+
+    /**
+     * Test if this config entry has a comment.
+     *
+     * @return true if this config entry has a comment, false otherwise
+     */
+    boolean hasComment();
 
     /**
      * Get what name this field should name on the file, doesn't include the path, this is only the

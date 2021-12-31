@@ -21,27 +21,21 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Modify a property path (relative to the root of the config file).
+ * Set the target property comments.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Path {
+public @interface Comment {
 
     /**
-     * Where this property should be saved relative to the root of the file. Use {@code .} (dot) to
-     * separate between layers (like a {@code Map}). Cannot be empty or blank, otherwise will throw
-     * {@code IllegalArgumentException}.<br><br>
+     * Comments to be placed on top of this property in the config file, each line being represented by
+     * an entry of the array. While they can be anything, they're usually used for explaining what the
+     * property is used for, or what it represents in your code.<br><br>
      *
-     * <b>Examples:</b><br><br>
+     * Keep in mind that this won't be applied to the property if the underlying file type does not
+     * support comments.<br>
      *
-     * {@code ""} » throw {@code IllegalArgumentException}.<br>
-     * {@code "  "} » throw {@code IllegalArgumentException}.<br>
-     * {@code "general"} » will place this entry under "general" section.<br>
-     * {@code "general.options"} » will place this entry under "options" sub-section, which is by itself
-     * inside "general" section.
-     *
-     * @return the path in which this property should be stored at
+     * @return the comment block to be placed in the config file, right on top of the property
      */
-    String value();
+    String[] value();
 }
-

@@ -20,6 +20,7 @@ import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.util.Sets;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -33,6 +34,8 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
 
     private final T instance;
     private final Configuration configAnnotation;
+    @Nullable
+    private final String header;
     private final Path destination;
     private final FileType fileType;
     private final Naming nameStrategy;
@@ -58,6 +61,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
     ) {
         this.instance = checkNotNull(instance, "instance");
         this.configAnnotation = checkNotNull(configAnnotation, "configAnnotation");
+        this.header = notContainsNull(configAnnotation.header(), "header").length > 0 ? String.join("\n", configAnnotation.header()) : null;
         this.destination = checkNotNull(destination, "destination");
         this.fileType = checkNotNull(configAnnotation.type(), "type");
         this.nameStrategy = checkNotNull(configAnnotation.naming(), "nameStrategy");
@@ -80,6 +84,12 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
     @Override
     public Configuration getConfigAnnotation() {
         return configAnnotation;
+    }
+
+    @Nullable
+    @Override
+    public String getHeader() {
+        return header;
     }
 
     @Override

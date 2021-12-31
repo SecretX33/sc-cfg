@@ -21,11 +21,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Modify a property path (relative to the root of the config file).
+ * Joins {@link Name}, {@link Path} and {@link Comment} annotations for convenience.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Path {
+public @interface NamedPath {
 
     /**
      * Where this property should be saved relative to the root of the file. Use {@code .} (dot) to
@@ -42,6 +42,25 @@ public @interface Path {
      *
      * @return the path in which this property should be stored at
      */
-    String value();
-}
+    String path();
 
+    /**
+     * Set the passed value as name of this config property. Cannot be empty or blank, otherwise will
+     * throw {@code IllegalArgumentException}.
+     *
+     * @return the name set of this config property
+     */
+    String name();
+
+    /**
+     * Comments to be placed in the config file, each line should be put in a position inside the array.
+     * While they can be anything, they're usually used for explaining what the property is for, or what
+     * it represents in your code.<br><br>
+     *
+     * Keep in mind that this won't be applied to the config file if the underlying file type does not
+     * support comments.<br><br>
+     *
+     * @return the comment block to be placed in the config file, right before the property
+     */
+    String[] comment() default {};
+}

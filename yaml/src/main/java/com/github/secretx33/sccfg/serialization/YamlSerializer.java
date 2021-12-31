@@ -15,12 +15,16 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
+import org.spongepowered.configurate.loader.HeaderMode;
 import org.spongepowered.configurate.serialize.TypeSerializerCollection;
 import org.spongepowered.configurate.yaml.NodeStyle;
 import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
 @SuppressWarnings("unused")
@@ -31,8 +35,16 @@ public final class YamlSerializer extends AbstractConfigurateSerializer<YamlConf
     }
 
     @Override
-    protected AbstractConfigurationLoader.Builder<YamlConfigurationLoader.Builder, YamlConfigurationLoader> fileBuilder() {
+    protected AbstractConfigurationLoader.Builder<YamlConfigurationLoader.Builder, YamlConfigurationLoader> fileBuilder(@Nullable final ConfigWrapper<?> configWrapper) {
         return YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK)
-                .defaultOptions(opts -> opts.shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
+                .headerMode(HeaderMode.PRESET)
+                .defaultOptions(opts -> opts.header(configWrapper != null ? configWrapper.getHeader() : null)
+                        .shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));
+    }
+
+    @Override
+    protected void afterSave(final ConfigWrapper<?> configWrapper) throws IOException {
+        final YamlCommentManager commentManager = new YamlCommentManager(configWrapper);
+        commentManager.saveComments();
     }
 }

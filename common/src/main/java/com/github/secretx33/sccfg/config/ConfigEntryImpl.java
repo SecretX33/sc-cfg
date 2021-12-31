@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.config;
 
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -24,6 +25,7 @@ import java.util.Objects;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotBlank;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.checkState;
+import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
 /**
  * Represents an entry of a config instance, and holds relevant data of that particular field, like
@@ -53,11 +55,15 @@ public final class ConfigEntryImpl implements ConfigEntry {
      */
     private final String path;
 
-    public ConfigEntryImpl(final Object instance, final Field field, final String nameOnFile, final String path) {
+    @Nullable
+    private final String comment;
+
+    public ConfigEntryImpl(final Object instance, final Field field, final String nameOnFile, final String path, final String[] comments) {
         this.instance = checkNotNull(instance, "instance");
         this.field = checkNotNull(field, "field");
         this.nameOnFile = checkNotBlank(nameOnFile, "nameOnFile");
         this.path = checkNotNull(path, "path");
+        this.comment = notContainsNull(comments, "comments").length > 0 ? String.join("\n", comments) : null;
         checkState(field.getDeclaringClass().isAssignableFrom(instance.getClass()), () -> "field passed as argument belongs to class '" + field.getDeclaringClass().getName() + "', but instance passed as argument is an instance of '" + instance.getClass().getName() + "' which does not inherit from class '" + field.getDeclaringClass().getName() + "'!");
         checkState(field.isAccessible(), () -> "field must be made accessible in order to be wrapped into a ConfigEntry (since sc-cfg library relies on accessing it), but field '" + field.getName() + "' from class '" + field.getDeclaringClass().getName() + "' was not!");
     }
@@ -65,6 +71,17 @@ public final class ConfigEntryImpl implements ConfigEntry {
     @Override
     public String getName() {
         return field.getName();
+    }
+
+    @Nullable
+    @Override
+    public String getComment() {
+        return comment;
+    }
+
+    @Override
+    public boolean hasComment() {
+        return comment != null;
     }
 
     @Override
