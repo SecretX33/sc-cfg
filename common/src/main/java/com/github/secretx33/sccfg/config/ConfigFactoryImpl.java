@@ -119,8 +119,8 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         final Configuration annotation = getConfigAnnotation(clazz);
         final Serializer serializer = serializerFactory.getSerializer(annotation.type());
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
-        final Set<ConfigEntry> configEntries = mapConfigEntries(instance, configFields, annotation.naming());
-        final Map<String, Object> defaults = serializer.getCurrentValues(instance, configEntries);
+        final Set<PropertyWrapper> properties = mapConfigFieldsToProperties(instance, configFields, annotation.naming());
+        final Map<String, Object> defaults = serializer.getCurrentValues(instance, properties);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
             final Path destination = basePath.resolve(configPath);
@@ -128,7 +128,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
-            final ConfigWrapper<T> wrapper = new ConfigWrapperImpl<>(instance, annotation, destination, defaults, configEntries, runBeforeReload, runAfterReload, watchedLocation);
+            final ConfigWrapper<T> wrapper = new ConfigWrapperImpl<>(instance, annotation, destination, defaults, properties, runBeforeReload, runAfterReload, watchedLocation);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             return serializer.loadConfig(wrapper);
         } catch (final ConfigException e) {
@@ -146,7 +146,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         return annotation;
     }
 
-    private Set<ConfigEntry> mapConfigEntries(final Object instance, final Set<Field> fields, final Naming naming) {
+    private Set<PropertyWrapper> mapConfigFieldsToProperties(final Object instance, final Set<Field> fields, final Naming naming) {
         checkNotNull(instance, "instance");
         notContainsNull(fields, "fields");
         checkNotNull(naming, "naming");
@@ -179,7 +179,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
             if (comment == null) {
                 comment = new String[0];
             }
-            return new ConfigEntryImpl(instance, field, nameOnFile, path, comment);
+            return new PropertyWrapperImpl(instance, field, nameOnFile, path, comment);
         }).collect(Sets.toSet());
     }
 

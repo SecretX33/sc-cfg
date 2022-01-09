@@ -65,9 +65,11 @@ subprojects {
     }
 
     tasks.javadoc {
+        val options = options as StandardJavadocDocletOptions
         if (JavaVersion.current().isJava9Compatible) {
-            (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
+            options.addBooleanOption("html5", true)
         }
+        options.addStringOption("Xdoclint:none", "-quiet")
     }
 
     license {

@@ -86,12 +86,10 @@ public class BaseScanner implements Scanner {
         this.basePackage = checkNotNull(basePackage, "basePath");
         this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
         final Reflections reflections = getGenericReflections();
-        baseTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Sets.toSet());
-        customTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Sets.toSet());
+        baseTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
+                clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH));
+        customTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
+                clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH));
     }
 
     @NotNull

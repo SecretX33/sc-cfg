@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.config.ConfigEntry;
+import com.github.secretx33.sccfg.config.PropertyWrapper;
 import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
@@ -63,7 +63,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
     /**
      * Loads a file, transforming the read value from "file names" to "file values" into a map of
-     * "java names" to "file values". The keys are transformed fields' {@link ConfigEntry#getName()},
+     * "java names" to "file values". The keys are transformed fields' {@link PropertyWrapper#getName()},
      * and values are kept intact (since they'll be converted only if needed when setting them into
      * the config field).
      *
@@ -82,10 +82,10 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
             return Collections.emptyMap();
         }
 
-        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
+        final Set<PropertyWrapper> properties = configWrapper.getProperties();
         final Map<String, Object> values = new LinkedHashMap<>();
 
-        configEntries.forEach(entry -> {
+        properties.forEach(entry -> {
             final String pathOnFile = entry.getFullPathOnFile();
             final Object value = file.node(Arrays.asList(pathOnFile.split("\\."))).raw();
             if (value != null) {
@@ -131,6 +131,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         configWrapper.registerFileModification();
         try {
             fileBuilder(configWrapper).path(path).build().save(fileNode);
+            configWrapper.registerFileModification();
             afterSave(configWrapper);
         } catch (final IOException e) {
             logger.log(Level.SEVERE, "An error has occurred when saving your config file '" + configWrapper.getInstance().getClass().getName() + " to the disk.", e);
@@ -144,8 +145,8 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         // insert header in root node
         commentedFileNode.comment(configWrapper.getHeader());
         // insert comments on config entries
-        configWrapper.getConfigEntries().stream()
-            .filter(ConfigEntry::hasComment)
+        configWrapper.getProperties().stream()
+            .filter(PropertyWrapper::hasComment)
             .forEach(entry -> {
                 final CommentedConfigurationNodeIntermediary<?> node = commentedFileNode.node(Arrays.asList(entry.getFullPathOnFile().split("\\.")));
                 if (!node.virtual()) {
@@ -163,14 +164,14 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
     @Override
     @SuppressWarnings("unchecked")
-    public final Map<String, Object> getCurrentValues(final Object configInstance, final Set<ConfigEntry> configEntries) {
+    public final Map<String, Object> getCurrentValues(final Object configInstance, final Set<PropertyWrapper> properties) {
         checkNotNull(configInstance, "configInstance");
-        checkNotNull(configEntries, "configEntries");
+        checkNotNull(properties, "properties");
 
         final ConfigurationNode root = emptyNode();
         final Gson gson = gsonFactory.getInstance();
 
-        configEntries.forEach(configEntry -> {
+        properties.forEach(configEntry -> {
             final Object serializableValue;
 
             try {

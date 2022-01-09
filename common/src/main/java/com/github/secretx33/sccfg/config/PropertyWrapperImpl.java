@@ -31,7 +31,7 @@ import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
  * Represents an entry of a config instance, and holds relevant data of that particular field, like
  * where it should be stored at (relative to the root of the file), what name should be used, etc.
  */
-public final class ConfigEntryImpl implements ConfigEntry {
+public final class PropertyWrapperImpl implements PropertyWrapper {
 
     /**
      * The instance of a config class.
@@ -39,7 +39,7 @@ public final class ConfigEntryImpl implements ConfigEntry {
     private final Object instance;
 
     /**
-     * A field belonging to {@link ConfigEntryImpl#instance} class (or any of its parents) which will be
+     * A field belonging to {@link PropertyWrapperImpl#instance} class (or any of its parents) which will be
      * saved to and read from a configuration file.
      */
     private final Field field;
@@ -58,14 +58,14 @@ public final class ConfigEntryImpl implements ConfigEntry {
     @Nullable
     private final String comment;
 
-    public ConfigEntryImpl(final Object instance, final Field field, final String nameOnFile, final String path, final String[] comments) {
+    public PropertyWrapperImpl(final Object instance, final Field field, final String nameOnFile, final String path, final String[] comments) {
         this.instance = checkNotNull(instance, "instance");
         this.field = checkNotNull(field, "field");
         this.nameOnFile = checkNotBlank(nameOnFile, "nameOnFile");
         this.path = checkNotNull(path, "path");
         this.comment = notContainsNull(comments, "comments").length > 0 ? String.join("\n", comments) : null;
         checkState(field.getDeclaringClass().isAssignableFrom(instance.getClass()), () -> "field passed as argument belongs to class '" + field.getDeclaringClass().getName() + "', but instance passed as argument is an instance of '" + instance.getClass().getName() + "' which does not inherit from class '" + field.getDeclaringClass().getName() + "'!");
-        checkState(field.isAccessible(), () -> "field must be made accessible in order to be wrapped into a ConfigEntry (since sc-cfg library relies on accessing it), but field '" + field.getName() + "' from class '" + field.getDeclaringClass().getName() + "' was not!");
+        checkState(field.isAccessible(), () -> "field must be made accessible in order to be wrapped into a PropertyWrapper (since sc-cfg library relies on accessing it), but field '" + field.getName() + "' from class '" + field.getDeclaringClass().getName() + "' was not!");
     }
 
     @Override
@@ -143,7 +143,7 @@ public final class ConfigEntryImpl implements ConfigEntry {
     public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        final ConfigEntryImpl that = (ConfigEntryImpl) o;
+        final PropertyWrapperImpl that = (PropertyWrapperImpl) o;
         return instance.equals(that.instance)
                 && field.equals(that.field)
                 && nameOnFile.equals(that.nameOnFile)
@@ -157,7 +157,7 @@ public final class ConfigEntryImpl implements ConfigEntry {
 
     @Override
     public String toString() {
-        return "ConfigEntry{" +
+        return "PropertyWrapper{" +
                 "instance=" + instance +
                 ", field=" + field +
                 ", nameOnFile='" + nameOnFile + '\'' +

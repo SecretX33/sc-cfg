@@ -15,10 +15,10 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.PropertyWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import com.github.secretx33.sccfg.config.ConfigEntry;
 import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -52,10 +52,10 @@ abstract class AbstractSerializer implements Serializer {
         checkNotNull(configWrapper, "configWrapper");
 
         saveDefaults(configWrapper, false);
-        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
+        final Set<PropertyWrapper> properties = configWrapper.getProperties();
         final Map<String, Object> fileValues = loadFromFile(configWrapper);
 
-        configEntries.stream()
+        properties.stream()
             .filter(configEntry -> fileValues.containsKey(configEntry.getName()))
             .forEach(configEntry -> {
                 final Object newValue = fileValues.get(configEntry.getName());
@@ -144,11 +144,11 @@ abstract class AbstractSerializer implements Serializer {
 
     private void saveCurrentInstanceValues(final ConfigWrapper<?> configWrapper) {
         final Object instance = configWrapper.getInstance();
-        final Set<ConfigEntry> configEntries = configWrapper.getConfigEntries();
-        saveToFile(configWrapper, getCurrentValues(instance, configEntries));
+        final Set<PropertyWrapper> properties = configWrapper.getProperties();
+        saveToFile(configWrapper, getCurrentValues(instance, properties));
     }
 
-    protected final void setValueOnField(final ConfigEntry configEntry, final Object rawValue) throws IllegalArgumentException, JsonSyntaxException {
+    protected final void setValueOnField(final PropertyWrapper configEntry, final Object rawValue) throws IllegalArgumentException, JsonSyntaxException {
         checkNotNull(configEntry, "configEntry");
         checkNotNull(rawValue, "rawValue");
 
@@ -163,7 +163,7 @@ abstract class AbstractSerializer implements Serializer {
         configEntry.set(value);
     }
 
-    protected final Object mapToSerializableValue(final Gson gson, final ConfigEntry configEntry) {
+    protected final Object mapToSerializableValue(final Gson gson, final PropertyWrapper configEntry) {
         final Class<?> fieldClass = configEntry.getType();
         final Type fieldType = configEntry.getGenericType();
         Type targetType = Object.class;

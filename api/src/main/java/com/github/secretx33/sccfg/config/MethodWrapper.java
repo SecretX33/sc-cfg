@@ -17,8 +17,32 @@ package com.github.secretx33.sccfg.config;
 
 import java.lang.reflect.Method;
 
+/**
+ * Represents a single method within a configuration instance, wrapped to expose its settings (set through
+ * annotations).
+ */
 public interface MethodWrapper {
+
+    /**
+     * Unwraps the method.
+     *
+     * @return the wrapped method
+     */
     Method getMethod();
 
+    /**
+     * Evaluates if this method should be run asynchronously.
+     *
+     * @return true if the method should be run only asynchronously.
+     */
     boolean isAsync();
+
+    /**
+     * Evaluates if this method should be run synchronously.
+     *
+     * @return true if the method should be run only synchronously.
+     */
+    default boolean isSync() {
+        return !isAsync();
+    }
 }

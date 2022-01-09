@@ -15,7 +15,6 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.config.ConfigEntry;
 import com.github.secretx33.sccfg.config.ConfigWrapper;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -33,6 +31,10 @@ import java.util.regex.Pattern;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
+/**
+ * This class is responsible for adding comments specified by a {@link ConfigWrapper} to a YAML file because
+ * the underlying library, Configurate, does not have comment support for YAML files.
+ */
 class YamlCommentManager {
 
     private static final String COMMENT_PREFIX = "# ";
@@ -49,24 +51,13 @@ class YamlCommentManager {
     YamlCommentManager(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
         this.file = configWrapper.getDestination();
-        this.comments = getComments(configWrapper);
+        this.comments = configWrapper.getComments();
     }
 
-    private Map<String, String[]> getComments(final ConfigWrapper<?> configWrapper) {
-        final Map<String, String[]> comments = new HashMap<>();
-        for (final ConfigEntry entry : configWrapper.getConfigEntries()) {
-            final String comment = entry.getComment();
-            if (comment == null) continue;
-
-            final String[] commentLines = comment.split("\\n");
-            if (commentLines.length > 0) {
-                final String key = entry.getFullPathOnFile();
-                comments.put(key, commentLines);
-            }
-        }
-        return comments;
-    }
-
+    /**
+     * Save the {@link YamlCommentManager#comments} extracted from the {@link ConfigWrapper} to the
+     * {@link YamlCommentManager#file}.
+     */
     public void saveComments() throws IOException {
         if (comments.isEmpty()) return;
         final List<String> lines = Files.readAllLines(file, UTF8_CHARSET);
@@ -105,7 +96,7 @@ class YamlCommentManager {
             // line is a list key
             matchRes = matchOrNull(LIST_PATTERN, line, 1);
             if (matchRes != null) {
-                matchRes = matchRes.replace("-", "").trim();
+                matchRes = matchRes.trim();
                 keyIsFromList = true;
             }
         }

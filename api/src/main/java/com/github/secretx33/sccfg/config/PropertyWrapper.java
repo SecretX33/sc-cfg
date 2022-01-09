@@ -19,7 +19,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
 
-public interface ConfigEntry {
+/**
+ * Represents a single value within a configuration instance.
+ */
+public interface PropertyWrapper {
+
     /**
      * Get the name of this entry, which is its "java name".
      *
@@ -60,8 +64,8 @@ public interface ConfigEntry {
     String getPathOnFile();
 
     /**
-     * Return the "full path" of this entry, e.g. if the {@link ConfigEntry#getPathOnFile} is "general" and
-     * the {@link ConfigEntry#getNameOnFile} is "my-entry", then the return of this method will be
+     * Return the "full path" of this entry, e.g. if the {@link PropertyWrapper#getPathOnFile} is "general" and
+     * the {@link PropertyWrapper#getNameOnFile} is "my-entry", then the return of this method will be
      * "general.my-entry".
      *
      * @return the "full path" of this entry, or only the {@code nameOnFile} if the config
@@ -111,7 +115,7 @@ public interface ConfigEntry {
      *
      * @param value the value that should be set on this config entry
      * @throws IllegalArgumentException if the {@code value} provided type is not compatible with the
-     *                                  {@link ConfigEntry#getType()} type
+     *                                  {@link PropertyWrapper#getType()} type
      */
     void set(Object value) throws IllegalArgumentException;
 }
