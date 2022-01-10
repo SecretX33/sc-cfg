@@ -56,7 +56,7 @@ public final class SerializerFactory {
             final MissingSerializerDependency ex = new MissingSerializerDependency(fileType, e);
             logger.log(Level.SEVERE, "Could not create a serializer for type " + fileType + " (" + fileType.getExtension() + ")", ex);
             throw ex;
-        } catch (final ReflectiveOperationException e) {
+        } catch (final ClassCastException | ReflectiveOperationException e) {
             throw new ConfigReflectiveOperationException("If you are reading this, it means that sc-cfg was not able to instantiate serializer class of file type " + fileType + ", and that there's a problem with sc-cfg, please report this!", e);
         }
     }

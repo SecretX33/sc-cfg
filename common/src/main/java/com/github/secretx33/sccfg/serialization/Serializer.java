@@ -15,12 +15,12 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.PropertyWrapper;
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
-import com.github.secretx33.sccfg.wrapper.ConfigEntry;
-import com.github.secretx33.sccfg.wrapper.ConfigWrapper;
 
 import java.util.Map;
 import java.util.Set;
@@ -75,10 +75,10 @@ public interface Serializer {
      * mapping to the variable names.
      *
      * @param configInstance the config to extract default values from
-     * @param configEntries set containing all the entries from {@code configInstance} that should have their value extracted
+     * @param properties set containing all the entries from {@code configInstance} that should have their value extracted
      * @return the default values for that config instance (the keys are <b>FILE</b> names, not java names)
      * @throws ConfigSerializationException if serializer could not serialize a config entry
      * (that happens when sc-cfg is missing a Type Adapter for that specific type)
      */
-    Map<String, Object> getCurrentValues(Object configInstance, Set<ConfigEntry> configEntries);
+    Map<String, Object> getCurrentValues(Object configInstance, Set<PropertyWrapper> properties);
 }

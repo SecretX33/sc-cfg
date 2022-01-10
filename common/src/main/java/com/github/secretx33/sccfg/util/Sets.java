@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,16 @@ public final class Sets {
                 .filter(Objects::nonNull)
                 .flatMap(Collection::stream)
                 .toArray(size -> (T[]) Array.newInstance(clazz, size));
+    }
+
+    public static <T> Set<T> filter(final Iterable<? extends T> iterable, final Predicate<? extends T> filter) {
+        final Set<T> set = new LinkedHashSet<>();
+        for (final T element : iterable) {
+            set.add(element);
+        }
+        if (set.isEmpty())
+            return Collections.emptySet();
+        return Collections.unmodifiableSet(set);
     }
 
     private static <T> Collector<T, ?, LinkedHashSet<T>> toMutableSet() {

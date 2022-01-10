@@ -19,10 +19,11 @@ import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
+import com.github.secretx33.sccfg.config.MethodWrapperImpl;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
-import com.github.secretx33.sccfg.wrapper.MethodWrapper;
+import com.github.secretx33.sccfg.config.MethodWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
@@ -77,16 +78,18 @@ public class BaseScanner implements Scanner {
      */
     private final Set<Class<?>> customTypeAdapters;
 
+    public BaseScanner(final Object mainInstance) {
+        this(checkNotNull(mainInstance, "mainInstance").getClass().getPackage().getName(), Sets.of(mainInstance.getClass().getClassLoader()));
+    }
+
     public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath");
         this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
         final Reflections reflections = getGenericReflections();
-        baseTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Sets.toSet());
-        customTypeAdapters = reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class).stream()
-                .filter(clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH))
-                .collect(Sets.toSet());
+        baseTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
+                clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH));
+        customTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
+                clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH));
     }
 
     @NotNull
@@ -114,7 +117,7 @@ public class BaseScanner implements Scanner {
                 method -> {
                     final BeforeReload reloadAnnotation = method.getDeclaredAnnotation(BeforeReload.class);
                     final boolean async = reloadAnnotation.async();
-                    return new MethodWrapper(method, async);
+                    return new MethodWrapperImpl(method, async);
                 });
     }
 
@@ -125,7 +128,7 @@ public class BaseScanner implements Scanner {
                 method -> {
                     final AfterReload reloadAnnotation = method.getDeclaredAnnotation(AfterReload.class);
                     final boolean async = reloadAnnotation.async();
-                    return new MethodWrapper(method, async);
+                    return new MethodWrapperImpl(method, async);
                 });
     }
 

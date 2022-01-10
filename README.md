@@ -11,7 +11,8 @@ You won't have to worry about reloading your configuration anymore, SC-CFG handl
 First, pick what platform modules you're going to use, currently there are:
 
 - `bukkit` for Spigot 1.8+ and Java 8+
-- `bukkit-kotlin` for Kotlin extensions on Bukkit (includes `bukkit`)
+- `bungee` for BungeeCord
+- `kotlin` for Kotlin extensions on any platform
 
 Second, pick the serializers you're going to use according to the file type you want your configs have.
 
@@ -148,6 +149,43 @@ public class MyConfig {
     // ...
 }
 ```
+
+### Header and comments
+
+It's now possible to add a header to the file by setting `header` property of your `@Configuration` annotation, and also comments directly to properties by annotating them with `@Comment` (or `@NamedPath`).
+
+OBS.: Json does not support comments by nature, so any comments on this `FileType` will be ignored.
+
+```java
+import com.github.secretx33.sccfg.api.*;
+
+@Configuration(header = {
+    "I am the first line of the header",
+    "and I am the second one",
+})
+public class MyConfig {
+    
+    @Comment("this value is awesome")
+    public int someValue = 0;
+    
+    @Comment({"but this one...", "this one ROCKS!"})
+    private final String someString = "rock";
+}
+```
+
+And our `MyConfig.yml` will looks like this.
+
+```yaml
+# I am the first line of the header
+# and I am the second one
+
+# this value is awesome
+someValue: 0
+# but this one...
+# this one ROCKS!
+someString: rock
+```
+
 #### And much, much more... Please check [our wiki](https://secretx.gitbook.io/sc-cfg/) for a complete list of sc-cfg features with usage examples.
 
 ## Kotlin
@@ -177,3 +215,7 @@ saveDefaults(config, reloadAfterwards = true, overrideIfExists = false)
 ## Bugs or suggestions
 
 Please report all bugs or post suggestions on the [Issue](https://github.com/SecretX33/sc-cfg/issues) section.
+
+## License
+
+Read file [LICENSE](LICENSE).

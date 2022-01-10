@@ -15,7 +15,7 @@
  */
 package com.github.secretx33.sccfg.executor;
 
-import com.github.secretx33.sccfg.wrapper.MethodWrapper;
+import com.github.secretx33.sccfg.config.MethodWrapper;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
@@ -40,7 +40,7 @@ public final class SyncMethodExecutor extends AbstractMethodExecutor implements 
         checkNotNull(tasks, "tasks");
 
         if (tasks.isEmpty()) return;
-        Bukkit.getScheduler().runTask(plugin, () -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
+        runSync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
     }
 
     @Override
@@ -50,6 +50,10 @@ public final class SyncMethodExecutor extends AbstractMethodExecutor implements 
         checkNotNull(latch, "latch");
 
         if (tasks.isEmpty()) return;
-        Bukkit.getScheduler().runTask(plugin, () -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
+        runSync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
+    }
+
+    private void runSync(final Runnable task) {
+        Bukkit.getScheduler().runTask(plugin, task);
     }
 }

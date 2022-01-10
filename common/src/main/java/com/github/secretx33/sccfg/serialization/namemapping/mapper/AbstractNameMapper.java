@@ -21,6 +21,7 @@ import org.intellij.lang.annotations.Language;
 
 import java.util.Locale;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -60,17 +61,16 @@ abstract class AbstractNameMapper implements NameMapper {
     }
 
     private boolean hasUppercase(final String[] chars) {
-        for (final String letter : chars) {
-            if (!letter.equals(letter.toLowerCase(Locale.US))) {
-                return true;
-            }
-        }
-        return false;
+        return testChars(chars, letter -> !letter.equals(letter.toLowerCase(Locale.US)));
     }
 
     private boolean hasUnderline(final String[] chars) {
+        return testChars(chars, letter -> letter.equals("_"));
+    }
+
+    private boolean testChars(final String[] chars, final Predicate<String> predicate) {
         for (final String letter : chars) {
-            if (letter.equals("_")) {
+            if (predicate.test(letter)) {
                 return true;
             }
         }

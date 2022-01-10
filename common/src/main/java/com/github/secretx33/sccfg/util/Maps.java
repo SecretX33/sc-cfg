@@ -46,20 +46,20 @@ public final class Maps {
         return Collections.unmodifiableMap(map);
     }
 
-    public static <K, V> Map<K, V> copyPutting(final Map<K, V> map, final K key, final V value) {
+    public static <K, V> Map<K, V> copyPutting(final Map<? extends K, ? extends V> map, final K key, final V value) {
         checkNotNull(map, "map");
         checkNotNull(key, "key");
         checkNotNull(value, "value");
         return copyApplying(map, m -> m.put(key, value));
     }
 
-    public static <K, V> Map<K, V> copyPutting(final Map<K, V> map, final Map<? extends K, ? extends V> otherMap) {
+    public static <K, V> Map<K, V> copyPutting(final Map<? extends K, ? extends V> map, final Map<? extends K, ? extends V> otherMap) {
         checkNotNull(map, "map");
         checkNotNull(otherMap, "otherMap");
         return copyApplying(map, m -> m.putAll(otherMap));
     }
 
-    public static <K, V> Map<K, V> copyApplying(final Map<K, V> map, final Consumer<Map<K, V>> consumer) {
+    public static <K, V> Map<K, V> copyApplying(final Map<? extends K, ? extends V> map, final Consumer<Map<K, V>> consumer) {
         checkNotNull(map, "map");
         checkNotNull(consumer, "consumer");
 
@@ -68,14 +68,14 @@ public final class Maps {
         return Collections.unmodifiableMap(newMap);
     }
 
-    private static <K, V> Collector<Pair<K, V>, ?, LinkedHashMap<K, V>> toMutableMap() {
+    private static <K, V> Collector<Pair<? extends K, ? extends V>, ?, LinkedHashMap<K, V>> toMutableMap() {
         return Collectors.toMap(Pair::getFirst,
                 Pair::getSecond,
                 (a, b) -> b,
                 LinkedHashMap::new);
     }
 
-    public static <K, V> Collector<Pair<K, V>, ?, Map<K, V>> toMap() {
+    public static <K, V> Collector<Pair<? extends K, ? extends V>, ?, Map<K, V>> toMap() {
         return Collectors.collectingAndThen(toMutableMap(), Collections::unmodifiableMap);
     }
 }

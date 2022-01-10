@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used to alter where this property will be stored (relative to the root of the config file).
+ * Modify a property path (relative to the root of the config file).
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
