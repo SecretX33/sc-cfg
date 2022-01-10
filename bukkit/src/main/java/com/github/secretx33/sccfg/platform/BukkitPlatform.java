@@ -19,7 +19,7 @@ import com.github.secretx33.sccfg.Config;
 import com.github.secretx33.sccfg.config.ConfigFactoryImpl;
 import com.github.secretx33.sccfg.config.ConfigFactory;
 import com.github.secretx33.sccfg.executor.SyncMethodExecutor;
-import com.github.secretx33.sccfg.scanner.BaseScanner;
+import com.github.secretx33.sccfg.scanner.ScannerImpl;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactoryImpl;
@@ -36,7 +36,7 @@ final class BukkitPlatform implements Platform {
 
     public BukkitPlatform() {
         final Plugin plugin = JavaPlugin.getProvidingPlugin(Config.class);
-        final Scanner scanner = new BaseScanner(plugin);
+        final Scanner scanner = new ScannerImpl(plugin);
         final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
         this.gsonFactory = new GsonFactoryImpl(plugin.getLogger(), scanner);
         this.configFactory = new ConfigFactoryImpl(

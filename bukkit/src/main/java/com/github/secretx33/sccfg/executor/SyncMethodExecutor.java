@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.config.MethodWrapper;
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.util.Set;
@@ -30,15 +29,14 @@ public final class SyncMethodExecutor extends AbstractMethodExecutor implements 
     private final Plugin plugin;
 
     public SyncMethodExecutor(final Plugin plugin, final Logger logger) {
+        super(logger);
         this.plugin = checkNotNull(plugin, "plugin");
-        super.logger = checkNotNull(logger, "logger");
     }
 
     @Override
     public void runMethodsSync(final Object instance, final Set<MethodWrapper> tasks) {
         checkNotNull(instance, "instance");
         checkNotNull(tasks, "tasks");
-
         if (tasks.isEmpty()) return;
         runSync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
     }
@@ -48,12 +46,11 @@ public final class SyncMethodExecutor extends AbstractMethodExecutor implements 
         checkNotNull(instance, "instance");
         checkNotNull(tasks, "tasks");
         checkNotNull(latch, "latch");
-
         if (tasks.isEmpty()) return;
         runSync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
     }
 
     private void runSync(final Runnable task) {
-        Bukkit.getScheduler().runTask(plugin, task);
+        plugin.getServer().getScheduler().runTask(plugin, task);
     }
 }

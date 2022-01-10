@@ -142,8 +142,6 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     private void applyComments(final ConfigWrapper<?> configWrapper, final ConfigurationNode fileNode) {
         if (!(fileNode instanceof CommentedConfigurationNodeIntermediary<?>)) return;
         final CommentedConfigurationNodeIntermediary<?> commentedFileNode = (CommentedConfigurationNodeIntermediary<?>) fileNode;
-        // insert header in root node
-        commentedFileNode.comment(configWrapper.getHeader());
         // insert comments on config entries
         configWrapper.getProperties().stream()
             .filter(PropertyWrapper::hasComment)

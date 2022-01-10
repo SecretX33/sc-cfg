@@ -48,10 +48,10 @@ import java.util.stream.Stream;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
-public class BaseScanner implements Scanner {
+public class ScannerImpl implements Scanner {
 
     private static final String LIBRARY_CLASSPATH = "com.github.secretx33.sccfg";
-    private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.of(BaseScanner.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
+    private static final Set<ClassLoader> BASE_CLASSLOADERS = Sets.of(ScannerImpl.class.getClassLoader(), ClassLoader.getSystemClassLoader(), ClasspathHelper.contextClassLoader(), ClasspathHelper.staticClassLoader());
     @Nullable
     private static final Field MODIFIERS_FIELD;
 
@@ -78,11 +78,11 @@ public class BaseScanner implements Scanner {
      */
     private final Set<Class<?>> customTypeAdapters;
 
-    public BaseScanner(final Object mainInstance) {
+    public ScannerImpl(final Object mainInstance) {
         this(checkNotNull(mainInstance, "mainInstance").getClass().getPackage().getName(), Sets.of(mainInstance.getClass().getClassLoader()));
     }
 
-    public BaseScanner(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
+    public ScannerImpl(final String basePackage, final Set<ClassLoader> extraClassLoaders) {
         this.basePackage = checkNotNull(basePackage, "basePath");
         this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
         final Reflections reflections = getGenericReflections();

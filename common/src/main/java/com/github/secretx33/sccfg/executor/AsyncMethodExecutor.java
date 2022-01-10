@@ -30,17 +30,16 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class AsyncMethodExecutor extends AbstractMethodExecutor implements AsyncExecutor {
 
-    private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+    private static final ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
 
     public AsyncMethodExecutor(final Logger logger) {
-        super.logger = checkNotNull(logger, "logger");
+        super(logger);
     }
 
     @Override
     public void delayedRun(final long millis, final Runnable task) {
         checkArgument(millis >= 0L, () -> "millis: " + millis + " (expected >= 0L)");
         checkNotNull(task, "task");
-
         executor.schedule(task, millis, TimeUnit.MILLISECONDS);
     }
 
@@ -48,7 +47,6 @@ public final class AsyncMethodExecutor extends AbstractMethodExecutor implements
     public void runMethodsAsync(final Object instance, final Set<MethodWrapper> tasks) {
         checkNotNull(instance, "instance");
         checkNotNull(tasks, "tasks");
-
         if (tasks.isEmpty()) return;
         CompletableFuture.runAsync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
     }
@@ -58,7 +56,6 @@ public final class AsyncMethodExecutor extends AbstractMethodExecutor implements
         checkNotNull(instance, "instance");
         checkNotNull(tasks, "tasks");
         checkNotNull(latch, "latch");
-
         if (tasks.isEmpty()) return;
         CompletableFuture.runAsync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
     }

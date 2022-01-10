@@ -44,7 +44,7 @@ public final class PlatformProvider {
             return (T) constructor.newInstance();
         } catch(final ClassNotFoundException e) {
             throw new WrongPlatformModuleException("You are using the wrong module of SC-CFG for your current platform, please use the module that provides '" + className + "'!", e);
-        } catch(final ClassCastException | ReflectiveOperationException e) {
+        } catch(final Exception e) {
             throw new ConfigInternalErrorException("Could not get Platform because sc-cfg could not instantiate class '" + className + "', please report this!", e);
         }
     }

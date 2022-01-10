@@ -16,7 +16,7 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.api.FileType;
-import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
+import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.MissingSerializerDependency;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 
@@ -54,10 +54,10 @@ public final class SerializerFactory {
             return (Serializer) constructor.newInstance(logger, gsonFactory);
         } catch (final ClassNotFoundException e) {
             final MissingSerializerDependency ex = new MissingSerializerDependency(fileType, e);
-            logger.log(Level.SEVERE, "Could not create a serializer for type " + fileType + " (" + fileType.getExtension() + ")", ex);
+            logger.log(Level.SEVERE, String.format("Could not create a serializer for type %s (%s)", fileType, fileType.getExtension()), ex);
             throw ex;
-        } catch (final ClassCastException | ReflectiveOperationException e) {
-            throw new ConfigReflectiveOperationException("If you are reading this, it means that sc-cfg was not able to instantiate serializer class of file type " + fileType + ", and that there's a problem with sc-cfg, please report this!", e);
+        } catch (final Exception e) {
+            throw new ConfigInternalErrorException("If you are reading this, it means that sc-cfg was not able to instantiate serializer class of file type " + fileType + ", and that there's a problem with sc-cfg, please report this!", e);
         }
     }
 }

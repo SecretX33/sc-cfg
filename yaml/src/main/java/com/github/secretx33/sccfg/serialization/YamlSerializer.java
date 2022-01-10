@@ -30,13 +30,15 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public final class YamlSerializer extends AbstractConfigurateSerializer<YamlConfigurationLoader.Builder, YamlConfigurationLoader> {
 
+    public static final int SPACES_PER_DEPTH = 2;
+
     public YamlSerializer(final Logger logger, final GsonFactory gsonFactory) {
         super(logger, gsonFactory);
     }
 
     @Override
     protected AbstractConfigurationLoader.Builder<YamlConfigurationLoader.Builder, YamlConfigurationLoader> fileBuilder(@Nullable final ConfigWrapper<?> configWrapper) {
-        return YamlConfigurationLoader.builder().indent(2).nodeStyle(NodeStyle.BLOCK)
+        return YamlConfigurationLoader.builder().indent(SPACES_PER_DEPTH).nodeStyle(NodeStyle.BLOCK)
                 .headerMode(HeaderMode.PRESET)
                 .defaultOptions(opts -> opts.header(configWrapper != null ? configWrapper.getHeader() : null)
                         .shouldCopyDefaults(false).serializers(TypeSerializerCollection.defaults()));

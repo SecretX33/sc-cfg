@@ -69,7 +69,6 @@ final class MemorySectionAdapter implements JsonSerializer<MemorySection>, JsonD
             }
             config.set(key, value);
         }
-
         return config;
     }
 
@@ -92,7 +91,6 @@ final class MemorySectionAdapter implements JsonSerializer<MemorySection>, JsonD
             }
             map.put(key, value);
         }
-
         return map;
     }
 

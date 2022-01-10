@@ -20,7 +20,7 @@ import com.github.secretx33.sccfg.config.ConfigFactory;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.executor.SyncMethodExecutor;
-import com.github.secretx33.sccfg.scanner.BaseScanner;
+import com.github.secretx33.sccfg.scanner.ScannerImpl;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactoryImpl;
@@ -38,7 +38,7 @@ final class BungeePlatform implements Platform {
 
     public BungeePlatform() {
         final Plugin plugin = getProvidingPlugin();
-        final Scanner scanner = new BaseScanner(plugin);
+        final Scanner scanner = new ScannerImpl(plugin);
         final FileWatcher fileWatcher = FileWatcherProvider.get(plugin.getDataFolder().toPath());
         this.gsonFactory = new GsonFactoryImpl(plugin.getLogger(), scanner);
         this.configFactory = new ConfigFactoryImpl(
@@ -55,13 +55,13 @@ final class BungeePlatform implements Platform {
         final Object pluginClassLoader = BungeePlatform.class.getClassLoader();
         final Class<?> pluginClassLoaderClass = pluginClassLoader.getClass();
         if (!pluginClassLoaderClass.getCanonicalName().equals("net.md_5.bungee.api.plugin.PluginClassloader")) {
-            throw new ConfigException("Unable to get providing plugin because the classloader is not a PluginClassloader");
+            throw new ConfigException(String.format("Unable to get providing plugin because the classloader '%s' is not a PluginClassloader", pluginClassLoaderClass.getCanonicalName()));
         }
         try {
             final Field pluginField = pluginClassLoaderClass.getDeclaredField("plugin");
             pluginField.setAccessible(true);
             return (Plugin) pluginField.get(pluginClassLoader);
-        } catch (final ClassCastException | ReflectiveOperationException e) {
+        } catch (final Exception e) {
             throw new ConfigReflectiveOperationException("Unable to find or get 'plugin' field inside class '" + pluginClassLoaderClass.getCanonicalName() + "'", e);
         }
     }

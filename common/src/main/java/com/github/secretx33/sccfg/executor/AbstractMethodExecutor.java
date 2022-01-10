@@ -22,9 +22,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
+
 abstract class AbstractMethodExecutor {
 
-    protected Logger logger;
+    protected final Logger logger;
+
+    public AbstractMethodExecutor(final Logger logger) {
+        this.logger = checkNotNull(logger, "logger");
+    }
 
     public void runCatching(final Object instance, final MethodWrapper wrapper) {
         final Method method = wrapper.getMethod();
@@ -36,17 +42,10 @@ abstract class AbstractMethodExecutor {
     }
 
     public void runCatching(final Object instance, final MethodWrapper wrapper, final CountDownLatch latch) {
-        final Method method = wrapper.getMethod();
         try {
-            method.invoke(instance);
-        } catch (final Exception e) {
-            logger.log(Level.SEVERE, "An exception was thrown while executing method '" + method.getName() + "' of class " + method.getDeclaringClass().getCanonicalName(), e);
+            runCatching(instance, wrapper);
         } finally {
             latch.countDown();
         }
-    }
-
-    public Runnable runnerCatching(final Object instance, final MethodWrapper wrapper, final CountDownLatch latch) {
-        return () -> runCatching(instance, wrapper, latch);
     }
 }

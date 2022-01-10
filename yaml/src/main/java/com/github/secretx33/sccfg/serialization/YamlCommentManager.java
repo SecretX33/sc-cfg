@@ -35,10 +35,9 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
  * This class is responsible for adding comments specified by a {@link ConfigWrapper} to a YAML file because
  * the underlying library, Configurate, does not have comment support for YAML files.
  */
-class YamlCommentManager {
+final class YamlCommentManager {
 
     private static final String COMMENT_PREFIX = "# ";
-    private static final int SPACES_PER_DEPTH = 2;
     private static final Pattern COMMENT_PATTERN = Pattern.compile("(\\s*?#.*)$");
     private static final Pattern KEY_PATTERN = Pattern.compile("^\\s*([\\w\\d\\-!@#$%^&*+]+?):.*$");
     private static final Pattern LIST_PATTERN = Pattern.compile("^\\s*-\\s?[\"']?(.+)[\"']?.*$");
@@ -120,7 +119,7 @@ class YamlCommentManager {
 
     private int lineDepth(final String line) {
         final Matcher match = DEPTH_PATTERN.matcher(line);
-        return match.find() ? match.group(1).length() / SPACES_PER_DEPTH : 0;
+        return match.find() ? match.group(1).length() / YamlSerializer.SPACES_PER_DEPTH : 0;
     }
 
     @Nullable
@@ -141,7 +140,7 @@ class YamlCommentManager {
         final List<String> lines = new ArrayList<>(comment.length);
         for (final String line : comment) {
             final StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < depth * SPACES_PER_DEPTH; i++) {
+            for (int i = 0; i < depth * YamlSerializer.SPACES_PER_DEPTH; i++) {
                 sb.append(' ');
             }
             sb.append(COMMENT_PREFIX);
