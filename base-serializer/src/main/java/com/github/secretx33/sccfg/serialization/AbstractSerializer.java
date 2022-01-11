@@ -15,14 +15,14 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
+import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.config.PropertyWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
-import com.github.secretx33.sccfg.config.ConfigWrapper;
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Type;

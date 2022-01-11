@@ -20,17 +20,12 @@ import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.MissingSerializerDependency;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 
-import java.lang.reflect.Constructor;
-import java.util.EnumMap;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class SerializerFactory {
 
-    private final Map<FileType, Serializer> serializers = new EnumMap<>(FileType.class);
     private final Logger logger;
     private final GsonFactory gsonFactory;
 
@@ -41,23 +36,23 @@ public final class SerializerFactory {
 
     public Serializer getSerializer(final FileType fileType) {
         checkNotNull(fileType, "fileType");
-        return serializers.computeIfAbsent(fileType, this::serializerFor);
+        return createSerializer(fileType);
     }
 
-    private Serializer serializerFor(final FileType fileType) {
-        checkNotNull(fileType, "fileType");
-
-        final String className = getClass().getPackage().getName() + "." + fileType.getClassName();
+    private Serializer createSerializer(final FileType fileType) {
         try {
-            final Constructor<?> constructor = Class.forName(className).getDeclaredConstructor(Logger.class, GsonFactory.class);
-            constructor.setAccessible(true);
-            return (Serializer) constructor.newInstance(logger, gsonFactory);
-        } catch (final ClassNotFoundException e) {
-            final MissingSerializerDependency ex = new MissingSerializerDependency(fileType, e);
-            logger.log(Level.SEVERE, String.format("Could not create a serializer for type %s (%s)", fileType, fileType.getExtension()), ex);
-            throw ex;
-        } catch (final Exception e) {
-            throw new ConfigInternalErrorException("If you are reading this, it means that sc-cfg was not able to instantiate serializer class of file type " + fileType + ", and that there's a problem with sc-cfg, please report this!", e);
+            switch(fileType) {
+                case HOCON:
+                    return new HoconSerializer(logger, gsonFactory);
+                case JSON:
+                    return new JsonSerializer(logger, gsonFactory);
+                case YAML:
+                    return new YamlSerializer(logger, gsonFactory);
+                default:
+                    throw new ConfigInternalErrorException("If you are reading this, it means that sc-cfg doesn't have a registered serializer for type " + fileType + ", and that there's a problem with sc-cfg, please report this!");
+            }
+        } catch (final NoClassDefFoundError e) {
+            throw new MissingSerializerDependency(fileType, e);
         }
     }
 }

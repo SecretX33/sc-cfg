@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark a method to be run after each config reload. Use this to perform general tasks, like sending
+ * Mark a method to be run <b>after</b> each config reload. Use this to perform general tasks, like sending
  * messages on the console ({@code config X reloaded}), perform checks on illegal values and replace/warn
  * the user, and so on.
  *

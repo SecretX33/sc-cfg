@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Set the target property comments.
+ * Set the property comments.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
