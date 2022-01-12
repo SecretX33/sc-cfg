@@ -18,12 +18,15 @@ package com.github.secretx33.sccfg.scanner;
 import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.IgnoreField;
+import com.github.secretx33.sccfg.api.annotation.PathComment;
+import com.github.secretx33.sccfg.api.annotation.PathComments;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
+import com.github.secretx33.sccfg.config.MethodWrapper;
 import com.github.secretx33.sccfg.config.MethodWrapperImpl;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.util.Packages;
 import com.github.secretx33.sccfg.util.Sets;
-import com.github.secretx33.sccfg.config.MethodWrapper;
+import com.google.common.collect.Streams;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.reflections.Reflections;
@@ -32,17 +35,20 @@ import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -176,6 +182,51 @@ public class ScannerImpl implements Scanner {
                 .collect(Sets.toSet());
     }
 
+    @Override
+    public Collection<Class<?>> getClassAndSubclasses(final Class<?> clazz) {
+        checkNotNull(clazz, "clazz");
+
+        // class does not inherit from another class, so just go through its fields
+        if (clazz.getSuperclass() == null || Object.class.equals(clazz.getSuperclass())) {
+            return Sets.of(clazz);
+        }
+
+        // collect all classes incl. parents
+        Class<?> currentClass = clazz;
+        final Set<Class<?>> classes = new LinkedHashSet<>();
+        while (currentClass != null && !Object.class.equals(currentClass)) {
+            classes.add(currentClass);
+            currentClass = currentClass.getSuperclass();
+        }
+        return Collections.unmodifiableSet(classes);
+    }
+
+    @Override
+    public Collection<PathComment> getPathCommentFromClassAndAllFields(final Class<?> clazz, final Collection<Field> configFields) {
+        final Collection<Class<?>> classAndSubs = getClassAndSubclasses(clazz);
+
+        final Stream<PathComment> classPathComments = extractPathComments(classAndSubs);
+        final Stream<PathComment> classPathComment = extractPathComment(classAndSubs);
+        final Stream<PathComment> fieldPathComments = extractPathComments(configFields);
+        final Stream<PathComment> fieldPathComment = extractPathComment(configFields);
+
+        return Streams.concat(classPathComment, classPathComments, fieldPathComment, fieldPathComments)
+                .collect(Collectors.toList());
+    }
+
+    private Stream<PathComment> extractPathComment(final Collection<? extends AnnotatedElement> members) {
+        return members.stream()
+                .map(field -> field.getDeclaredAnnotation(PathComment.class))
+                .filter(Objects::nonNull);
+    }
+
+    private Stream<PathComment> extractPathComments(final Collection<? extends AnnotatedElement> members) {
+        return members.stream()
+                .map(field -> field.getDeclaredAnnotation(PathComments.class))
+                .filter(Objects::nonNull)
+                .flatMap(annot -> Arrays.stream(annot.value()));
+    }
+
     private Stream<Method> getMethodsAnnotatedWith(final Class<?> clazz, final Class<? extends Annotation> annotationClass) {
         return getAllMembers(clazz, Class::getDeclaredMethods)
                 .filter(method -> method.getDeclaredAnnotation(annotationClass) != null);
@@ -187,18 +238,7 @@ public class ScannerImpl implements Scanner {
     }
 
     private <T extends Member> Stream<T> getAllMembers(final Class<?> clazz, final Function<Class<?>, T[]> selector) {
-        // class does not inherit from another class, so just go through its fields
-        if (clazz.getSuperclass() == null || Object.class.equals(clazz.getSuperclass())) {
-            return Arrays.stream(selector.apply(clazz)).sequential();
-        }
-
-        // collect all classes incl. parents
-        Class<?> currentClass = clazz;
-        final List<Class<?>> classes = new ArrayList<>();
-        while (currentClass != null && !Object.class.equals(currentClass)) {
-            classes.add(currentClass);
-            currentClass = currentClass.getSuperclass();
-        }
+        final Collection<Class<?>> classes = getClassAndSubclasses(clazz);
 
         // and add all members from all classes (incl. parents) if they were not added yet
         final Set<T> members = new LinkedHashSet<>();

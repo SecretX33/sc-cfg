@@ -138,13 +138,18 @@ final class YamlCommentManager {
 
     private List<String> toYamlComment(final String[] comment, final int depth) {
         final List<String> lines = new ArrayList<>(comment.length);
+        boolean listContainsText = false;
         for (final String line : comment) {
             final StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < depth * YamlSerializer.SPACES_PER_DEPTH; i++) {
-                sb.append(' ');
+            final boolean isLineBlank = line.trim().isEmpty();
+            if (listContainsText || !isLineBlank) {
+                for (int i = 0; i < depth * YamlSerializer.SPACES_PER_DEPTH; i++) {
+                    sb.append(' ');
+                }
+                sb.append(COMMENT_PREFIX);
             }
-            sb.append(COMMENT_PREFIX);
             sb.append(line);
+            if (!isLineBlank) listContainsText = true;
             lines.add(sb.toString());
         }
         return lines;

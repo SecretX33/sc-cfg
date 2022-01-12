@@ -23,7 +23,6 @@ import com.github.secretx33.sccfg.util.Sets;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -42,6 +41,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
     private final Naming nameStrategy;
     private final Map<String, Object> defaults;
     private final Set<PropertyWrapper> properties;
+    private final Map<String, String[]> comments;
     private final Set<MethodWrapper> runBeforeReloadMethods;
     private final Set<MethodWrapper> runAfterReloadMethods;
     private final FileWatcher.WatchedLocation watchedLocation;
@@ -52,6 +52,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
             final Path destination,
             final Map<String, Object> defaults,
             final Set<PropertyWrapper> properties,
+            final Map<String, String[]> comments,
             final Set<MethodWrapper> runBeforeReload,
             final Set<MethodWrapper> runAfterReload,
             final FileWatcher.WatchedLocation watchedLocation
@@ -64,6 +65,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
         this.nameStrategy = checkNotNull(configAnnotation.naming(), "nameStrategy");
         this.defaults = checkNotNull(defaults, "defaults");
         this.properties = notContainsNull(properties, "properties");
+        this.comments = notContainsNull(comments, "comments");
         this.runBeforeReloadMethods = notContainsNull(runBeforeReload, "runBeforeReload");
         this.runAfterReloadMethods = notContainsNull(runAfterReload, "runAfterReload");
         this.watchedLocation = checkNotNull(watchedLocation, "watchedLocation");
@@ -147,17 +149,6 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
 
     @Override
     public Map<String, String[]> getComments() {
-        final Map<String, String[]> comments = new LinkedHashMap<>();
-        for (final PropertyWrapper entry : getProperties()) {
-            final String comment = entry.getComment();
-            if (comment == null || !entry.hasComment()) continue;
-
-            final String[] commentLines = comment.split("\\n");
-            if (commentLines.length > 0) {
-                final String key = entry.getFullPathOnFile();
-                comments.put(key, commentLines);
-            }
-        }
         return comments;
     }
 
@@ -173,6 +164,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
                 && nameStrategy == that.nameStrategy
                 && defaults.equals(that.defaults)
                 && properties.equals(that.properties)
+                && comments.equals(that.comments)
                 && runBeforeReloadMethods.equals(that.runBeforeReloadMethods)
                 && runAfterReloadMethods.equals(that.runAfterReloadMethods)
                 && watchedLocation.equals(that.watchedLocation);
@@ -180,7 +172,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
 
     @Override
     public int hashCode() {
-        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, properties, runBeforeReloadMethods, runAfterReloadMethods, watchedLocation);
+        return Objects.hash(instance, configAnnotation, destination, fileType, nameStrategy, defaults, properties, comments, runBeforeReloadMethods, runAfterReloadMethods, watchedLocation);
     }
 
     @Override
@@ -193,6 +185,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
                 ", nameStrategy=" + nameStrategy +
                 ", defaults=" + defaults +
                 ", properties=" + properties +
+                ", comments=" + comments +
                 ", runBeforeReloadMethods=" + runBeforeReloadMethods +
                 ", runAfterReloadMethods=" + runAfterReloadMethods +
                 ", watchedLocation=" + watchedLocation +

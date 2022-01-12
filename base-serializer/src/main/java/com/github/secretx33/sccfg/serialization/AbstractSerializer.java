@@ -184,6 +184,5 @@ abstract class AbstractSerializer implements Serializer {
         return serializedValue;
     }
 
-    @SuppressWarnings("UnstableApiUsage")
     protected static final Type GENERIC_MAP_TOKEN = new TypeToken<Map<String, Object>>() {}.getType();
 }

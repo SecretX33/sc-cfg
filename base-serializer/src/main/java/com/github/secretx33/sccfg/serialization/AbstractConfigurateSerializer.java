@@ -143,12 +143,11 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         if (!(fileNode instanceof CommentedConfigurationNodeIntermediary<?>)) return;
         final CommentedConfigurationNodeIntermediary<?> commentedFileNode = (CommentedConfigurationNodeIntermediary<?>) fileNode;
         // insert comments on config entries
-        configWrapper.getProperties().stream()
-            .filter(PropertyWrapper::hasComment)
-            .forEach(entry -> {
-                final CommentedConfigurationNodeIntermediary<?> node = commentedFileNode.node(Arrays.asList(entry.getFullPathOnFile().split("\\.")));
+        configWrapper.getComments()
+            .forEach((path, comments) -> {
+                final CommentedConfigurationNodeIntermediary<?> node = commentedFileNode.node(Arrays.asList(path.split("\\.")));
                 if (!node.virtual()) {
-                    node.comment(entry.getComment());
+                    node.comment(String.join("\n", comments));
                 }
             });
     }

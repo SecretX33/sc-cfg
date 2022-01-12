@@ -20,6 +20,7 @@ import com.github.secretx33.sccfg.api.annotation.Comment;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.api.annotation.Name;
 import com.github.secretx33.sccfg.api.annotation.NamedPath;
+import com.github.secretx33.sccfg.api.annotation.PathComment;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
@@ -38,8 +39,10 @@ import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 import com.github.secretx33.sccfg.util.BooleanWrapper;
+import com.github.secretx33.sccfg.util.Maps;
 import com.github.secretx33.sccfg.util.Sets;
 import com.github.secretx33.sccfg.util.Valid;
+import com.google.common.collect.ObjectArrays;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
@@ -47,6 +50,8 @@ import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -120,6 +125,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         final Serializer serializer = serializerFactory.getSerializer(annotation.type());
         final Set<Field> configFields = scanner.getConfigurationFields(clazz);
         final Set<PropertyWrapper> properties = mapConfigFieldsToProperties(instance, configFields, annotation.naming());
+        final Map<String, String[]> comments = getConfigComments(clazz, properties, configFields);
         final Map<String, Object> defaults = serializer.getCurrentValues(instance, properties);
         try {
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
@@ -128,7 +134,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
             final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
 
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
-            final ConfigWrapper<T> wrapper = new ConfigWrapperImpl<>(instance, annotation, destination, defaults, properties, runBeforeReload, runAfterReload, watchedLocation);
+            final ConfigWrapper<T> wrapper = new ConfigWrapperImpl<>(instance, annotation, destination, defaults, properties, comments, runBeforeReload, runAfterReload, watchedLocation);
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             return serializer.loadConfig(wrapper);
         } catch (final ConfigException e) {
@@ -192,6 +198,28 @@ public final class ConfigFactoryImpl implements ConfigFactory {
             }
         }
         return null;
+    }
+
+    private Map<String, String[]> getConfigComments(
+            final Class<?> clazz,
+            final Collection<PropertyWrapper> properties,
+            final Collection<Field> configFields
+    ) {
+        final Map<String, String[]> map = new LinkedHashMap<>();
+
+        // from Comment and NamedPath annotations
+        properties.stream()
+                .filter(property -> property.hasComment() && property.getComment() != null)
+                .forEach(property -> map.put(property.getFullPathOnFile(), property.getComment().split("\\n")));
+
+        // from PathComment and PathComments annotations
+        final Collection<PathComment> pathComment = scanner.getPathCommentFromClassAndAllFields(clazz, configFields);
+        pathComment.forEach(annotation -> {
+            final String[] annotationComment = String.join("\n", annotation.comment()).split("\n");
+            checkNotBlank(annotation.path(), () -> String.format("@PathComment annotation cannot hold empty or blank paths, but class '%s' comment '%s' have a empty/blank path assigned to it!", clazz.getCanonicalName(), Arrays.toString(annotationComment)));
+            map.compute(annotation.path(), (k, v) -> (v == null) ? annotationComment : ObjectArrays.concat(v, annotationComment, String.class));
+        });
+        return Maps.of(map);
     }
 
     private String parseConfigPath(final Class<?> clazz, final Configuration configuration) {

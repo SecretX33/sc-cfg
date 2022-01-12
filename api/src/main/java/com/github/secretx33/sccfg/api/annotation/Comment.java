@@ -28,9 +28,10 @@ import java.lang.annotation.Target;
 public @interface Comment {
 
     /**
-     * Comments to be placed on top of this property in the config file, each line being represented by
-     * an entry of the array. While they can be anything, they're usually used for explaining what the
-     * property is used for, or what it represents in your code.<br><br>
+     * Comments to be placed on top of this property in the config file, each line being represented
+     * either by an entry of the array, or by {@code \n} in the same string. While they can be anything,
+     * they're usually used for explaining what the property is used for, or what it represents in your
+     * code.<br><br>
      *
      * Keep in mind that this won't be applied to the property if the underlying file type does not
      * support comments.<br>

@@ -20,6 +20,7 @@ import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.api.annotation.AfterReload;
 import com.github.secretx33.sccfg.api.annotation.BeforeReload;
 import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.api.annotation.PathComment;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
@@ -115,8 +116,9 @@ public interface ConfigWrapper<T> {
     Set<MethodWrapper> getRunAfterReloadSyncMethods();
 
     /**
-     * Get a map holding the {@link PropertyWrapper#getFullPathOnFile() fullPathOnFile} as key, and the comments
-     * of that key as value (each line is an entry of the array).
+     * Get a map holding the {@link PropertyWrapper#getFullPathOnFile() fullPathOnFile} as key (for properties),
+     * or the {@link PathComment#path()} (for paths), and the comments of that key as value (each line is an entry
+     * of the array).<br><br>
      */
     Map<String, String[]> getComments();
 

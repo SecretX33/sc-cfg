@@ -15,9 +15,12 @@
  */
 package com.github.secretx33.sccfg.scanner;
 
+import com.github.secretx33.sccfg.api.annotation.PathComment;
+import com.github.secretx33.sccfg.api.annotation.PathComments;
 import com.github.secretx33.sccfg.config.MethodWrapper;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Set;
 
 public interface Scanner {
@@ -53,4 +56,16 @@ public interface Scanner {
      * Return a set containing all field that should not be serialized.
      */
     Set<Field> getIgnoredFields(final Class<?> clazz);
+
+    /**
+     * Return a collection containing the own class and all of its subclasses.
+     */
+    Collection<Class<?>> getClassAndSubclasses(final Class<?> clazz);
+
+    /**
+     * Return a collection containing all {@link PathComment} annotation presents in the class, any subclass, any
+     * field inside {@code configField} parameter, or the content of {@link PathComments} in any of the previous
+     * mentioned places.
+     */
+    Collection<PathComment> getPathCommentFromClassAndAllFields(final Class<?> clazz, final Collection<Field> configFields);
 }
