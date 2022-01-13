@@ -135,7 +135,7 @@ public abstract class AbstractFileWatcher implements AutoCloseable  {
      */
     protected abstract void processEvent(final FileWatcherEvent event);
 
-    public final void runEventProcessingLoopAsync() {
+    protected final void runEventProcessingLoopAsync() {
         CompletableFuture.runAsync(this::runEventProcessingLoop, singleThreadExecutor);
     }
 

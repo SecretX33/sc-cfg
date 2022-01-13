@@ -116,7 +116,7 @@ public interface ConfigWrapper<T> {
     Set<MethodWrapper> getRunAfterReloadSyncMethods();
 
     /**
-     * Get a map holding the {@link PropertyWrapper#getFullPathOnFile() fullPathOnFile} as key (for properties),
+     * Get a map holding the {@link PropertyWrapper#getFullPathOnFile()} as key (for properties),
      * or the {@link PathComment#path()} (for paths), and the comments of that key as value (each line is an entry
      * of the array).<br><br>
      */

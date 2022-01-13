@@ -15,8 +15,8 @@
  */
 package com.github.secretx33.sccfg.serialization;
 
-import com.github.secretx33.sccfg.config.PropertyWrapper;
 import com.github.secretx33.sccfg.config.ConfigWrapper;
+import com.github.secretx33.sccfg.config.PropertyWrapper;
 import com.github.secretx33.sccfg.exception.ConfigDeserializationException;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
@@ -24,6 +24,7 @@ import com.github.secretx33.sccfg.exception.ConfigOverlappingPathException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
 import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
+import com.github.secretx33.sccfg.util.PathUtil;
 import com.google.gson.Gson;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.CommentedConfigurationNodeIntermediary;
@@ -34,7 +35,6 @@ import org.spongepowered.configurate.serialize.SerializationException;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -87,7 +87,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
 
         properties.forEach(entry -> {
             final String pathOnFile = entry.getFullPathOnFile();
-            final Object value = file.node(Arrays.asList(pathOnFile.split("\\."))).raw();
+            final Object value = file.node(PathUtil.spreadPath(pathOnFile)).raw();
             if (value != null) {
                 values.put(entry.getName(), value);
             }
@@ -145,7 +145,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         // insert comments on config entries
         configWrapper.getComments()
             .forEach((path, comments) -> {
-                final CommentedConfigurationNodeIntermediary<?> node = commentedFileNode.node(Arrays.asList(path.split("\\.")));
+                final CommentedConfigurationNodeIntermediary<?> node = commentedFileNode.node(PathUtil.spreadPath(path));
                 if (!node.virtual()) {
                     node.comment(String.join("\n", comments));
                 }
@@ -178,7 +178,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
             }
 
             final String pathOnFile = configEntry.getFullPathOnFile();
-            final ConfigurationNode node = root.node(Arrays.asList(pathOnFile.split("\\.")));
+            final ConfigurationNode node = root.node(PathUtil.spreadPath(pathOnFile));
 
             if (!node.isNull()) {
                 throw new ConfigOverlappingPathException("There is an overlapping config on key '" + configEntry.getPathOnFile() + "' of config instance of class " + configInstance.getClass().getSimpleName() + ", which prevented the serialization of field '" + configEntry.getName() + "'. Please structure your paths in a way that ensure that there is no possibility of collision between two properties.");
