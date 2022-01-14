@@ -23,30 +23,25 @@ import com.github.secretx33.sccfg.serialization.namemapping.mapper.NoneMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.UppercaseHyphenatedMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.mapper.UppercaseUnderlinedMapper;
 
-import java.util.EnumMap;
-import java.util.Map;
-
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class NameMapperFactory {
-
-    private final Map<Naming, NameMapper> nameMappers = new EnumMap<>(Naming.class);
 
     public NameMapper getMapper(final Naming strategy) {
         checkNotNull(strategy, "strategy");
         switch (strategy) {
             case NONE:
-                return nameMappers.computeIfAbsent(strategy, s -> new NoneMapper());
+                return new NoneMapper();
             case LOWERCASE_HYPHENATED:
-                return nameMappers.computeIfAbsent(strategy, LowercaseHyphenatedMapper::new);
+                return new LowercaseHyphenatedMapper(strategy);
             case UPPERCASE_HYPHENATED:
-                return nameMappers.computeIfAbsent(strategy, UppercaseHyphenatedMapper::new);
+                return new UppercaseHyphenatedMapper(strategy);
             case LOWERCASE_UNDERLINED:
-                return nameMappers.computeIfAbsent(strategy, LowercaseUnderlinedMapper::new);
+                return new LowercaseUnderlinedMapper(strategy);
             case UPPERCASE_UNDERLINED:
-                return nameMappers.computeIfAbsent(strategy, UppercaseUnderlinedMapper::new);
+                return new UppercaseUnderlinedMapper(strategy);
             default:
-                throw new ConfigInternalErrorException("Oops, I don't have a registered name mapper for name strategy " + strategy + ", what a shame!");
+                throw new ConfigInternalErrorException("There is no registered name mapper for name strategy " + strategy + ", please report this!");
         }
     }
 }

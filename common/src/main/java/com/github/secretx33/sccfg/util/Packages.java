@@ -15,12 +15,15 @@
  */
 package com.github.secretx33.sccfg.util;
 
+import org.jetbrains.annotations.Contract;
+
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class Packages {
 
     private Packages() {}
 
+    @Contract(pure = true)
     public static boolean isPackageWithin(final Package pkg, final String otherPkg) {
         checkNotNull(pkg, "pkg");
         checkNotNull(otherPkg, "otherPkg");
@@ -38,6 +41,7 @@ public final class Packages {
         return true;
     }
 
+    @Contract(pure = true)
     public static boolean isPackageNotWithin(final Package pkg, final String otherPkg) {
         checkNotNull(pkg, "pkg");
         checkNotNull(otherPkg, "otherPkg");
@@ -45,6 +49,7 @@ public final class Packages {
         return !isPackageWithin(pkg, otherPkg);
     }
 
+    @Contract(pure = true)
     public static boolean isClassWithinPackage(final Class<?> clazz, final String pkg) {
         checkNotNull(clazz, "clazz");
         checkNotNull(pkg, "pkg");
@@ -52,6 +57,7 @@ public final class Packages {
         return isPackageWithin(clazz.getPackage(), pkg);
     }
 
+    @Contract(pure = true)
     public static boolean isClassNotWithinPackage(final Class<?> clazz, final String pkg) {
         checkNotNull(clazz, "clazz");
         checkNotNull(pkg, "pkg");

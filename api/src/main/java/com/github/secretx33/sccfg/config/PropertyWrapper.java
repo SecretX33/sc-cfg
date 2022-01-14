@@ -15,6 +15,7 @@
  */
 package com.github.secretx33.sccfg.config;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Type;
@@ -38,6 +39,7 @@ public interface PropertyWrapper {
      * @return the comment associated with this entry, or {@code null} if no comment was set
      */
     @Nullable
+    @Contract(pure = true)
     String getComment();
 
     /**
@@ -45,6 +47,7 @@ public interface PropertyWrapper {
      *
      * @return true if this config entry has a comment, false otherwise
      */
+    @Contract(pure = true)
     boolean hasComment();
 
     /**

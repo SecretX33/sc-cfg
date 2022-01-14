@@ -17,11 +17,11 @@ package com.github.secretx33.sccfg.serialization.namemapping.mapper;
 
 import com.github.secretx33.sccfg.api.Naming;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
+import com.github.secretx33.sccfg.util.Predicates;
 import org.intellij.lang.annotations.Language;
 
 import java.util.Locale;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -39,7 +39,6 @@ abstract class AbstractNameMapper implements NameMapper {
     @Override
     public String applyStrategy(final String string) {
         checkNotBlank(string, "name");
-        checkNotNull(nameStrategy, "nameStrategy");
 
         final String[] chars = string.codePoints()
                 .mapToObj(cp -> new String(Character.toChars(cp)))
@@ -61,20 +60,11 @@ abstract class AbstractNameMapper implements NameMapper {
     }
 
     private boolean hasUppercase(final String[] chars) {
-        return testChars(chars, letter -> !letter.equals(letter.toLowerCase(Locale.US)));
+        return Predicates.any(chars, letter -> !letter.equals(letter.toLowerCase(Locale.US)));
     }
 
     private boolean hasUnderline(final String[] chars) {
-        return testChars(chars, letter -> letter.equals("_"));
-    }
-
-    private boolean testChars(final String[] chars, final Predicate<String> predicate) {
-        for (final String letter : chars) {
-            if (predicate.test(letter)) {
-                return true;
-            }
-        }
-        return false;
+        return Predicates.any(chars, letter -> letter.equals("_"));
     }
 
     protected String replaceAll(

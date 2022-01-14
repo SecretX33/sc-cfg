@@ -76,7 +76,7 @@ subprojects {
         header = rootProject.file("HEADER")
         strictCheck = true
         ext {
-            set("year", 2021)
+            set("year", 2022)
             set("name", "SecretX")
             set("email", "notyetmidnight@gmail.com")
         }

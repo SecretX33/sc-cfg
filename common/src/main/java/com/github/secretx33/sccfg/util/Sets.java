@@ -87,13 +87,14 @@ public final class Sets {
                 .toArray(size -> (T[]) Array.newInstance(clazz, size));
     }
 
-    public static <T> Set<T> filter(final Iterable<? extends T> iterable, final Predicate<? extends T> filter) {
+    public static <T> Set<T> filter(final Iterable<? extends T> iterable, final Predicate<T> filter) {
         final Set<T> set = new LinkedHashSet<>();
         for (final T element : iterable) {
-            set.add(element);
+            if (filter.test(element)) {
+                set.add(element);
+            }
         }
-        if (set.isEmpty())
-            return Collections.emptySet();
+        if (set.isEmpty()) return Collections.emptySet();
         return Collections.unmodifiableSet(set);
     }
 
