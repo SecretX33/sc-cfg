@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.api.FileType;
-import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.MissingSerializerDependency;
 
 import java.util.logging.Logger;
@@ -48,7 +47,7 @@ public final class SerializerFactory {
                 case YAML:
                     return new YamlSerializer(logger, gsonProvider);
                 default:
-                    throw new ConfigInternalErrorException("If you are reading this, it means that sc-cfg doesn't have a registered serializer for type " + fileType + ", and that there's a problem with sc-cfg, please report this!");
+                    throw new IllegalStateException("Could not found a valid serializer for file type " + fileType);
             }
         } catch (final NoClassDefFoundError e) {
             throw new MissingSerializerDependency(fileType, e);

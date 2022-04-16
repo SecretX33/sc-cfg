@@ -55,6 +55,10 @@ public final class PropertyWrapperImpl implements PropertyWrapper {
      */
     private final String path;
 
+    /**
+     * All comments lines that should be placed above the property's entry in the file joined by {@code \n}. If
+     * there are no comments, this will be {@code null}.
+     */
     @Nullable
     private final String comment;
 

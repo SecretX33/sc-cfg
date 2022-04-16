@@ -1,5 +1,5 @@
 # sc-cfg
- 
+
 SC-CFG is a simple, yet powerful library that automatically generate configuration files based on your classes. Compatible with Java 8+ and Kotlin, anyone can use it and start enjoying the commodities right now.
 
 You won't have to worry about reloading your configuration anymore, SC-CFG handles everything for you, automatically.
@@ -30,7 +30,7 @@ repositories {
 
 dependencies {
     // replace 'bukkit' with artifact name
-    implementation("com.github.secretx33.sc-cfg:bukkit:main-SNAPSHOT")
+    implementation("com.github.secretx33.sc-cfg:sccfg-bukkit:main-SNAPSHOT")
 }
 ```
 
@@ -46,8 +46,8 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>com.github.secretx33.sc-cfg</groupId>
-        <!-- Replace 'bukkit' with the artifact name -->
-        <artifactId>bukkit</artifactId>
+        <!-- Replace 'sccfg-bukkit' with the artifact name -->
+        <artifactId>sccfg-bukkit</artifactId>
         <version>main-SNAPSHOT</version>
     </dependency>
 </dependencies>
@@ -65,7 +65,7 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 // you just have to annotate the class
 @Configuration
 public class MyConfig {
-    
+
     public int someValue = 0;
     private final String someString = "rock";
 }
@@ -125,7 +125,7 @@ public class MyPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         MyConfig config = Config.getConfig(MyConfig.class);
-        
+
         // save your config by using
         Config.saveConfig(config);
         // or
@@ -164,10 +164,10 @@ import com.github.secretx33.sccfg.api.*;
     "and I am the second one",
 })
 public class MyConfig {
-    
+
     @Comment("this value is awesome")
     public int someValue = 0;
-    
+
     @Comment({"but this one...", "this one ROCKS!"})
     private final String someString = "rock";
 }

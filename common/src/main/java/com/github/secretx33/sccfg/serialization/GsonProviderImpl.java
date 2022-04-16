@@ -119,7 +119,7 @@ public final class GsonProviderImpl implements GsonProvider {
                 final Object instance = constructor.newInstance();
                 newTypeAdapters.put(annotationFor, checkNotNull(instance, "instance"));
             } catch (final ReflectiveOperationException e) {
-                throw new ConfigInternalErrorException("This exception should not be thrown, and will only if sc-cfg has messed up its base type adapters.", e);
+                throw new ConfigInternalErrorException("This exception should not be thrown, and will only if sc-cfg has messed up its default type adapters.", e);
             }
         });
 

@@ -19,13 +19,10 @@ import com.github.secretx33.sccfg.api.annotation.IgnoreField;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 
-import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
-
 public final class GsonIgnoreFieldExclusionStrategy implements ExclusionStrategy {
 
     @Override
     public boolean shouldSkipField(final FieldAttributes fieldAttributes) {
-        checkNotNull(fieldAttributes, "fieldAttributes");
         return fieldAttributes.getAnnotation(IgnoreField.class) != null;
     }
 
