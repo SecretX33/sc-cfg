@@ -19,8 +19,6 @@ import com.github.secretx33.sccfg.api.annotation.Configuration;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 
-import java.util.Arrays;
-
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 public final class Valid {
@@ -34,28 +32,27 @@ public final class Valid {
         if (annotation == null) {
             return false;
         }
-
-        final boolean hasDefaultConstructor = Arrays.stream(clazz.getDeclaredConstructors()).anyMatch(c -> c.getParameterCount() == 0);
-        return hasDefaultConstructor;
+        return ClassUtil.hasZeroArgsConstructor(clazz);
     }
 
-    public static void validateConfigClass(final Class<?> clazz) {
+    public static <T> Class<T> ensureConfigClass(final Class<T> clazz) {
         checkNotNull(clazz, "clazz");
         final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
         if (annotation == null) {
             throw new MissingConfigAnnotationException(clazz);
         }
+        return clazz;
     }
 
-    public static void validateConfigClassWithDefaultConstructor(final Class<?> clazz) {
+    public static void ensureInstantiableConfigClass(final Class<?> clazz) {
         checkNotNull(clazz, "clazz");
-        validateConfigClass(clazz);
-        validateClassHasDefaultConstructor(clazz);
+        ensureConfigClass(clazz);
+        ensureClassHasZeroArgsConstructor(clazz);
     }
 
-    private static void validateClassHasDefaultConstructor(final Class<?> clazz) {
+    private static void ensureClassHasZeroArgsConstructor(final Class<?> clazz) {
         checkNotNull(clazz, "clazz");
-        final boolean hasDefaultConstructor = Arrays.stream(clazz.getDeclaredConstructors()).anyMatch(c -> c.getParameterCount() == 0);
+        final boolean hasDefaultConstructor = ClassUtil.hasZeroArgsConstructor(clazz);
         if (!hasDefaultConstructor) {
             throw new MissingNoArgsConstructorException(clazz);
         }

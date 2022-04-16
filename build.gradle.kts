@@ -60,6 +60,27 @@ subprojects {
         publications {
             create<MavenPublication>("maven") {
                 from(components["java"])
+                pom {
+                    name.set(rootProject.name)
+                    description.set("Library that dynamically generate config files from an instance of a class, greatly reducing development time.")
+                    url.set("https://github.com/SecretX33/sc-cfg/")
+                    licenses {
+                        license {
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                        }
+                    }
+                    developers {
+                        developer {
+                            id.set("secretx33")
+                            name.set("SecretX")
+                            email.set("notyetmidnight@gmail.com")
+                        }
+                    }
+                    scm {
+                        url.set("https://github.com/SecretX33/sc-cfg/")
+                    }
+                }
             }
         }
     }
@@ -86,30 +107,4 @@ subprojects {
         ))
         exclude("**/*FileWatcher.java")
     }
-
-    /*create<MavenPublication>("mavenJava") {
-        pom {
-            name.set(rootProject.name)
-            description.set("Library that dynamically generate config files from an instance of a class, greatly reducing development time.")
-            url.set("https://github.com/SecretX33/sc-cfg/")
-            licenses {
-                license {
-                    name.set("The Apache License, Version 2.0")
-                    url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
-                }
-            }
-            developers {
-                developer {
-                    id.set("secretx33")
-                    name.set("SecretX")
-                    email.set("notyetmidnight@gmail.com")
-                }
-            }
-            scm {
-                connection.set("scm:git:git://example.com/my-library.git")
-                developerConnection.set("scm:git:ssh://example.com/my-library.git")
-                url.set("https://github.com/SecretX33/sc-cfg/")
-            }
-        }
-    }*/
 }

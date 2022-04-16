@@ -78,7 +78,7 @@ public class ScannerImpl implements Scanner {
     /**
      * Type adapters provided by this library.
      */
-    private final Set<Class<?>> baseTypeAdapters;
+    private final Set<Class<?>> defaultTypeAdapters;
     /**
      * Type adapters provided by the user.
      */
@@ -92,7 +92,7 @@ public class ScannerImpl implements Scanner {
         this.basePackage = checkNotNull(basePackage, "basePath");
         this.extraClassLoaders = notContainsNull(extraClassLoaders, "extraClassLoaders");
         final Reflections reflections = getGenericReflections();
-        baseTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
+        defaultTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
                 clazz -> Packages.isClassWithinPackage(clazz, LIBRARY_CLASSPATH));
         customTypeAdapters = Sets.filter(reflections.getTypesAnnotatedWith(RegisterTypeAdapter.class),
                 clazz -> Packages.isClassNotWithinPackage(clazz, LIBRARY_CLASSPATH));
@@ -107,12 +107,12 @@ public class ScannerImpl implements Scanner {
     }
 
     @Override
-    public Set<Class<?>> getBaseRegisterTypeAdapters() {
-        return baseTypeAdapters;
+    public Set<Class<?>> findDefaultRegisterTypeAdapters() {
+        return defaultTypeAdapters;
     }
 
     @Override
-    public Set<Class<?>> getCustomRegisterTypeAdapters() {
+    public Set<Class<?>> findCustomRegisterTypeAdapters() {
         return customTypeAdapters;
     }
 

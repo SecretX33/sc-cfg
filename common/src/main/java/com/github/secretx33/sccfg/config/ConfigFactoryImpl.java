@@ -25,20 +25,20 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
 import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
-import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 import com.github.secretx33.sccfg.executor.AsyncExecutor;
 import com.github.secretx33.sccfg.executor.AsyncMethodExecutor;
 import com.github.secretx33.sccfg.executor.SyncExecutor;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.serialization.GsonProvider;
 import com.github.secretx33.sccfg.serialization.Serializer;
 import com.github.secretx33.sccfg.serialization.SerializerFactory;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapper;
 import com.github.secretx33.sccfg.serialization.namemapping.NameMapperFactory;
 import com.github.secretx33.sccfg.storage.FileModificationType;
 import com.github.secretx33.sccfg.storage.FileWatcher;
 import com.github.secretx33.sccfg.storage.FileWatcherEvent;
 import com.github.secretx33.sccfg.util.BooleanWrapper;
+import com.github.secretx33.sccfg.util.ClassUtil;
 import com.github.secretx33.sccfg.util.Maps;
 import com.github.secretx33.sccfg.util.Sets;
 import com.github.secretx33.sccfg.util.Valid;
@@ -81,7 +81,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
 
     public ConfigFactoryImpl(
             final Logger logger,
-            final GsonFactory gsonFactory,
+            final GsonProvider gsonProvider,
             final Path basePath,
             final Scanner scanner,
             final FileWatcher fileWatcher,
@@ -90,8 +90,8 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         this.basePath = checkNotNull(basePath, "basePath");
         this.scanner = checkNotNull(scanner, "scanner");
         this.fileWatcher = checkNotNull(fileWatcher, "fileWatcher");
-        this.serializerFactory = new SerializerFactory(logger, checkNotNull(gsonFactory, "gsonFactory"));
-        this.asyncExecutor = new AsyncMethodExecutor(checkNotNull(logger, "logger"));
+        this.serializerFactory = new SerializerFactory(logger, gsonProvider);
+        this.asyncExecutor = new AsyncMethodExecutor(logger);
         this.syncExecutor = checkNotNull(syncExecutor, "syncExecutor");
         this.nameMapperFactory = new NameMapperFactory();
     }
@@ -100,15 +100,14 @@ public final class ConfigFactoryImpl implements ConfigFactory {
     @SuppressWarnings("unchecked")
     public <T> ConfigWrapper<T> getWrapper(final Class<T> configClass) {
         checkNotNull(configClass, "configClass");
-        return (ConfigWrapper<T>) instances.computeIfAbsent(configClass, this::newWrappedConfigInstance);
+        return (ConfigWrapper<T>) instances.computeIfAbsent(configClass, this::createWrappedConfigInstance);
     }
 
-    private <T> ConfigWrapper<T> newWrappedConfigInstance(final Class<T> clazz) {
-        Valid.validateConfigClassWithDefaultConstructor(clazz);
-        final Constructor<T> constructor = getDefaultConstructor(clazz);
+    private <T> ConfigWrapper<T> createWrappedConfigInstance(final Class<T> clazz) {
+        Valid.ensureInstantiableConfigClass(clazz);
+        final Constructor<T> constructor = ClassUtil.zeroArgsConstructor(clazz);
         try {
-            final T instance = constructor.newInstance();
-            return wrapInstance(instance);
+            return wrapInstance(constructor.newInstance());
         } catch (final ConfigException e) {
             throw e;
         } catch (final Exception e) {
@@ -236,15 +235,6 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         return value + extension;
     }
 
-    @SuppressWarnings("unchecked")
-    private <T> Constructor<T> getDefaultConstructor(Class<T> clazz) {
-        return Arrays.stream(clazz.getDeclaredConstructors())
-                .filter(c -> c.getParameterCount() == 0)
-                .findAny()
-                .map(c -> (Constructor<T>) c)
-                .orElseThrow(() -> new MissingNoArgsConstructorException(clazz));
-    }
-
     private Consumer<FileWatcherEvent> handleReload(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
         return event -> handleReloadAsync(configWrapper);
@@ -281,8 +271,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         checkNotNull(instance, "instance");
         checkArgument(!(instance instanceof Class<?>), "cannot register classes as instances of configuration");
 
-        final Class<?> clazz = instance.getClass();
-        Valid.validateConfigClass(clazz);
+        final Class<?> clazz = Valid.ensureConfigClass(instance.getClass());
 
         instances.compute(clazz, (key, oldValue) -> {
             if (oldValue != null) {  // throw if there is already an instance registered for given class
@@ -295,14 +284,14 @@ public final class ConfigFactoryImpl implements ConfigFactory {
     @Override
     public void saveInstance(final Class<?> configClass) {
         checkNotNull(configClass, "configClass");
-        validateConfigClassAndUseSerializer(configClass, (wrapper, serializer) -> serializer.saveConfig(wrapper));
+        withWrapperAndSerializer(configClass, (wrapper, serializer) -> serializer.saveConfig(wrapper));
     }
 
     @Override
     public boolean saveDefaults(final Class<?> configClass, final boolean overrideIfExists, final boolean reloadAfterwards) {
         checkNotNull(configClass, "configClass");
         final BooleanWrapper result = new BooleanWrapper();
-        validateConfigClassAndUseSerializer(configClass, (wrapper, serializer) -> {
+        withWrapperAndSerializer(configClass, (wrapper, serializer) -> {
             result.set(serializer.saveDefaults(wrapper, overrideIfExists));
             if (reloadAfterwards && result.get()) reloadInstance(wrapper);
         });
@@ -310,8 +299,8 @@ public final class ConfigFactoryImpl implements ConfigFactory {
     }
 
     @SuppressWarnings("unchecked")
-    private <T> void validateConfigClassAndUseSerializer(final Class<T> configClass, final BiConsumer<ConfigWrapper<T>, Serializer> consumer) {
-        Valid.validateConfigClass(configClass);
+    private <T> void withWrapperAndSerializer(final Class<T> configClass, final BiConsumer<ConfigWrapper<T>, Serializer> consumer) {
+        Valid.ensureConfigClass(configClass);
         final ConfigWrapper<T> wrapper = (ConfigWrapper<T>) instances.get(configClass);
         if (wrapper == null) {
             throw new ConfigNotInitializedException(configClass);

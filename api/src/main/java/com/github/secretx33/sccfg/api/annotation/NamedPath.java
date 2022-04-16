@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Joins {@link Name}, {@link Path} and {@link Comment} annotations for convenience.
+ * Combines {@link Name}, {@link Path} and {@link Comment} annotations for convenience.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

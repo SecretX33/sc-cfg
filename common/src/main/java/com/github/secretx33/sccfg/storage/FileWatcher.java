@@ -78,7 +78,7 @@ public final class FileWatcher extends AbstractFileWatcher {
         checkNotNull(path, "path");
         if (path.isAbsolute()) {
             path = basePath.relativize(path);
-        } else if(path.startsWith(basePath)) {
+        } else if (path.startsWith(basePath)) {
             path = basePath.relativize(path.toAbsolutePath());
         } else {
             path = basePath.resolve(path);

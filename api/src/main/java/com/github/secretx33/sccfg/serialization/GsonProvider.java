@@ -13,17 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.serialization.gson;
+package com.github.secretx33.sccfg.serialization;
 
 import com.google.gson.Gson;
 
 import java.lang.reflect.Type;
 import java.util.Map;
 
-public interface GsonFactory {
+/**
+ * Provides a lazy {@link Gson} instance with possibility of registering type adapters at runtime.<br><br>
+ *
+ * <b>All classes that implement this interface are required to be thread-safe.<b/>
+ */
+public interface GsonProvider {
+
+    /**
+     * Returns a valid Gson instance with all type adapters registered.
+     */
     Gson getInstance();
 
+    /**
+     * Register a single type adapter for the given type.
+     *
+     * @param adapterFor The type to register the adapter for.
+     * @param typeAdapter The actual adapter instance to register.
+     */
     void addTypeAdapter(Type adapterFor, Object typeAdapter);
 
+    /**
+     * Register multiple type adapters for the given types.
+     *
+     * @param typeAdapters The type adapters to register.
+     */
     void addTypeAdapters(Map<? extends Type, Object> typeAdapters);
 }

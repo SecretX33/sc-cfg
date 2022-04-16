@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
 import org.spongepowered.configurate.loader.HeaderMode;
@@ -32,8 +31,8 @@ public final class YamlSerializer extends AbstractConfigurateSerializer<YamlConf
 
     public static final int SPACES_PER_DEPTH = 2;
 
-    public YamlSerializer(final Logger logger, final GsonFactory gsonFactory) {
-        super(logger, gsonFactory);
+    public YamlSerializer(final Logger logger, final GsonProvider gsonProvider) {
+        super(logger, gsonProvider);
     }
 
     @Override

@@ -29,13 +29,13 @@ public interface Scanner {
      * Return a set containing all type adapters classes that are <b>within</b> the sc-cfg
      * classpath, or in other words, type adapters provided by this library.
      */
-    Set<Class<?>> getBaseRegisterTypeAdapters();
+    Set<Class<?>> findDefaultRegisterTypeAdapters();
 
     /**
      * Return a set containing all type adapters classes that are <b>not</b> in the sc-cfg
      * classpath, or in other words, type adapters that were provided by the user.
      */
-    Set<Class<?>> getCustomRegisterTypeAdapters();
+    Set<Class<?>> findCustomRegisterTypeAdapters();
 
     /**
      * Return a set containing all methods that should be run before reloading the config instance.

@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.serialization.gson;
+package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.scanner.Scanner;
+import com.github.secretx33.sccfg.serialization.gson.GsonIgnoreFieldExclusionStrategy;
 import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
-import com.github.secretx33.sccfg.util.Maps;
-import com.github.secretx33.sccfg.util.Pair;
+import com.github.secretx33.sccfg.util.ClassUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -33,54 +33,54 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkArgument;
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 import static com.github.secretx33.sccfg.util.Preconditions.notContainsNull;
 
-public final class GsonFactoryImpl implements GsonFactory {
+public final class GsonProviderImpl implements GsonProvider {
 
     private final Logger logger;
     private final Scanner scanner;
-    private Map<Type, Object> typeAdapters = Collections.emptyMap();
-    private Gson gson;
+    private final Map<Type, Object> typeAdapters = new ConcurrentHashMap<>();
+    private volatile Gson gson;
 
-    public GsonFactoryImpl(final Logger logger, final Scanner scanner) {
+    public GsonProviderImpl(final Logger logger, final Scanner scanner) {
         this.logger = checkNotNull(logger, "logger");
         this.scanner = checkNotNull(scanner, "scanner");
-        parseTypeAdaptersOnClasspath();
+        findAndRegisterTypeAdaptersOnClasspath();
     }
 
     @Override
     public Gson getInstance() {
         Gson instance = gson;
-        if (instance == null) {
-            instance = newInstanceWithTypeAdapters(false);
-            gson = instance;
+        if (instance != null) return instance;
+        synchronized (this) {
+            instance = gson;
+            if (instance == null) {
+                instance = createGson();
+                gson = instance;
+            }
+            return instance;
         }
-        return instance;
     }
 
-    private void clearGsonInstances() {
+    private void removeCachedGson() {
         gson = null;
     }
 
-    private Gson newInstanceWithTypeAdapters(final boolean prettyPrint) {
+    private Gson createGson() {
         checkNotNull(typeAdapters, "typeAdapters");
         final GsonBuilder builder = new GsonBuilder().disableHtmlEscaping()
                 .excludeFieldsWithModifiers(Modifier.TRANSIENT, Modifier.STATIC)
-                .setExclusionStrategies(new GsonIgnoreFieldExclusionStrategy());
-        if (prettyPrint) {
-            builder.setPrettyPrinting();
-        }
-        builder.registerTypeAdapter(GENERIC_MAP_TOKEN, new MapDeserializerDoubleAsIntFix());
+                .setExclusionStrategies(new GsonIgnoreFieldExclusionStrategy())
+                .registerTypeAdapter(GENERIC_MAP_TOKEN, new MapDeserializerDoubleAsIntFix());
         typeAdapters.forEach(builder::registerTypeAdapter);
         return builder.create();
     }
@@ -91,8 +91,8 @@ public final class GsonFactoryImpl implements GsonFactory {
         checkNotNull(typeAdapter, "typeAdapter");
         checkArgument(isTypeAdapter(typeAdapter.getClass()), () -> "typeAdapter passed as argument does not implement any of Gson type adapter interfaces, so I could not register " + typeAdapter.getClass().getCanonicalName() + " since it is not a type adapter");
 
-        this.typeAdapters = Maps.copyPutting(typeAdapters, adapterFor, typeAdapter);
-        clearGsonInstances();
+        this.typeAdapters.put(adapterFor, typeAdapter);
+        removeCachedGson();
     }
 
     @Override
@@ -101,22 +101,16 @@ public final class GsonFactoryImpl implements GsonFactory {
         if (typeAdapters.isEmpty()) return;
         checkArgument(areTypeAdapters(typeAdapters.values()), "there are at least one value on the typeAdapters that is not a type adapter, please pass only type adapters as argument");
 
-        final Map<? extends Type, Object> newTypeAdapters = typeAdapters.entrySet().stream()
-                .map(entry -> {
-                    final Type type = TypeToken.get(entry.getKey()).getType();
-                    return new Pair<>(type, entry.getValue());
-                })
-                .collect(Maps.toMap());
-        this.typeAdapters = Maps.copyPutting(this.typeAdapters, newTypeAdapters);
-        clearGsonInstances();
+        this.typeAdapters.putAll(typeAdapters);
+        removeCachedGson();
     }
 
-    private void parseTypeAdaptersOnClasspath() {
-        final Set<Class<?>> baseTypeAdaptersClasses = scanner.getBaseRegisterTypeAdapters();
-        final Set<Class<?>> customTypeAdaptersClasses = scanner.getCustomRegisterTypeAdapters();
+    private void findAndRegisterTypeAdaptersOnClasspath() {
+        final Set<Class<?>> defaultTypeAdaptersClasses = scanner.findDefaultRegisterTypeAdapters();
+        final Set<Class<?>> customTypeAdaptersClasses = scanner.findCustomRegisterTypeAdapters();
         final Map<Type, Object> newTypeAdapters = new HashMap<>(customTypeAdaptersClasses.size());
 
-        baseTypeAdaptersClasses.forEach(clazz -> {
+        defaultTypeAdaptersClasses.forEach(clazz -> {
             final Class<?> annotationFor = clazz.getDeclaredAnnotation(RegisterTypeAdapter.class).value();
 
             try {
@@ -130,16 +124,7 @@ public final class GsonFactoryImpl implements GsonFactory {
         });
 
         for (Class<?> clazz : customTypeAdaptersClasses) {
-            final Constructor<?> constructor = Arrays.stream(clazz.getDeclaredConstructors())
-                    .filter(c -> c.getParameterCount() == 0)
-                    .findAny()
-                    .orElse(null);
-
-            if (constructor == null) {
-                logger.warning("Class " + clazz.getCanonicalName() + " doesn't have a no args constructor, I don't know how to instantiate it!");
-                continue;
-            }
-            constructor.setAccessible(true);
+            final Constructor<?> constructor = ClassUtil.zeroArgsConstructor(clazz);
 
             if (!isTypeAdapter(clazz)) {
                 logger.warning("Class " + clazz.getCanonicalName() + " does not extend any of Gson typeAdapter interfaces, please double check if that class should be annotated with @RegisterTypeAdapter.");
@@ -157,7 +142,7 @@ public final class GsonFactoryImpl implements GsonFactory {
                 throw new ConfigReflectiveOperationException(e);
             }
         }
-        typeAdapters = Maps.of(newTypeAdapters);
+        addTypeAdapters(newTypeAdapters);
     }
 
     private boolean isTypeAdapter(final Class<?> clazz) {

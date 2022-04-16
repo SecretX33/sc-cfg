@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.gson.GsonConfigurationLoader;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
@@ -28,8 +27,8 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public final class JsonSerializer extends AbstractConfigurateSerializer<GsonConfigurationLoader.Builder, GsonConfigurationLoader> {
 
-    public JsonSerializer(final Logger logger, final GsonFactory gsonFactory) {
-        super(logger, gsonFactory);
+    public JsonSerializer(final Logger logger, final GsonProvider gsonProvider) {
+        super(logger, gsonProvider);
     }
 
     @Override

@@ -18,7 +18,6 @@ package com.github.secretx33.sccfg.serialization;
 import com.github.secretx33.sccfg.api.FileType;
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.MissingSerializerDependency;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 
 import java.util.logging.Logger;
 
@@ -27,11 +26,11 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 public final class SerializerFactory {
 
     private final Logger logger;
-    private final GsonFactory gsonFactory;
+    private final GsonProvider gsonProvider;
 
-    public SerializerFactory(final Logger logger, final GsonFactory gsonFactory) {
+    public SerializerFactory(final Logger logger, final GsonProvider gsonProvider) {
         this.logger = checkNotNull(logger, "logger");
-        this.gsonFactory = checkNotNull(gsonFactory, "gsonFactory");
+        this.gsonProvider = checkNotNull(gsonProvider, "gsonProvider");
     }
 
     public Serializer getSerializer(final FileType fileType) {
@@ -43,11 +42,11 @@ public final class SerializerFactory {
         try {
             switch(fileType) {
                 case HOCON:
-                    return new HoconSerializer(logger, gsonFactory);
+                    return new HoconSerializer(logger, gsonProvider);
                 case JSON:
-                    return new JsonSerializer(logger, gsonFactory);
+                    return new JsonSerializer(logger, gsonProvider);
                 case YAML:
-                    return new YamlSerializer(logger, gsonFactory);
+                    return new YamlSerializer(logger, gsonProvider);
                 default:
                     throw new ConfigInternalErrorException("If you are reading this, it means that sc-cfg doesn't have a registered serializer for type " + fileType + ", and that there's a problem with sc-cfg, please report this!");
             }

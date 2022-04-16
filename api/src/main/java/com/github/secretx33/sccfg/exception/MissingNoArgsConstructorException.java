@@ -26,6 +26,6 @@ package com.github.secretx33.sccfg.exception;
 public final class MissingNoArgsConstructorException extends ConfigException {
 
     public MissingNoArgsConstructorException(final Class<?> clazz) {
-        super("Could not create instance of class " + clazz.getName() + " because it is missing no args constructor, please add an empty arg constructor to the class");
+        super("Could not create instance of class " + clazz.getCanonicalName() + " because it is missing no args constructor, please add an empty arg constructor to the class");
     }
 }

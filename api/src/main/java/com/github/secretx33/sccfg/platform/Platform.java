@@ -16,7 +16,7 @@
 package com.github.secretx33.sccfg.platform;
 
 import com.github.secretx33.sccfg.config.ConfigFactory;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
+import com.github.secretx33.sccfg.serialization.GsonProvider;
 
 /**
  * Interface used to delegate all platform-specific operations to their implementation.
@@ -31,9 +31,9 @@ public interface Platform {
     ConfigFactory getConfigFactory();
 
     /**
-     * Gets the {@link GsonFactory} for this platform.
+     * Gets the {@link GsonProvider} for this platform.
      *
-     * @return a valid {@code GsonFactory} for this platform.
+     * @return a valid {@code GsonProvider} for this platform.
      */
-    GsonFactory getGsonFactory();
+    GsonProvider getGsonFactory();
 }

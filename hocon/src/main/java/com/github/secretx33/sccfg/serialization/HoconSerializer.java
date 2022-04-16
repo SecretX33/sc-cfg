@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.serialization;
 
 import com.github.secretx33.sccfg.config.ConfigWrapper;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import org.spongepowered.configurate.loader.AbstractConfigurationLoader;
@@ -28,8 +27,8 @@ import java.util.logging.Logger;
 @SuppressWarnings("unused")
 public final class HoconSerializer extends AbstractConfigurateSerializer<HoconConfigurationLoader.Builder, HoconConfigurationLoader> {
 
-    public HoconSerializer(final Logger logger, final GsonFactory gsonFactory) {
-        super(logger, gsonFactory);
+    public HoconSerializer(final Logger logger, final GsonProvider gsonProvider) {
+        super(logger, gsonProvider);
     }
 
     @Override

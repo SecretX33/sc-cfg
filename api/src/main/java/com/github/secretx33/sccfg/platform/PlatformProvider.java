@@ -22,6 +22,9 @@ import java.lang.reflect.Constructor;
 
 public final class PlatformProvider {
 
+    /**
+     * Get a new instance of the appropriate platform module through reflection.
+     */
     public static Platform getPlatform() {
         final PlatformType platform = PlatformType.ACTUAL;
         try {

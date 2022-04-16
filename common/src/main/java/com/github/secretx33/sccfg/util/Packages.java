@@ -31,7 +31,7 @@ public final class Packages {
         final String[] slitClassPkg = pkg.getName().split("\\.");
         final String[] slitPkg = otherPkg.split("\\.");
 
-        if(slitClassPkg.length < slitPkg.length) return false;
+        if (slitClassPkg.length < slitPkg.length) return false;
 
         for(int i = 0; i < slitPkg.length; i++) {
             if (!slitPkg[i].equals(slitClassPkg[i])) {

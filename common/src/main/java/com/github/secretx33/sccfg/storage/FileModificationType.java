@@ -60,13 +60,13 @@ public enum FileModificationType {
     public static final Set<FileModificationType> CREATE_AND_MODIFICATION = Sets.of(CREATE, MODIFY);
 
     public static FileModificationType adapt(final WatchEvent<Path> event) {
-        if(event.kind().equals(StandardWatchEventKinds.ENTRY_CREATE))
+        if (event.kind().equals(StandardWatchEventKinds.ENTRY_CREATE))
             return FileModificationType.CREATE;
-        if(event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY))
+        if (event.kind().equals(StandardWatchEventKinds.ENTRY_MODIFY))
             return FileModificationType.MODIFY;
-        if(event.kind().equals(StandardWatchEventKinds.ENTRY_DELETE))
+        if (event.kind().equals(StandardWatchEventKinds.ENTRY_DELETE))
             return FileModificationType.DELETE;
-        if(event.kind().equals(StandardWatchEventKinds.OVERFLOW))
+        if (event.kind().equals(StandardWatchEventKinds.OVERFLOW))
             return FileModificationType.OVERFLOW;
         throw new ConfigInternalErrorException("Could not convert unknown event " + event.kind().toString() + " to a FileModificationType");
     }

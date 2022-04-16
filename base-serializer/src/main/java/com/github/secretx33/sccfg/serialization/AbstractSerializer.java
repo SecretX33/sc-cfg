@@ -19,7 +19,6 @@ import com.github.secretx33.sccfg.config.ConfigWrapper;
 import com.github.secretx33.sccfg.config.PropertyWrapper;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -40,11 +39,11 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 abstract class AbstractSerializer implements Serializer {
 
     protected final Logger logger;
-    protected final GsonFactory gsonFactory;
+    protected final GsonProvider gsonProvider;
 
-    public AbstractSerializer(final Logger logger, final GsonFactory gsonFactory) {
+    public AbstractSerializer(final Logger logger, final GsonProvider gsonProvider) {
         this.logger = checkNotNull(logger, "logger");
-        this.gsonFactory = checkNotNull(gsonFactory, "gsonFactory");
+        this.gsonProvider = checkNotNull(gsonProvider, "gsonProvider");
     }
 
     @Override
@@ -152,7 +151,7 @@ abstract class AbstractSerializer implements Serializer {
         checkNotNull(configEntry, "configEntry");
         checkNotNull(rawValue, "rawValue");
 
-        final Gson gson = gsonFactory.getInstance();
+        final Gson gson = gsonProvider.getInstance();
         // serialize and deserialize the value to make sure it is the right type of the field, a.k.a. account for
         // generics, and also make sure to use any registered type adapter for that type
         final Object value = gson.fromJson(gson.toJson(rawValue), configEntry.getGenericType());

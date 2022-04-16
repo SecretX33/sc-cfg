@@ -22,7 +22,6 @@ import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.ConfigOverlappingPathException;
 import com.github.secretx33.sccfg.exception.ConfigSerializationException;
-import com.github.secretx33.sccfg.serialization.gson.GsonFactory;
 import com.github.secretx33.sccfg.util.Maps;
 import com.github.secretx33.sccfg.util.PathUtil;
 import com.google.gson.Gson;
@@ -46,8 +45,8 @@ import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
 
 abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoader.Builder<U, L>, L extends AbstractConfigurationLoader<?>> extends AbstractSerializer {
 
-    public AbstractConfigurateSerializer(final Logger logger, final GsonFactory gsonFactory) {
-        super(logger, gsonFactory);
+    public AbstractConfigurateSerializer(final Logger logger, final GsonProvider gsonProvider) {
+        super(logger, gsonProvider);
     }
 
     abstract AbstractConfigurationLoader.Builder<U, L> fileBuilder(@Nullable ConfigWrapper<?> configWrapper);
@@ -96,7 +95,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
     }
 
     private String convertValuesMapToSerializedFile(final Map<String, Object> valuesMap) throws ConfigurateException {
-        return gsonFactory.getInstance().toJson(valuesMap, GENERIC_MAP_TOKEN);
+        return gsonProvider.getInstance().toJson(valuesMap, GENERIC_MAP_TOKEN);
     }
 
     @Override
@@ -166,7 +165,7 @@ abstract class AbstractConfigurateSerializer<U extends AbstractConfigurationLoad
         checkNotNull(properties, "properties");
 
         final ConfigurationNode root = emptyNode();
-        final Gson gson = gsonFactory.getInstance();
+        final Gson gson = gsonProvider.getInstance();
 
         properties.forEach(configEntry -> {
             final Object serializableValue;
