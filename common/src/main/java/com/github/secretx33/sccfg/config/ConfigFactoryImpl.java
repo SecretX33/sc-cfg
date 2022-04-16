@@ -284,10 +284,12 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         final Class<?> clazz = instance.getClass();
         Valid.validateConfigClass(clazz);
 
-        if (instances.containsKey(clazz)) {
-            throw new ConfigInstanceOverrideException(clazz);
-        }
-        instances.computeIfAbsent(clazz, c -> wrapInstance(instance));
+        instances.compute(clazz, (key, oldValue) -> {
+            if (oldValue != null) {  // throw if there is already an instance registered for given class
+                throw new ConfigInstanceOverrideException(clazz);
+            }
+            return wrapInstance(key);
+        });
     }
 
     @Override
@@ -318,7 +320,7 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         consumer.accept(wrapper, serializer);
     }
 
-    protected void reloadInstance(final ConfigWrapper<?> configWrapper) {
+    private void reloadInstance(final ConfigWrapper<?> configWrapper) {
         checkNotNull(configWrapper, "configWrapper");
         final Serializer serializer = serializerFactory.getSerializer(configWrapper.getFileType());
         serializer.loadConfig(configWrapper);

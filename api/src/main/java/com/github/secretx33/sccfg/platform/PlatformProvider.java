@@ -23,29 +23,15 @@ import java.lang.reflect.Constructor;
 public final class PlatformProvider {
 
     public static Platform getPlatform() {
+        final PlatformType platform = PlatformType.ACTUAL;
         try {
-            Class.forName("org.spigotmc.SpigotConfig");
-            return getOrThrow("com.github.secretx33.sccfg.platform.BukkitPlatform");
-        } catch(final ClassNotFoundException ignored){
-        }
-        try {
-            Class.forName("net.md_5.bungee.config.Configuration");
-            return getOrThrow("com.github.secretx33.sccfg.platform.BungeePlatform");
-        } catch(final ClassNotFoundException ignored){
-        }
-        return getOrThrow("com.github.secretx33.sccfg.platform.StandalonePlatform");
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T getOrThrow(final String className) {
-        try {
-            final Constructor<?> constructor = Class.forName(className).getDeclaredConstructor();
+            final Constructor<?> constructor = Class.forName(platform.getPlatformClass()).getDeclaredConstructor();
             constructor.setAccessible(true);
-            return (T) constructor.newInstance();
-        } catch(final ClassNotFoundException e) {
-            throw new WrongPlatformModuleException("You are using the wrong module of SC-CFG for your current platform, please use the module that provides '" + className + "'!", e);
-        } catch(final Exception e) {
-            throw new ConfigInternalErrorException("Could not get Platform because sc-cfg could not instantiate class '" + className + "', please report this!", e);
+            return (Platform)constructor.newInstance();
+        } catch (final ClassNotFoundException e) {
+            throw new WrongPlatformModuleException("You are using the wrong module of SC-CFG for your current platform, please use the module that provides '" + platform.getPlatformClass() + "'!", e);
+        } catch (final Exception e) {
+            throw new ConfigInternalErrorException("Could not get Platform because sc-cfg could not instantiate class '" + platform.getPlatformClass() + "', please report this!", e);
         }
     }
 }

@@ -124,8 +124,7 @@ public final class PropertyWrapperImpl implements PropertyWrapper {
         try {
             return field.get(instance);
         } catch (final IllegalAccessException e) {
-            // this should never be thrown
-            throw new ConfigReflectiveOperationException(e);
+            throw new ConfigReflectiveOperationException(e);  // this should never be thrown
         }
     }
 
@@ -134,8 +133,7 @@ public final class PropertyWrapperImpl implements PropertyWrapper {
         try {
             field.set(instance, value);
         } catch (final IllegalAccessException e) {
-            // this should never be thrown
-            throw new ConfigReflectiveOperationException(e);
+            throw new ConfigReflectiveOperationException(e);  // this should never be thrown
         }
     }
 

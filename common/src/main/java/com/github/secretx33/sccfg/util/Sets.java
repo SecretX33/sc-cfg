@@ -87,7 +87,7 @@ public final class Sets {
                 .toArray(size -> (T[]) Array.newInstance(clazz, size));
     }
 
-    public static <T> Set<T> filter(final Iterable<? extends T> iterable, final Predicate<T> filter) {
+    public static <T> Set<T> filter(final Iterable<? extends T> iterable, final Predicate<? super T> filter) {
         final Set<T> set = new LinkedHashSet<>();
         for (final T element : iterable) {
             if (filter.test(element)) {
