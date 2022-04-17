@@ -30,7 +30,7 @@ public final class PlatformProvider {
         try {
             final Constructor<?> constructor = Class.forName(platform.getPlatformClass()).getDeclaredConstructor();
             constructor.setAccessible(true);
-            return (Platform)constructor.newInstance();
+            return (Platform) constructor.newInstance();
         } catch (final ClassNotFoundException e) {
             throw new WrongPlatformModuleException("You are using the wrong module of SC-CFG for your current platform, please use the module that provides '" + platform.getPlatformClass() + "'!", e);
         } catch (final Exception e) {

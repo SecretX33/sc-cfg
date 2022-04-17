@@ -16,6 +16,7 @@
 package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.config.MethodWrapper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -44,19 +45,15 @@ public final class AsyncMethodExecutor extends AbstractMethodExecutor implements
     }
 
     @Override
-    public void runMethodsAsync(final Object instance, final Set<MethodWrapper> tasks) {
-        checkNotNull(instance, "instance");
-        checkNotNull(tasks, "tasks");
-        if (tasks.isEmpty()) return;
-        CompletableFuture.runAsync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
+    public void execute(final Object instance, final Set<MethodWrapper> tasks) {
+        execute(instance, tasks, null);
     }
 
     @Override
-    public void runMethodsAsyncWithLatch(final Object instance, final Set<MethodWrapper> tasks, final CountDownLatch latch) {
+    public void execute(final Object instance, final Set<MethodWrapper> tasks, @Nullable final CountDownLatch latch) {
         checkNotNull(instance, "instance");
         checkNotNull(tasks, "tasks");
-        checkNotNull(latch, "latch");
         if (tasks.isEmpty()) return;
-        CompletableFuture.runAsync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
+        CompletableFuture.runAsync(() -> tasks.forEach(wrapper -> execute(instance, wrapper, latch)));
     }
 }

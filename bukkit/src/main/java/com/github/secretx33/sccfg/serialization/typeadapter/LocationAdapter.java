@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.serialization.gson.typeadapter;
+package com.github.secretx33.sccfg.serialization.typeadapter;
 
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
 import com.google.gson.JsonDeserializationContext;

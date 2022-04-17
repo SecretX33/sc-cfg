@@ -16,15 +16,35 @@
 package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.config.MethodWrapper;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 public interface AsyncExecutor {
 
+    /**
+     * Schedule the execution of a task by a given amount of milliseconds.
+     *
+     * @param millis the amount of milliseconds to wait before executing the task, has to be >= 0
+     * @param task the task to execute
+     */
     void delayedRun(long millis, Runnable task);
 
-    void runMethodsAsync(final Object instance, Set<MethodWrapper> tasks);
+    /**
+     * Execute the given tasks asynchronously.
+     *
+     * @param instance the instance which has all the methods to execute contained on {@code tasks}
+     * @param tasks the tasks to execute
+     */
+    void execute(final Object instance, Set<MethodWrapper> tasks);
 
-    void runMethodsAsyncWithLatch(Object instance, Set<MethodWrapper> tasks, CountDownLatch latch);
+    /**
+     * Execute the given tasks asynchronously, counting down the given latch after each task execution.
+     *
+     * @param instance the instance which has all the methods to execute contained on {@code tasks}
+     * @param tasks the tasks to execute
+     * @param latch the latch to count down after each task execution
+     */
+    void execute(Object instance, Set<MethodWrapper> tasks, @Nullable CountDownLatch latch);
 }

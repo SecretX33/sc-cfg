@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.github.secretx33.sccfg.serialization.gson.typeadapter;
+package com.github.secretx33.sccfg.serialization.typeadapter;
 
 import com.cryptomorin.xseries.XItemStack;
 import com.github.secretx33.sccfg.api.annotation.RegisterTypeAdapter;
@@ -78,13 +78,12 @@ final class ItemStackAdapter implements JsonSerializer<ItemStack>, JsonDeseriali
             final String serializedItem = Base64.getEncoder().encodeToString(baos.toByteArray());
             return new JsonPrimitive(serializedItem);
         } catch (final IOException e2) {
-            e2.addSuppressed(e);
-            e2.printStackTrace();
+            e.addSuppressed(e2);
+            e.printStackTrace();
             return new JsonPrimitive("");
         }
     }
 
-    @Nullable
     private ItemStack deserializeItemUsingXItemStack(final JsonElement json, final JsonDeserializationContext context) throws JsonParseException {
         try {
             final Map<String, Object> map = context.deserialize(json, GENERIC_MAP_TYPE);

@@ -46,7 +46,7 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>com.github.secretx33.sc-cfg</groupId>
-        <!-- Replace 'sccfg-bukkit' with the artifact name -->
+        <!-- Replace 'bukkit' with the artifact name -->
         <artifactId>sccfg-bukkit</artifactId>
         <version>main-SNAPSHOT</version>
     </dependency>

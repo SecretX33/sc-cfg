@@ -55,7 +55,7 @@ final class BungeePlatform implements Platform {
         final Object pluginClassLoader = BungeePlatform.class.getClassLoader();
         final Class<?> pluginClassLoaderClass = pluginClassLoader.getClass();
         if (!pluginClassLoaderClass.getCanonicalName().equals("net.md_5.bungee.api.plugin.PluginClassloader")) {
-            throw new ConfigException(String.format("Unable to get providing plugin because the classloader '%s' is not a PluginClassloader", pluginClassLoaderClass.getCanonicalName()));
+            throw new ConfigException("Unable to get providing plugin because the classloader '" + pluginClassLoaderClass.getCanonicalName() + "' is not a PluginClassloader");
         }
         try {
             final Field pluginField = pluginClassLoaderClass.getDeclaredField("plugin");

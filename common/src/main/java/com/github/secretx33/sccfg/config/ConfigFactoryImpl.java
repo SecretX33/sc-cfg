@@ -250,8 +250,8 @@ public final class ConfigFactoryImpl implements ConfigFactory {
             final int runBeforeCount = asyncBefore.size() + syncBefore.size();
             final CountDownLatch latch = new CountDownLatch(runBeforeCount);
 
-            asyncExecutor.runMethodsAsyncWithLatch(instance, asyncBefore, latch);
-            syncExecutor.runMethodsSyncWithLatch(instance, syncBefore, latch);
+            asyncExecutor.execute(instance, asyncBefore, latch);
+            syncExecutor.execute(instance, syncBefore, latch);
 
             if (runBeforeCount > 0) {
                 try {
@@ -261,8 +261,8 @@ public final class ConfigFactoryImpl implements ConfigFactory {
                 }
             }
             reloadInstance(configWrapper);
-            asyncExecutor.runMethodsAsync(instance, asyncAfter);
-            syncExecutor.runMethodsSync(instance, syncAfter);
+            asyncExecutor.execute(instance, asyncAfter);
+            syncExecutor.execute(instance, syncAfter);
         });
     }
 

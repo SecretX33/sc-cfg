@@ -17,6 +17,7 @@ package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.config.MethodWrapper;
 import org.bukkit.plugin.Plugin;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -34,20 +35,18 @@ public final class SyncMethodExecutor extends AbstractMethodExecutor implements 
     }
 
     @Override
-    public void runMethodsSync(final Object instance, final Set<MethodWrapper> tasks) {
-        checkNotNull(instance, "instance");
-        checkNotNull(tasks, "tasks");
-        if (tasks.isEmpty()) return;
-        runSync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper)));
+    public void execute(final Object instance, final Set<MethodWrapper> tasks) {
+        execute(instance, tasks, null);
     }
 
     @Override
-    public void runMethodsSyncWithLatch(final Object instance, final Set<MethodWrapper> tasks, final CountDownLatch latch) {
+    public void execute(final Object instance, final Set<MethodWrapper> tasks, @Nullable final CountDownLatch latch) {
         checkNotNull(instance, "instance");
         checkNotNull(tasks, "tasks");
         checkNotNull(latch, "latch");
+
         if (tasks.isEmpty()) return;
-        runSync(() -> tasks.forEach(wrapper -> runCatching(instance, wrapper, latch)));
+        runSync(() -> tasks.forEach(wrapper -> execute(instance, wrapper, latch)));
     }
 
     private void runSync(final Runnable task) {

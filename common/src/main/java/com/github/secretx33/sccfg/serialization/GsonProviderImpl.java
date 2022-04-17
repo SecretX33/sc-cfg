@@ -20,7 +20,7 @@ import com.github.secretx33.sccfg.exception.ConfigInternalErrorException;
 import com.github.secretx33.sccfg.exception.ConfigReflectiveOperationException;
 import com.github.secretx33.sccfg.scanner.Scanner;
 import com.github.secretx33.sccfg.serialization.gson.GsonIgnoreFieldExclusionStrategy;
-import com.github.secretx33.sccfg.serialization.gson.typeadapter.MapDeserializerDoubleAsIntFix;
+import com.github.secretx33.sccfg.serialization.typeadapter.MapDeserializerDoubleAsIntFix;
 import com.github.secretx33.sccfg.util.ClassUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

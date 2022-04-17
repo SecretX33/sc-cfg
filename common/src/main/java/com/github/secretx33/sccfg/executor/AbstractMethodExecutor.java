@@ -16,7 +16,9 @@
 package com.github.secretx33.sccfg.executor;
 
 import com.github.secretx33.sccfg.config.MethodWrapper;
+import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
@@ -32,20 +34,21 @@ abstract class AbstractMethodExecutor {
         this.logger = checkNotNull(logger, "logger");
     }
 
-    public void runCatching(final Object instance, final MethodWrapper wrapper) {
+    public void execute(final Object instance, final MethodWrapper wrapper) {
+        execute(instance, wrapper, null);
+    }
+
+    public void execute(final Object instance, final MethodWrapper wrapper, @Nullable final CountDownLatch latch) {
         final Method method = wrapper.getMethod();
         try {
             method.invoke(instance);
-        } catch (final Exception e) {
-            logger.log(Level.SEVERE, "An exception was thrown while executing method '" + method.getName() + "' of class " + method.getDeclaringClass().getCanonicalName(), e);
-        }
-    }
-
-    public void runCatching(final Object instance, final MethodWrapper wrapper, final CountDownLatch latch) {
-        try {
-            runCatching(instance, wrapper);
+        } catch (final Throwable e) {
+            Throwable cause = (e instanceof InvocationTargetException) ? ((InvocationTargetException) e).getTargetException() : e;
+            logger.log(Level.SEVERE, "An exception was thrown while executing method '" + method.getName() + "' of class " + method.getDeclaringClass().getCanonicalName(), cause);
         } finally {
-            latch.countDown();
+            if (latch != null) {
+                latch.countDown();
+            }
         }
     }
 }
