@@ -16,7 +16,6 @@
 package com.github.secretx33.sccfg.util;
 
 import com.github.secretx33.sccfg.api.annotation.Configuration;
-import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -28,7 +27,7 @@ public final class Valid {
     public static boolean isConfigClass(final Class<?> clazz) {
         checkNotNull(clazz, "clazz");
 
-        final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
+        final Configuration annotation = ClassUtil.configAnnotationOrNull(clazz);
         if (annotation == null) {
             return false;
         }
@@ -37,10 +36,7 @@ public final class Valid {
 
     public static <T> Class<T> ensureConfigClass(final Class<T> clazz) {
         checkNotNull(clazz, "clazz");
-        final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
-        if (annotation == null) {
-            throw new MissingConfigAnnotationException(clazz);
-        }
+        ClassUtil.configAnnotation(clazz);
         return clazz;
     }
 

@@ -15,9 +15,11 @@
  */
 package com.github.secretx33.sccfg.util;
 
+import com.github.secretx33.sccfg.api.annotation.Configuration;
+import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.exception.MissingNoArgsConstructorException;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 
 import static com.github.secretx33.sccfg.util.Preconditions.checkNotNull;
@@ -55,5 +57,19 @@ public final class ClassUtil {
             }
         }
         return false;
+    }
+
+    public static Configuration configAnnotation(final Class<?> clazz) {
+        Configuration annotation = configAnnotationOrNull(clazz);
+        if (annotation == null) {
+            throw new MissingConfigAnnotationException(clazz);
+        }
+        return annotation;
+    }
+
+    @Nullable
+    public static Configuration configAnnotationOrNull(final Class<?> clazz) {
+        checkNotNull(clazz, "clazz");
+        return clazz.getDeclaredAnnotation(Configuration.class);
     }
 }

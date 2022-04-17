@@ -24,7 +24,6 @@ import com.github.secretx33.sccfg.api.annotation.PathComment;
 import com.github.secretx33.sccfg.exception.ConfigException;
 import com.github.secretx33.sccfg.exception.ConfigInstanceOverrideException;
 import com.github.secretx33.sccfg.exception.ConfigNotInitializedException;
-import com.github.secretx33.sccfg.exception.MissingConfigAnnotationException;
 import com.github.secretx33.sccfg.executor.AsyncExecutor;
 import com.github.secretx33.sccfg.executor.AsyncMethodExecutor;
 import com.github.secretx33.sccfg.executor.SyncExecutor;
@@ -74,9 +73,9 @@ public final class ConfigFactoryImpl implements ConfigFactory {
     private final Path basePath;
     private final Scanner scanner;
     private final FileWatcher fileWatcher;
-    private final SerializerFactory serializerFactory;
     private final AsyncExecutor asyncExecutor;
     private final SyncExecutor syncExecutor;
+    private final SerializerFactory serializerFactory;
     private final NameMapperFactory nameMapperFactory;
 
     public ConfigFactoryImpl(
@@ -87,13 +86,33 @@ public final class ConfigFactoryImpl implements ConfigFactory {
             final FileWatcher fileWatcher,
             final SyncExecutor syncExecutor
     ) {
+        this(
+            basePath,
+            scanner,
+            fileWatcher,
+            new AsyncMethodExecutor(logger),
+            syncExecutor,
+            new SerializerFactory(logger, gsonProvider),
+            new NameMapperFactory()
+        );
+    }
+
+    public ConfigFactoryImpl(
+            final Path basePath,
+            final Scanner scanner,
+            final FileWatcher fileWatcher,
+            final AsyncExecutor asyncExecutor,
+            final SyncExecutor syncExecutor,
+            final SerializerFactory serializerFactory,
+            final NameMapperFactory nameMapperFactory
+    ) {
         this.basePath = checkNotNull(basePath, "basePath");
         this.scanner = checkNotNull(scanner, "scanner");
         this.fileWatcher = checkNotNull(fileWatcher, "fileWatcher");
-        this.serializerFactory = new SerializerFactory(logger, gsonProvider);
-        this.asyncExecutor = new AsyncMethodExecutor(logger);
+        this.serializerFactory = checkNotNull(serializerFactory, "serializerFactory");
+        this.asyncExecutor = checkNotNull(asyncExecutor, "asyncExecutor");
         this.syncExecutor = checkNotNull(syncExecutor, "syncExecutor");
-        this.nameMapperFactory = new NameMapperFactory();
+        this.nameMapperFactory = checkNotNull(nameMapperFactory, "nameMapperFactory");
     }
 
     @Override
@@ -119,21 +138,28 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         checkNotNull(instance, "instance");
         checkArgument(!(instance instanceof Class<?>), "cannot register classes as instances of configuration");
 
-        final Class<?> clazz = instance.getClass();
-        final Configuration annotation = getConfigAnnotation(clazz);
-        final Serializer serializer = serializerFactory.getSerializer(annotation.type());
-        final Set<Field> configFields = scanner.getConfigurationFields(clazz);
-        final Set<PropertyWrapper> properties = mapConfigFieldsToProperties(instance, configFields, annotation.naming());
-        final Map<String, String[]> comments = getConfigComments(clazz, properties, configFields);
-        final Map<String, Object> defaults = serializer.getCurrentValues(instance, properties);
         try {
+            final Class<?> clazz = instance.getClass();
+            final Configuration annotation = ClassUtil.configAnnotation(clazz);
+            final Serializer serializer = serializerFactory.getSerializer(annotation.type());
+            final Set<Field> configFields = scanner.getConfigurationFields(clazz);
+            final Set<PropertyWrapper> properties = mapConfigFieldsToProperties(instance, configFields, annotation.naming());
+            final Map<String, String[]> comments = getConfigComments(clazz, properties, configFields);
             final Path configPath = Paths.get(parseConfigPath(clazz, annotation));
-            final Path destination = basePath.resolve(configPath);
-            final Set<MethodWrapper> runBeforeReload = scanner.getBeforeReloadMethods(clazz);
-            final Set<MethodWrapper> runAfterReload = scanner.getAfterReloadMethods(clazz);
-
             final FileWatcher.WatchedLocation watchedLocation = fileWatcher.getWatcher(configPath);
-            final ConfigWrapper<T> wrapper = new ConfigWrapperImpl<>(instance, annotation, destination, defaults, properties, comments, runBeforeReload, runAfterReload, watchedLocation);
+
+            final ConfigWrapper<T> wrapper = ConfigWrapperImpl.builder()
+                .instance(instance)
+                .configAnnotation(annotation)
+                .destination(basePath.resolve(configPath))
+                .defaults(serializer.getCurrentValues(instance, properties))
+                .properties(properties)
+                .comments(comments)
+                .runBeforeReloadMethods(scanner.getBeforeReloadMethods(clazz))
+                .runAfterReloadMethods(scanner.getAfterReloadMethods(clazz))
+                .watchedLocation(watchedLocation)
+                .build();
+
             watchedLocation.addListener(FileModificationType.CREATE_AND_MODIFICATION, handleReload(wrapper));
             return serializer.loadConfig(wrapper);
         } catch (final ConfigException e) {
@@ -141,14 +167,6 @@ public final class ConfigFactoryImpl implements ConfigFactory {
         } catch (final Exception e) {
             throw new ConfigException(e);
         }
-    }
-
-    private Configuration getConfigAnnotation(final Class<?> clazz) {
-        final Configuration annotation = clazz.getDeclaredAnnotation(Configuration.class);
-        if (annotation == null) {
-            throw new MissingConfigAnnotationException(clazz);
-        }
-        return annotation;
     }
 
     private Set<PropertyWrapper> mapConfigFieldsToProperties(final Object instance, final Set<Field> fields, final Naming naming) {
@@ -208,8 +226,8 @@ public final class ConfigFactoryImpl implements ConfigFactory {
 
         // from Comment and NamedPath annotations
         properties.stream()
-                .filter(property -> property.hasComment() && property.getComment() != null)
-                .forEach(property -> map.put(property.getFullPathOnFile(), property.getComment().split("\\n")));
+            .filter(property -> property.hasComment() && property.getComment() != null)
+            .forEach(property -> map.put(property.getFullPathOnFile(), property.getComment().split("\\n")));
 
         // from PathComment and PathComments annotations
         final Collection<PathComment> pathComment = scanner.getPathCommentFromClassAndAllFields(clazz, configFields);

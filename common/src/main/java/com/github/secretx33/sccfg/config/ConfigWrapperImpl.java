@@ -46,7 +46,7 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
     private final Set<MethodWrapper> runAfterReloadMethods;
     private final FileWatcher.WatchedLocation watchedLocation;
 
-    public ConfigWrapperImpl(
+    private ConfigWrapperImpl(
             final T instance,
             final Configuration configAnnotation,
             final Path destination,
@@ -190,5 +190,84 @@ public final class ConfigWrapperImpl<T> implements ConfigWrapper<T> {
                 ", runAfterReloadMethods=" + runAfterReloadMethods +
                 ", watchedLocation=" + watchedLocation +
                 '}';
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static final class Builder {
+        private Object instance;
+        private Configuration configAnnotation;
+        private Path destination;
+        private Map<String, Object> defaults;
+        private Set<PropertyWrapper> properties;
+        private Map<String, String[]> comments;
+        private Set<MethodWrapper> runBeforeReloadMethods;
+        private Set<MethodWrapper> runAfterReloadMethods;
+        private FileWatcher.WatchedLocation watchedLocation;
+
+        private Builder() {
+        }
+
+        public Builder instance(Object instance) {
+            this.instance = checkNotNull(instance, "instance");
+            return this;
+        }
+
+        public Builder configAnnotation(Configuration configAnnotation) {
+            this.configAnnotation = checkNotNull(configAnnotation, "configAnnotation");
+            return this;
+        }
+
+        public Builder destination(Path destination) {
+            this.destination = checkNotNull(destination, "destination");
+            return this;
+        }
+
+        public Builder defaults(Map<String, Object> defaults) {
+            this.defaults = checkNotNull(defaults, "defaults");
+            return this;
+        }
+
+        public Builder properties(Set<PropertyWrapper> properties) {
+            this.properties = checkNotNull(properties, "properties");
+            return this;
+        }
+
+        public Builder comments(Map<String, String[]> comments) {
+            this.comments = checkNotNull(comments, "comments");
+            return this;
+        }
+
+        public Builder runBeforeReloadMethods(Set<MethodWrapper> runBeforeReloadMethods) {
+            this.runBeforeReloadMethods = checkNotNull(runBeforeReloadMethods, "runBeforeReloadMethods");
+            return this;
+        }
+
+        public Builder runAfterReloadMethods(Set<MethodWrapper> runAfterReloadMethods) {
+            this.runAfterReloadMethods = checkNotNull(runAfterReloadMethods, "runAfterReloadMethods");
+            return this;
+        }
+
+        public Builder watchedLocation(FileWatcher.WatchedLocation watchedLocation) {
+            this.watchedLocation = checkNotNull(watchedLocation, "watchedLocation");
+            return this;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T> ConfigWrapper<T> build() {
+            return new ConfigWrapperImpl<>(
+                (T) instance,
+                configAnnotation,
+                destination,
+                defaults,
+                properties,
+                comments,
+                runBeforeReloadMethods,
+                runAfterReloadMethods,
+                watchedLocation
+            );
+        }
     }
 }

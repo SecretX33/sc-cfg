@@ -8,6 +8,7 @@ dependencies {
     compileOnly(project(":sccfg-hocon"))
     compileOnly(project(":sccfg-json"))
     compileOnly(project(":sccfg-yaml"))
+    testImplementation(project(":sccfg-base-serializer"))
     testImplementation(project(":sccfg-hocon"))
     testImplementation(project(":sccfg-json"))
     testImplementation(project(":sccfg-yaml"))
